@@ -5,37 +5,19 @@ import (
 	"strings"
 )
 
-func TagValueAndFlags(tag string) (string, map[string]bool) {
+func ParseTagKeyAndFlags(tag string) (string, map[string]struct{}) {
 	values := strings.Split(tag, ",")
-	flags := make(map[string]bool)
+	flags := make(map[string]struct{})
 	if len(values[0]) > 1 {
 		for _, flag := range values[1:] {
-			flags[flag] = true
+			flags[flag] = struct{}{}
 		}
 	}
 	return values[0], flags
 }
 
-type StructTag string
-
-func (t StructTag) Name() string {
-	s := string(t)
-	if i := strings.Index(s, ","); i >= 0 {
-		if i == 0 {
-			return ""
-		}
-		return s[0:i]
-	}
-	return s
-}
-
-func (t StructTag) HasFlag(flg string) bool {
-	idx := strings.Index(string(t), flg)
-	return idx > 0
-}
-
-func ParseStructTag(tag string) map[string]StructTag {
-	flags := map[string]StructTag{}
+func ParseStructTag(tag string) map[string]string {
+	flags := map[string]string{}
 
 	for i := 0; tag != ""; {
 		// skip spaces
@@ -76,7 +58,7 @@ func ParseStructTag(tag string) map[string]StructTag {
 		if err != nil {
 			break
 		}
-		flags[name] = StructTag(value)
+		flags[name] = value
 	}
 	return flags
 }

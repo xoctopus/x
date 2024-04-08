@@ -2,6 +2,7 @@ package contextx
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 )
 
@@ -34,10 +35,8 @@ func (c *kv) Value(k interface{}) interface{} {
 	return c.Context.Value(k)
 }
 
-type stringer interface{ String() string }
-
 func nameof(c context.Context) string {
-	if str, ok := c.(stringer); ok {
+	if str, ok := c.(fmt.Stringer); ok {
 		return str.String()
 	}
 	return reflect.TypeOf(c).String()
@@ -45,7 +44,7 @@ func nameof(c context.Context) string {
 
 func stringify(v interface{}) string {
 	switch s := v.(type) {
-	case stringer:
+	case fmt.Stringer:
 		return s.String()
 	case string:
 		return s

@@ -5,134 +5,131 @@ import (
 	"reflect"
 )
 
+var (
+	InvalidValue = reflect.Value{}
+	InvalidType  = reflect.TypeOf(nil)
+)
+
+// Indirect deref and new all level pointer references
 func Indirect(v reflect.Value) reflect.Value {
-	if v.Kind() == reflect.Ptr {
+	if !v.IsValid() {
+		return InvalidValue
+	}
+	if v.Kind() == reflect.Pointer {
 		return Indirect(v.Elem())
 	}
 	return v
 }
 
+// Deref returns the basic type of t
+func Deref(t reflect.Type) reflect.Type {
+	if t == InvalidType {
+		return InvalidType
+	}
+	if kind := t.Kind(); kind == reflect.Pointer || kind == reflect.Interface {
+		return Deref(t.Elem())
+	}
+	return t
+}
+
 // New a `reflect.Value` with reflect.Type
+// not like reflect.New, but new all level pointer ref
 func New(t reflect.Type) reflect.Value {
 	v := reflect.New(t).Elem()
-	if t.Kind() == reflect.Ptr {
+	if t.Kind() == reflect.Pointer {
 		v.Set(New(t.Elem()).Addr())
 	}
 	return v
 }
 
-func IsEmptyValue(v interface{}) bool {
-	rv, ok := v.(reflect.Value)
-	if !ok {
-		rv = reflect.ValueOf(&v).Elem()
-	}
-	if rv.Kind() == reflect.Ptr && rv.IsNil() {
-		return true
-	}
-	if rv.Kind() == reflect.Interface && rv.IsNil() {
-		return true
-	}
-	if rv.Kind() == reflect.Invalid {
-		return true
+// NewElem new the indirect type of t
+func NewElem(t reflect.Type) reflect.Value {
+	ptrLevel := 0
+	for t.Kind() == reflect.Pointer {
+		t = t.Elem()
+		ptrLevel++
 	}
 
-	if rv.IsValid() && rv.CanInterface() {
-		if chk, ok := rv.Interface().(interface{ IsZero() bool }); ok {
-			return chk.IsZero()
-		}
+	rv := reflect.New(t)
+
+	for i := 0; i < ptrLevel-1; i++ {
+		t = reflect.PointerTo(t)
+		nextrv := reflect.New(t)
+		nextrv.Elem().Set(rv)
+		rv = nextrv
 	}
-	switch rv.Kind() {
-	case reflect.Array, reflect.Slice, reflect.Map, reflect.String:
-		return rv.Len() == 0
-	case reflect.Bool:
-		return !rv.Bool()
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return rv.Int() == 0
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return rv.Uint() == 0
-	case reflect.Float32, reflect.Float64:
-		return rv.Float() == 0
-	case reflect.Ptr, reflect.Interface:
-		return IsEmptyValue(rv.Elem())
-	}
-	return false
+
+	return rv.Elem()
 }
 
-func TypeName(rt reflect.Type) string {
+// IsZero check if input v is zero
+func IsZero(v any) bool {
+	rv, ok := v.(reflect.Value)
+	if !ok {
+		rv = reflect.ValueOf(v)
+	}
+	kind := rv.Kind()
+	if !rv.IsValid() {
+		return true
+	}
+	if kind == reflect.Pointer || kind == reflect.Interface {
+		if rv.IsNil() {
+			return true
+		}
+		return IsZero(rv.Elem())
+	}
+
+	if rv.CanInterface() {
+		if checker, ok := rv.Interface().(interface{ IsZero() bool }); ok {
+			return checker.IsZero()
+		}
+	}
+
+	// check if a CanLen value's length is 0(not include Array type)
+	switch kind {
+	case reflect.Slice, reflect.Map, reflect.String, reflect.Chan:
+		return rv.Len() == 0
+	default:
+		return rv.IsZero()
+	}
+}
+
+// Typename returns the full type name of rt
+func Typename(rt reflect.Type) string {
 	buf := bytes.NewBuffer(nil)
 	for rt.Kind() == reflect.Ptr {
 		buf.WriteByte('*')
 		rt = rt.Elem()
 	}
-	if pkg := rt.PkgPath(); pkg != "" {
-		buf.WriteString(pkg)
-		buf.WriteByte('.')
-	}
+
 	if name := rt.Name(); name != "" {
+		if pkg := rt.PkgPath(); pkg != "" {
+			buf.WriteString(pkg)
+			buf.WriteByte('.')
+		}
 		buf.WriteString(name)
+		return buf.String()
 	}
+
 	buf.WriteString(rt.String())
 	return buf.String()
 }
 
-func DeRef(t reflect.Type) reflect.Type {
-	for t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-	return t
-}
-
-// NatureType return the v's nature type, for example:
-// Foo nature type is Foo
-// *Foo nature type is Foo
-// ***Foo nature type is Foo
-// reflect.TypeOf(Foo) nature type is Foo
-// (interface{})(Foo) nature type is Foo
-func NatureType(v interface{}) (rt reflect.Type) {
-	if !reflect.ValueOf(v).IsValid() {
-		return reflect.TypeOf(nil)
-	}
-
-	rt = reflect.TypeOf(v)
-	if t, ok := v.(reflect.Type); ok {
-		rt = t
-	}
-
-	kind := rt.Kind()
-	for kind == reflect.Ptr {
-		rt = rt.Elem()
-		kind = rt.Kind()
-	}
-
-	if kind == reflect.Interface {
-		return NatureType(reflect.New(rt).Elem().Interface())
-	}
-	return rt
-}
-
-func IsBytes(v interface{}) bool {
+func IsBytes(v any) bool {
 	if _, ok := v.([]byte); ok {
 		return true
 	}
-	t := BasicAssertReflectType(v)
-	return IsBytesType(t)
+	t := typeof(v)
+	return t.Kind() == reflect.Slice && t.Elem().Kind() == reflect.Uint8 && t.Elem().PkgPath() == ""
 }
 
-func IsBytesType(t reflect.Type) bool {
-	return t.Kind() == reflect.Slice &&
-		t.Elem().Kind() == reflect.Uint8 &&
-		t.Elem().PkgPath() == ""
-}
-
-func BasicAssertReflectType(v interface{}) reflect.Type {
-	var t reflect.Type
+func typeof(v any) reflect.Type {
 	switch x := v.(type) {
 	case reflect.Type:
-		t = x
+		return x
 	case interface{ Type() reflect.Type }:
-		t = x.Type()
+		return x.Type()
 	default:
-		t = reflect.TypeOf(v)
+		return reflect.TypeOf(v)
 	}
-	return t
 }
