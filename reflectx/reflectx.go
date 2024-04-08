@@ -10,7 +10,7 @@ var (
 	InvalidType  = reflect.TypeOf(nil)
 )
 
-// Indirect deref and new all level pointer references
+// Indirect deref all level pointer references
 func Indirect(v reflect.Value) reflect.Value {
 	if !v.IsValid() {
 		return InvalidValue
