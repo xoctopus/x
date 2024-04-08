@@ -7,7 +7,7 @@ import (
 )
 
 // WithValue like context.WithValue but faster
-func WithValue(parent context.Context, k, v interface{}) context.Context {
+func WithValue(parent context.Context, k, v any) context.Context {
 	if parent == nil {
 		panic("parent is nil")
 	}
@@ -19,7 +19,7 @@ func WithValue(parent context.Context, k, v interface{}) context.Context {
 
 type kv struct {
 	context.Context
-	k, v interface{}
+	k, v any
 }
 
 func (c *kv) String() string {
@@ -28,7 +28,7 @@ func (c *kv) String() string {
 		", val" + stringify(c.v) + ")"
 }
 
-func (c *kv) Value(k interface{}) interface{} {
+func (c *kv) Value(k any) any {
 	if c.k == k {
 		return c.v
 	}
@@ -42,7 +42,7 @@ func nameof(c context.Context) string {
 	return reflect.TypeOf(c).String()
 }
 
-func stringify(v interface{}) string {
+func stringify(v any) string {
 	switch s := v.(type) {
 	case fmt.Stringer:
 		return s.String()
