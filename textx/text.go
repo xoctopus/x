@@ -139,7 +139,7 @@ type ErrMarshalUnsupportedType struct {
 }
 
 func (e *ErrMarshalUnsupportedType) Error() string {
-	return "marshal text unsupported type " + e.Type.String()
+	return "marshal text unsupported type `" + e.Type.String() + "`"
 }
 
 type ErrUnmarshalUnsupportedType struct {
@@ -147,7 +147,7 @@ type ErrUnmarshalUnsupportedType struct {
 }
 
 func (e *ErrUnmarshalUnsupportedType) Error() string {
-	return "unmarshal text unsupported type " + e.Type.String()
+	return "unmarshal text unsupported type `" + e.Type.String() + "`"
 }
 
 type ErrInvalidUnmarshal struct {
@@ -159,9 +159,9 @@ func (e *ErrInvalidUnmarshal) Error() string {
 		return "unmarshal(nil)"
 	}
 	if e.Type.Kind() != reflect.Pointer {
-		return "unmarshal(non-pointer " + e.Type.String() + ")"
+		return "unmarshal(non-pointer `" + e.Type.String() + "`)"
 	}
-	return "unmarshal(nil " + e.Type.String() + ")"
+	return "unmarshal(nil `" + e.Type.String() + "`)"
 }
 
 type ErrUnmarshalFailed struct {
@@ -171,5 +171,5 @@ type ErrUnmarshalFailed struct {
 }
 
 func (e *ErrUnmarshalFailed) Error() string {
-	return "failed unmarshal from " + string(e.Data) + " to type " + e.Type.String() + ": " + e.Err
+	return "failed unmarshal from `" + string(e.Data) + "` to type `" + e.Type.String() + "`: " + e.Err
 }
