@@ -2,6 +2,8 @@ package textx_test
 
 import (
 	"bytes"
+	"encoding/binary"
+	"errors"
 	"reflect"
 	"strconv"
 	"testing"
@@ -25,6 +27,22 @@ func (d *Duration) UnmarshalText(data []byte) error {
 		return err
 	}
 	*d = Duration(dur)
+	return nil
+}
+
+var errInvalidDataLength = errors.New("data length should times 8")
+
+type UnsignedIntegers []uint64
+
+func (d UnsignedIntegers) UnmarshalText(data []byte) error {
+	if len(data)%8 != 0 {
+		return errInvalidDataLength
+	}
+	for offset := 0; len(data) >= 8; offset += 8 {
+		v := binary.LittleEndian.Uint64(data)
+		data = data[8:]
+		d[offset/8] = v
+	}
 	return nil
 }
 
@@ -108,9 +126,12 @@ var unmarshalCases = []*UnmarshalCase{
 	{"BooleanFailed", new(bool), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(true)}},
 	{"Bytes", new([]byte), ToBase64([]byte("any")), nil},
 	{"BytesFailed", new([]byte), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf([]byte{})}},
-	{"Unmarshaler", new(Duration), []byte("1s"), nil},
-	{"UnmarshalerFailed", new(Duration), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(Duration(0))}},
-	{"Unsupported", new([]int), []byte("any"), &ErrUnmarshalUnsupportedType{Type: reflect.TypeOf([]int{})}},
+	{"Unmarshaler1", new(Duration), []byte("1s"), nil},
+	{"UnmarshalerFailed1", new(Duration), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(Duration(0))}},
+	{"Unmarshaler2", &UnsignedIntegers{0x02}, []byte{1, 0, 0, 0, 0, 0, 0, 0}, nil},
+	{"UnmarshalerFailed2", &UnsignedIntegers{0x02}, []byte{1, 0, 0, 0, 0, 0, 0}, errInvalidDataLength},
+	{"Unsupported1", new([]int), []byte("any"), &ErrUnmarshalUnsupportedType{Type: reflect.TypeOf([]int{})}},
+	{"Unsupported2", &struct{}{}, []byte("any"), &ErrUnmarshalUnsupportedType{Type: reflect.TypeOf(struct{}{})}},
 }
 
 func TestUnmarshalText(t *testing.T) {
