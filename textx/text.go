@@ -57,16 +57,25 @@ func UnmarshalText(data []byte, v any) error {
 		return &ErrInvalidUnmarshal{nil, "invalid value"}
 	}
 
-	if rv.Kind() != reflect.Pointer && !rv.CanSet() {
+	if rv.Kind() == reflect.Pointer {
+		if rv.IsNil() && rv.CanSet() {
+			rv.Set(reflectx.New(rv.Type()))
+		}
+		return UnmarshalText(data, rv.Elem())
+	}
+
+	if !rv.CanSet() {
 		return &ErrInvalidUnmarshal{rv.Type(), "cannot set"}
 	}
 
-	if rv.CanInterface() {
-		if unmarshaler, ok := rv.Interface().(encoding.TextUnmarshaler); ok {
-			if err := unmarshaler.UnmarshalText(data); err != nil {
-				return &ErrUnmarshalFailed{data, rv.Type(), err.Error()}
-			}
-			return nil
+	rt := rv.Type()
+	if rt.Implements(rtTextUnmarshaller) {
+		if err := rv.Interface().(encoding.TextUnmarshaler).UnmarshalText(data); err != nil {
+			return &ErrUnmarshalFailed{data, rt, err.Error()}
+		}
+	} else if reflect.PointerTo(rt).Implements(rtTextUnmarshaller) {
+		if err := rv.Addr().Interface().(encoding.TextUnmarshaler).UnmarshalText(data); err != nil {
+			return &ErrUnmarshalFailed{data, rt, err.Error()}
 		}
 	}
 
@@ -75,14 +84,15 @@ func UnmarshalText(data []byte, v any) error {
 		if reflectx.IsBytes(rv.Type()) {
 			raw, err := FromBase64(data)
 			if err != nil {
-				return &ErrUnmarshalFailed{data, rv.Type(), err.Error()}
+				return &ErrUnmarshalFailed{data, rt, err.Error()}
 			}
 			rv.SetBytes(raw)
-		} else {
-			return &ErrUnmarshalUnsupportedType{rv.Type()}
+			return nil
 		}
+		return &ErrUnmarshalUnsupportedType{rt}
 	case reflect.String:
 		rv.SetString(string(data))
+		return nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		v, err := strconv.ParseInt(string(data), 10, 64)
 		if err != nil {
@@ -92,26 +102,25 @@ func UnmarshalText(data []byte, v any) error {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		v, err := strconv.ParseUint(string(data), 10, 64)
 		if err != nil {
-			return &ErrUnmarshalFailed{data, rv.Type(), err.Error()}
+			return &ErrUnmarshalFailed{data, rt, err.Error()}
 		}
 		rv.SetUint(v)
 	case reflect.Float32, reflect.Float64:
 		v, err := strconv.ParseFloat(string(data), 64)
 		if err != nil {
-			return &ErrUnmarshalFailed{data, rv.Type(), err.Error()}
+			return &ErrUnmarshalFailed{data, rt, err.Error()}
 		}
 		rv.SetFloat(v)
+		return nil
 	case reflect.Bool:
 		v, err := strconv.ParseBool(string(data))
 		if err != nil {
-			return &ErrUnmarshalFailed{data, rv.Type(), err.Error()}
+			return &ErrUnmarshalFailed{data, rt, err.Error()}
 		}
 		rv.SetBool(v)
-	case reflect.Pointer:
-		if rv.IsNil() && rv.CanSet() {
-			rv.Set(reflectx.New(rv.Type()))
-		}
-		return UnmarshalText(data, rv.Elem())
+		return nil
+	default:
+		return &ErrUnmarshalUnsupportedType{Type: rt}
 	}
 	return nil
 }
@@ -171,3 +180,5 @@ type ErrUnmarshalFailed struct {
 func (e *ErrUnmarshalFailed) Error() string {
 	return "failed unmarshal from `" + string(e.Data) + "` to type `" + e.Type.String() + "`: " + e.Err
 }
+
+var rtTextUnmarshaller = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()

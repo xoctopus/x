@@ -109,7 +109,7 @@ var unmarshalCases = []*UnmarshalCase{
 	{"Bytes", new([]byte), ToBase64([]byte("any")), nil},
 	{"BytesFailed", new([]byte), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf([]byte{})}},
 	{"Unmarshaler", new(Duration), []byte("1s"), nil},
-	{"UnmarshalerFailed", new(Duration), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(new(Duration))}},
+	{"UnmarshalerFailed", new(Duration), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(Duration(0))}},
 	{"Unsupported", new([]int), []byte("any"), &ErrUnmarshalUnsupportedType{Type: reflect.TypeOf([]int{})}},
 }
 
