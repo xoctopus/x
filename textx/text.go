@@ -53,11 +53,12 @@ func UnmarshalText(data []byte, v any) error {
 		rv = reflect.ValueOf(v)
 	}
 
-	if rv.Kind() != reflect.Pointer || rv.IsNil() {
-		if v == nil {
-			return &ErrInvalidUnmarshal{nil}
-		}
-		return &ErrInvalidUnmarshal{rv.Type()}
+	if !rv.IsValid() {
+		return &ErrInvalidUnmarshal{nil, "invalid value"}
+	}
+
+	if rv.Kind() != reflect.Pointer && !rv.CanSet() {
+		return &ErrInvalidUnmarshal{rv.Type(), "cannot set"}
 	}
 
 	if rv.CanInterface() {
@@ -68,7 +69,6 @@ func UnmarshalText(data []byte, v any) error {
 			return nil
 		}
 	}
-	rv = rv.Elem()
 
 	switch rv.Kind() {
 	case reflect.Slice:
@@ -108,10 +108,10 @@ func UnmarshalText(data []byte, v any) error {
 		}
 		rv.SetBool(v)
 	case reflect.Pointer:
-		if rv.IsNil() {
-			rv.Set(reflect.New(rv.Type().Elem()))
+		if rv.IsNil() && rv.CanSet() {
+			rv.Set(reflectx.New(rv.Type()))
 		}
-		return UnmarshalText(data, rv.Elem().Addr())
+		return UnmarshalText(data, rv.Elem())
 	}
 	return nil
 }
@@ -152,16 +152,14 @@ func (e *ErrUnmarshalUnsupportedType) Error() string {
 
 type ErrInvalidUnmarshal struct {
 	Type reflect.Type
+	Err  string
 }
 
 func (e *ErrInvalidUnmarshal) Error() string {
 	if e.Type == nil {
-		return "unmarshal(nil)"
+		return "unmarshal(nil): " + e.Err
 	}
-	if e.Type.Kind() != reflect.Pointer {
-		return "unmarshal(non-pointer `" + e.Type.String() + "`)"
-	}
-	return "unmarshal(nil `" + e.Type.String() + "`)"
+	return "unmarshal(`" + e.Type.String() + "`): " + e.Err
 }
 
 type ErrUnmarshalFailed struct {

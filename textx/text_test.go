@@ -81,37 +81,41 @@ func TestMarshalText(t *testing.T) {
 }
 
 type UnmarshalCase struct {
+	name  string
 	value any
 	text  []byte
 	err   error
 }
 
-var unmarshalCases = map[string]*UnmarshalCase{
-	"Nil":                   {nil, []byte("any"), &ErrInvalidUnmarshal{}},
-	"CannotSet1":            {1, []byte("1"), &ErrInvalidUnmarshal{Type: reflect.TypeOf(1)}},
-	"CannotSet2":            {(*int)(nil), []byte("1"), &ErrInvalidUnmarshal{Type: reflect.TypeOf((*int)(nil))}},
-	"NamedString":           {new(NamedString), []byte("any"), nil},
-	"NamedInt":              {new(NamedInt), []byte("1"), nil},
-	"Integer":               {new(int), []byte("1"), nil},
-	"IntegerPtr":            {new(*int), []byte("1"), nil},
-	"IntegerPtrPtr":         {new(**int), []byte("1"), nil},
-	"IntegerFailed":         {new(int), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(1)}},
-	"UnsignedInteger":       {new(uint32), []byte("1"), nil},
-	"UnsignedIntegerFailed": {new(uint32), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(uint32(1))}},
-	"Float":                 {new(float64), []byte("1"), nil},
-	"FloatFailed":           {new(float64), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(float64(1))}},
-	"Boolean":               {new(bool), []byte("true"), nil},
-	"BooleanFailed":         {new(bool), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(true)}},
-	"Bytes":                 {new([]byte), ToBase64([]byte("any")), nil},
-	"BytesFailed":           {new([]byte), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf([]byte{})}},
-	"Unmarshaler":           {new(Duration), []byte("1s"), nil},
-	"UnmarshalerFailed":     {new(Duration), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(new(Duration))}},
-	"Unsupported":           {new([]int), []byte("any"), &ErrUnmarshalUnsupportedType{Type: reflect.TypeOf([]int{})}},
+var unmarshalCases = []*UnmarshalCase{
+	{"Nil", nil, []byte("any"), &ErrInvalidUnmarshal{Type: nil, Err: "invalid value"}},
+	{"CannotSet1", 1, []byte("1"), &ErrInvalidUnmarshal{Type: reflect.TypeOf(1), Err: "cannot set"}},
+	{"CannotSet2", (*int)(nil), []byte("1"), &ErrInvalidUnmarshal{Type: nil, Err: "invalid value"}},
+	{"CannotSet3", reflect.ValueOf(struct{ Int int }{}).Field(0), []byte("1"), &ErrInvalidUnmarshal{Type: reflect.TypeOf(0), Err: "cannot set"}},
+	{"CannotSet4", reflect.ValueOf(&struct{ value int }{}).Elem().Field(0), []byte("1"), &ErrInvalidUnmarshal{Type: reflect.TypeOf(0), Err: "cannot set"}},
+	{"StructField", reflect.ValueOf(&struct{ Int int }{}).Elem().Field(0), []byte("1"), nil},
+	{"NamedString", new(NamedString), []byte("any"), nil},
+	{"NamedInt", new(NamedInt), []byte("1"), nil},
+	{"Integer", new(int), []byte("1"), nil},
+	{"IntegerPtr", new(*int), []byte("1"), nil},
+	{"IntegerPtrPtr", new(**int), []byte("1"), nil},
+	{"IntegerFailed", new(int), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(1)}},
+	{"UnsignedInteger", new(uint32), []byte("1"), nil},
+	{"UnsignedIntegerFailed", new(uint32), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(uint32(1))}},
+	{"Float", new(float64), []byte("1"), nil},
+	{"FloatFailed", new(float64), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(float64(1))}},
+	{"Boolean", new(bool), []byte("true"), nil},
+	{"BooleanFailed", new(bool), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(true)}},
+	{"Bytes", new([]byte), ToBase64([]byte("any")), nil},
+	{"BytesFailed", new([]byte), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf([]byte{})}},
+	{"Unmarshaler", new(Duration), []byte("1s"), nil},
+	{"UnmarshalerFailed", new(Duration), []byte("any"), &ErrUnmarshalFailed{Data: []byte("any"), Type: reflect.TypeOf(new(Duration))}},
+	{"Unsupported", new([]int), []byte("any"), &ErrUnmarshalUnsupportedType{Type: reflect.TypeOf([]int{})}},
 }
 
 func TestUnmarshalText(t *testing.T) {
-	for name, c := range unmarshalCases {
-		t.Run(name, func(t *testing.T) {
+	for _, c := range unmarshalCases {
+		t.Run(c.name, func(t *testing.T) {
 			err := UnmarshalText(c.text, c.value)
 			if c.err != nil {
 				NewWithT(t).Expect(err).NotTo(BeNil())
@@ -124,8 +128,11 @@ func TestUnmarshalText(t *testing.T) {
 }
 
 func BenchmarkUnmarshalTextAndMarshalText(b *testing.B) {
-	for name, c := range unmarshalCases {
-		b.Run("UnmarshalText_"+name, func(b *testing.B) {
+	for _, c := range unmarshalCases {
+		if c.err != nil {
+			continue
+		}
+		b.Run("UnmarshalText_"+c.name, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				_ = UnmarshalText(c.text, c.value)
 			}
