@@ -73,10 +73,12 @@ func UnmarshalText(data []byte, v any) error {
 		if err := rv.Interface().(encoding.TextUnmarshaler).UnmarshalText(data); err != nil {
 			return &ErrUnmarshalFailed{data, rt, err.Error()}
 		}
+		return nil
 	} else if reflect.PointerTo(rt).Implements(rtTextUnmarshaller) {
 		if err := rv.Addr().Interface().(encoding.TextUnmarshaler).UnmarshalText(data); err != nil {
 			return &ErrUnmarshalFailed{data, rt, err.Error()}
 		}
+		return nil
 	}
 
 	switch rv.Kind() {
