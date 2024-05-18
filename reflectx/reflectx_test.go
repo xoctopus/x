@@ -84,6 +84,10 @@ type Int int
 
 func (v Int) IsZero() bool { return v == 0 }
 
+type Float float64
+
+func (v Float) IsZero() bool { return v == 0 }
+
 func TestIsZero(t *testing.T) {
 	var cases = []*struct {
 		value any
@@ -114,6 +118,7 @@ func TestIsZero(t *testing.T) {
 		{0.0, true},
 		{Int(1), false},
 		{Int(0), true},
+		{Float(0), true},
 	}
 
 	for i, c := range cases {
@@ -156,5 +161,63 @@ func TestIsBytes(t *testing.T) {
 
 	for _, c := range cases {
 		NewWithT(t).Expect(IsBytes(c.value)).To(Equal(c.expect))
+	}
+}
+
+func TestIsInteger(t *testing.T) {
+	var cases = []*struct {
+		value  any
+		expect bool
+	}{
+		{0.1, false},
+		{1, true},
+		{"1", false},
+		{Int(0), true},
+		{any(100), true},
+		{reflect.TypeOf(1), true},
+	}
+
+	for _, c := range cases {
+		NewWithT(t).Expect(IsInteger(c.value)).To(Equal(c.expect))
+	}
+}
+
+func TestIsFloat(t *testing.T) {
+	var cases = []*struct {
+		value  any
+		expect bool
+	}{
+		{1, false},
+		{0.1, true},
+		{"1", false},
+		{Int(0), false},
+		{any(100), false},
+		{any(100.0), true},
+		{reflect.TypeOf(1.0), true},
+	}
+
+	for _, c := range cases {
+		NewWithT(t).Expect(IsFloat(c.value)).To(Equal(c.expect))
+	}
+}
+
+func TestIsNumeric(t *testing.T) {
+	var cases = []*struct {
+		value  any
+		expect bool
+	}{
+		{1, true},
+		{0.1, true},
+		{"1", false},
+		{Int(0), true},
+		{Float(0), true},
+		{any(100), true},
+		{any(100.0), true},
+		{reflect.TypeOf(1), true},
+		{reflect.TypeOf(1.0), true},
+	}
+
+	for _, c := range cases {
+		NewWithT(t).Expect(IsNumeric(c.value)).To(Equal(c.expect))
 	}
 }

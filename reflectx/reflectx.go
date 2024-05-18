@@ -123,6 +123,21 @@ func IsBytes(v any) bool {
 	return t.Kind() == reflect.Slice && t.Elem().Kind() == reflect.Uint8 && t.Elem().PkgPath() == ""
 }
 
+func IsInteger(v any) bool {
+	k := typeof(v).Kind()
+	return k >= reflect.Int && k <= reflect.Uint64
+}
+
+func IsFloat(v any) bool {
+	k := typeof(v).Kind()
+	return k == reflect.Float64 || k == reflect.Float32
+}
+
+func IsNumeric(v any) bool {
+	k := typeof(v).Kind()
+	return k >= reflect.Int && k <= reflect.Complex128
+}
+
 func typeof(v any) reflect.Type {
 	switch x := v.(type) {
 	case reflect.Type:
