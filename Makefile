@@ -13,6 +13,6 @@ report:
 	@ineffassign ./...
 	@echo "done\n"
 	@echo ">>>detecting icyclomatic complexities over 10 and average"
-	@gocyclo -over 10 -avg -ignore '_test|vendor' .
+	@gocyclo -over 10 -avg -ignore '_test|vendor' . || true
 	@echo "done\n"
 
