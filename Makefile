@@ -16,3 +16,7 @@ report:
 	@gocyclo -over 10 -avg -ignore '_test|vendor' . || true
 	@echo "done\n"
 
+meta:
+	@echo "version:   `git describe --tags --always`"
+	@echo "feature:   `git rev-parse --abbrev-ref HEAD`"
+	@echo "commit_id: `git rev-parse --short --show HEAD`"
