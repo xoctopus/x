@@ -4,6 +4,8 @@ cover: tidy
 	go test -race -failfast -parallel 1 -gcflags="all=-N -l" ./... -covermode=atomic -coverprofile cover.out
 test: tidy
 	go test -race -failfast -parallel 1 -gcflags="all=-N -l" ./...
+cover.view: cover
+	go tool cover -html cover.out
 
 report:
 	@echo ">>>static checking"

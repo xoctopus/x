@@ -11,14 +11,46 @@ var (
 )
 
 // Indirect deref all level pointer references
-func Indirect(v reflect.Value) reflect.Value {
-	if !v.IsValid() {
+func Indirect(v any) reflect.Value {
+	rv, ok := v.(reflect.Value)
+	if !ok {
+		rv = reflect.ValueOf(v)
+	}
+
+	if !rv.IsValid() {
 		return InvalidValue
 	}
-	if v.Kind() == reflect.Pointer {
-		return Indirect(v.Elem())
+
+	if rv.Kind() == reflect.Pointer {
+		return Indirect(rv.Elem())
 	}
-	return v
+
+	if rv.Kind() == reflect.Interface {
+		return Indirect(rv.Elem())
+	}
+
+	return rv
+}
+
+func IndirectNew(v any) reflect.Value {
+	rv, ok := v.(reflect.Value)
+	if !ok {
+		rv = reflect.ValueOf(v)
+	}
+
+	if !rv.IsValid() {
+		return InvalidValue
+	}
+	if rv.Kind() == reflect.Pointer {
+		if rv.IsNil() {
+			rv.Set(New(rv.Type()))
+		}
+		return IndirectNew(rv.Elem())
+	}
+	if rv.Kind() == reflect.Interface {
+		return IndirectNew(rv.Elem())
+	}
+	return rv
 }
 
 // Deref returns the basic type of t

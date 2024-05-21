@@ -12,6 +12,8 @@ import (
 )
 
 func TestIndirect(t *testing.T) {
+	v := &struct{ Any any }{Any: 100.1}
+
 	var cases = []*struct {
 		input  any
 		expect reflect.Value
@@ -20,10 +22,11 @@ func TestIndirect(t *testing.T) {
 		{ptrx.Ptr(1), reflect.ValueOf(1)},
 		{(*int)(nil), InvalidValue},
 		{ptrx.Ptr(ptrx.Ptr(0.2)), reflect.ValueOf(0.2)},
+		{reflect.ValueOf(v).Elem().Field(0), reflect.ValueOf(100.1)},
 	}
 
 	for _, c := range cases {
-		result := Indirect(reflect.ValueOf(c.input))
+		result := Indirect(c.input)
 		if c.expect == InvalidValue {
 			NewWithT(t).Expect(result).To(Equal(c.expect))
 			continue
@@ -31,6 +34,38 @@ func TestIndirect(t *testing.T) {
 		NewWithT(t).Expect(result.Type()).To(Equal(c.expect.Type()))
 		NewWithT(t).Expect(result.Interface()).To(Equal(c.expect.Interface()))
 	}
+}
+
+func TestIndirectNew(t *testing.T) {
+	v1 := &struct{ Int int }{Int: 1}
+	v2 := &struct{ Int ***int }{}
+	v3 := &struct{ Any any }{Any: 1}
+
+	var cases = []*struct {
+		Input  any
+		expect reflect.Value
+	}{
+		{1, reflect.ValueOf(1)},
+		{ptrx.Ptr(1), reflect.ValueOf(1)},
+		{nil, InvalidValue},
+		{reflect.ValueOf(v1).Elem().Field(0), reflect.ValueOf(1)},
+		{reflect.ValueOf(v2).Elem().Field(0), reflect.ValueOf(0)},
+		{reflect.ValueOf(v3).Elem().Field(0), reflect.ValueOf(1)},
+	}
+
+	for _, c := range cases {
+		result := IndirectNew(c.Input)
+		if c.expect == InvalidValue {
+			NewWithT(t).Expect(result).To(Equal(c.expect))
+			continue
+		}
+		NewWithT(t).Expect(result.Type()).To(Equal(c.expect.Type()))
+		NewWithT(t).Expect(result.Interface()).To(Equal(c.expect.Interface()))
+	}
+
+	v2f0rv := IndirectNew(reflect.ValueOf(v2).Elem().Field(0))
+	v2f0rv.Set(reflect.ValueOf(100))
+	NewWithT(t).Expect(***v2.Int).To(Equal(100))
 }
 
 func TestDeref(t *testing.T) {
