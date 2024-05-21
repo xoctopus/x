@@ -8,10 +8,8 @@ import (
 func ParseTagKeyAndFlags(tag string) (string, map[string]struct{}) {
 	values := strings.Split(tag, ",")
 	flags := make(map[string]struct{})
-	if len(values[0]) > 1 {
-		for _, flag := range values[1:] {
-			flags[flag] = struct{}{}
-		}
+	for _, flag := range values[1:] {
+		flags[flag] = struct{}{}
 	}
 	return values[0], flags
 }

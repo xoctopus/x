@@ -24,6 +24,11 @@ func TestTagValueAndFlags(t *testing.T) {
 	key, flags = ParseTagKeyAndFlags(jsonTag)
 	NewWithT(t).Expect(key).To(Equal("tagName"))
 	NewWithT(t).Expect(flags).To(Equal(map[string]struct{}{"omitempty": {}}))
+
+	tag = `name:",default"`
+	key, flags = ParseTagKeyAndFlags(tag.Get("name"))
+	NewWithT(t).Expect(key).To(Equal(""))
+	NewWithT(t).Expect(flags).To(Equal(map[string]struct{}{"default": {}}))
 }
 
 func TestParseStructTag(t *testing.T) {
