@@ -20,14 +20,40 @@ func ExampleNoError() {
 	// any
 }
 
-func ExampleOK() {
-	must.OK(true)
+func ExampleNoErrorV() {
+	fmt.Println(must.NoErrorV(100, nil))
 
 	defer func() {
 		fmt.Println(recover())
 	}()
-	must.OK(false)
+	must.NoError(errors.New("any"))
 
 	// Output:
+	// 100
+	// any
+}
+
+func ExampleBeTrue() {
+	must.BeTrue(true)
+
+	defer func() {
+		fmt.Println(recover())
+	}()
+	must.BeTrue(false)
+
+	// Output:
+	// must ok
+}
+
+func ExampleBeTrueV() {
+	fmt.Println(must.BeTrueV(float32(100.1), true))
+
+	defer func() {
+		fmt.Println(recover())
+	}()
+	_ = must.BeTrueV(new(float64), false)
+
+	// Output:
+	// 100.1
 	// must ok
 }
