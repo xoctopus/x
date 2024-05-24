@@ -6,10 +6,10 @@ debug:
 tidy:
 	@go mod tidy
 
-cover: tidy
+cover: tidy vet
 	@go test -race -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES} -covermode=atomic -coverprofile=cover.out
 
-test: tidy
+test: tidy vet
 	@go test -race -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES}
 
 vet:
