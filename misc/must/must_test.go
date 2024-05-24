@@ -8,52 +8,108 @@ import (
 	"github.com/sincospro/x/misc/must"
 )
 
+func ReturnError() error {
+	return errors.New("some error")
+}
+
+func ReturnNoError() error {
+	return nil
+}
+
+func ReturnIntError() (int, error) {
+	return 100, errors.New("some error")
+}
+
+func ReturnIntNoError() (int, error) {
+	return 100, nil
+}
+
+func ReturnTrue() bool {
+	return true
+}
+
+func ReturnFalse() bool {
+	return false
+}
+
+func ReturnIntTrue() (int, bool) {
+	return 100, true
+}
+
+func ReturnIntFalse() (int, bool) {
+	return 100, false
+}
+
 func ExampleNoError() {
-	must.NoError(nil)
+	must.NoError(ReturnNoError())
 
 	defer func() {
 		fmt.Println(recover())
 	}()
-	must.NoError(errors.New("any"))
+	must.NoError(ReturnError())
 
 	// Output:
-	// any
+	// some error
 }
 
 func ExampleNoErrorV() {
-	fmt.Println(must.NoErrorV(100, nil))
+	fmt.Println(must.NoErrorV(ReturnIntNoError()))
 
 	defer func() {
 		fmt.Println(recover())
 	}()
-	must.NoError(errors.New("any"))
+	must.NoErrorV(ReturnIntError())
 
 	// Output:
 	// 100
-	// any
+	// some error
+}
+
+func ExampleNoErrorWrap() {
+	must.NoErrorWrap(ReturnNoError(), "any")
+
+	defer func() {
+		fmt.Println(recover())
+	}()
+	must.NoErrorWrap(ReturnError(), "some message: %d", 10)
+
+	// Output:
+	// some message: 10: some error
 }
 
 func ExampleBeTrue() {
-	must.BeTrue(true)
+	must.BeTrue(ReturnTrue())
 
 	defer func() {
 		fmt.Println(recover())
 	}()
-	must.BeTrue(false)
+	must.BeTrue(ReturnFalse())
 
 	// Output:
-	// must ok
+	// must be true
 }
 
 func ExampleBeTrueV() {
-	fmt.Println(must.BeTrueV(float32(100.1), true))
+	fmt.Println(must.BeTrueV(ReturnIntTrue()))
 
 	defer func() {
 		fmt.Println(recover())
 	}()
-	_ = must.BeTrueV(new(float64), false)
+	_ = must.BeTrueV(ReturnIntFalse())
 
 	// Output:
-	// 100.1
-	// must ok
+	// 100
+	// must be true
+}
+
+func ExampleBeTrueWrap() {
+	must.BeTrueWrap(ReturnTrue(), "any")
+
+	defer func() {
+		fmt.Println(recover())
+	}()
+	must.BeTrueWrap(ReturnFalse(), "required exists")
+
+	// Output:
+	// must be true: required exists
 }
