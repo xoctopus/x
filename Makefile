@@ -1,11 +1,19 @@
+PACKAGES=$(shell go list ./... | grep -E -v 'example|proto|testdata')
+
+debug:
+	@echo ${PACKAGES}
+
 tidy:
-	go mod tidy
+	@go mod tidy
+
 cover: tidy
-	go test -race -failfast -parallel 1 -gcflags="all=-N -l" ./... -covermode=atomic -coverprofile cover.out
+	@go test -race -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES} -covermode=atomic -coverprofile=cover.out
+
 test: tidy
-	go test -race -failfast -parallel 1 -gcflags="all=-N -l" ./...
-cover.view: cover
-	go tool cover -html cover.out
+	@go test -race -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES}
+
+vet:
+	@go vet ${PACKAGES}
 
 report:
 	@echo ">>>static checking"
@@ -18,7 +26,4 @@ report:
 	@gocyclo -over 10 -avg -ignore '_test|vendor' . || true
 	@echo "done\n"
 
-meta:
-	@echo "version:   `git describe --tags --always`"
-	@echo "feature:   `git rev-parse --abbrev-ref HEAD`"
-	@echo "commit_id: `git rev-parse --short --show HEAD`"
+check: tidy vet test

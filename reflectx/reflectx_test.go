@@ -39,7 +39,8 @@ func TestIndirect(t *testing.T) {
 func TestIndirectNew(t *testing.T) {
 	v1 := &struct{ Int int }{Int: 1}
 	v2 := &struct{ Int ***int }{}
-	v3 := &struct{ Any any }{Any: 1}
+	v3 := &struct{ Any any }{Any: new(****int)}
+	v4 := &struct{ v ***int }{}
 
 	var cases = []*struct {
 		Input  any
@@ -50,7 +51,8 @@ func TestIndirectNew(t *testing.T) {
 		{nil, InvalidValue},
 		{reflect.ValueOf(v1).Elem().Field(0), reflect.ValueOf(1)},
 		{reflect.ValueOf(v2).Elem().Field(0), reflect.ValueOf(0)},
-		{reflect.ValueOf(v3).Elem().Field(0), reflect.ValueOf(1)},
+		{reflect.ValueOf(v3).Elem().Field(0), reflect.ValueOf(0)},
+		{reflect.ValueOf(v4).Elem().Field(0), InvalidValue},
 	}
 
 	for _, c := range cases {

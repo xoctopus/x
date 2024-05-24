@@ -32,6 +32,9 @@ func Indirect(v any) reflect.Value {
 	return rv
 }
 
+// IndirectNew returns the indirect value of v
+// this function is safe and WILL NOT trigger panic. if the input is invalid,
+// InvalidValue returns. validation of return is recommended.
 func IndirectNew(v any) reflect.Value {
 	rv, ok := v.(reflect.Value)
 	if !ok {
@@ -41,12 +44,14 @@ func IndirectNew(v any) reflect.Value {
 	if !rv.IsValid() {
 		return InvalidValue
 	}
+
 	if rv.Kind() == reflect.Pointer {
-		if rv.IsNil() {
+		if rv.IsNil() && rv.CanSet() {
 			rv.Set(New(rv.Type()))
 		}
 		return IndirectNew(rv.Elem())
 	}
+
 	if rv.Kind() == reflect.Interface {
 		return IndirectNew(rv.Elem())
 	}
