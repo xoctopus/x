@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sincospro/x/ptrx"
+	"github.com/xoctopus/x/ptrx"
 )
 
 func Example() {

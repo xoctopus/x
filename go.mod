@@ -1,4 +1,4 @@
-module github.com/sincospro/x
+module github.com/xoctopus/x
 
 go 1.22.0
 

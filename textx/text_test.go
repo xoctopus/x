@@ -11,8 +11,8 @@ import (
 
 	. "github.com/onsi/gomega"
 
-	"github.com/sincospro/x/ptrx"
-	. "github.com/sincospro/x/textx"
+	"github.com/xoctopus/x/ptrx"
+	. "github.com/xoctopus/x/textx"
 )
 
 type Duration time.Duration

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sincospro/x/contextx"
+	"github.com/xoctopus/x/contextx"
 )
 
 type key struct{}

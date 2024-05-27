@@ -6,7 +6,7 @@ import (
 
 	. "github.com/onsi/gomega"
 
-	. "github.com/sincospro/x/reflectx"
+	. "github.com/xoctopus/x/reflectx"
 )
 
 func TestTagValueAndFlags(t *testing.T) {

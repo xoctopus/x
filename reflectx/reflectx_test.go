@@ -7,8 +7,8 @@ import (
 
 	. "github.com/onsi/gomega"
 
-	"github.com/sincospro/x/ptrx"
-	. "github.com/sincospro/x/reflectx"
+	"github.com/xoctopus/x/ptrx"
+	. "github.com/xoctopus/x/reflectx"
 )
 
 func TestIndirect(t *testing.T) {

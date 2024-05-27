@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/gomega"
 
-	"github.com/sincospro/x/misc/stringsx"
+	"github.com/xoctopus/x/misc/stringsx"
 )
 
 func Test_SplitToWords(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/sincospro/x/reflectx"
+	"github.com/xoctopus/x/reflectx"
 )
 
 func MarshalText(v any) ([]byte, error) {
