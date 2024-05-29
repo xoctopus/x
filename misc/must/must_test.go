@@ -2,10 +2,12 @@ package must_test
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/pkg/errors"
 
 	"github.com/xoctopus/x/misc/must"
+	"github.com/xoctopus/x/ptrx"
 )
 
 func ReturnError() error {
@@ -112,4 +114,36 @@ func ExampleBeTrueWrap() {
 
 	// Output:
 	// must be true: required exists
+}
+
+func ExampleNotNilV() {
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		must.NotNilV((*int)(nil))
+	}()
+
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		must.NotNilV(any((*int)(nil)))
+	}()
+
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		fmt.Println(must.NotNilV(1))
+		fmt.Println(*must.NotNilV(ptrx.Ptr(1)))
+		must.NotNilV(reflect.TypeOf(nil))
+	}()
+
+	// Output:
+	// must not nil: invalid value
+	// must not nil: invalid value
+	// 1
+	// 1
+	// must not nil: invalid value
 }

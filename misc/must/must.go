@@ -1,6 +1,10 @@
 package must
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+
+	"github.com/xoctopus/x/reflectx"
+)
 
 func NoError(err error) {
 	if err != nil {
@@ -36,6 +40,14 @@ func BeTrueWrap(ok bool, msg string, args ...any) {
 func BeTrueV[V any](v V, ok bool) V {
 	if !ok {
 		panic(errors.New("must be true"))
+	}
+	return v
+}
+
+func NotNilV[V any](v V) V {
+	rv := reflectx.Indirect(v)
+	if rv == reflectx.InvalidValue {
+		panic("must not nil: invalid value")
 	}
 	return v
 }
