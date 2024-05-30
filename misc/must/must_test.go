@@ -147,3 +147,23 @@ func ExampleNotNilV() {
 	// 1
 	// must not nil: invalid value
 }
+
+func ExampleNotNilWrap() {
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		must.NotNilWrap((*int)(nil), "invalid business data1")
+	}()
+
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		must.NotNilWrap(any((*int)(nil)), "invalid business data2")
+	}()
+
+	// Output:
+	// must not nil, but got invalid value invalid business data1
+	// must not nil, but got invalid value invalid business data2
+}

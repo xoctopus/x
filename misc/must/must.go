@@ -51,3 +51,10 @@ func NotNilV[V any](v V) V {
 	}
 	return v
 }
+
+func NotNilWrap(v any, msg string, args ...any) {
+	rv := reflectx.Indirect(v)
+	if rv == reflectx.InvalidValue {
+		panic(errors.Errorf("must not nil, but got invalid value "+msg, args...))
+	}
+}
