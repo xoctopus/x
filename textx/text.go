@@ -3,6 +3,7 @@ package textx
 import (
 	"encoding"
 	"encoding/base64"
+	"fmt"
 	"reflect"
 	"strconv"
 
@@ -96,23 +97,25 @@ func UnmarshalText(data []byte, v any) error {
 		rv.SetString(string(data))
 		return nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		v, err := strconv.ParseInt(string(data), 10, 64)
-		if err != nil {
+		i64 := int64(0)
+		if _, err := fmt.Sscan(string(data), &i64); err != nil {
 			return &ErrUnmarshalFailed{data, rv.Type(), err.Error()}
 		}
-		rv.SetInt(v)
+		rv.SetInt(i64)
+		return nil
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		v, err := strconv.ParseUint(string(data), 10, 64)
-		if err != nil {
-			return &ErrUnmarshalFailed{data, rt, err.Error()}
+		ui64 := uint64(0)
+		if _, err := fmt.Sscan(string(data), &ui64); err != nil {
+			return &ErrUnmarshalFailed{data, rv.Type(), err.Error()}
 		}
-		rv.SetUint(v)
+		rv.SetUint(ui64)
+		return nil
 	case reflect.Float32, reflect.Float64:
-		v, err := strconv.ParseFloat(string(data), 64)
-		if err != nil {
-			return &ErrUnmarshalFailed{data, rt, err.Error()}
+		f64 := float64(0)
+		if _, err := fmt.Sscan(string(data), &f64); err != nil {
+			return &ErrUnmarshalFailed{data, rv.Type(), err.Error()}
 		}
-		rv.SetFloat(v)
+		rv.SetFloat(f64)
 		return nil
 	case reflect.Bool:
 		v, err := strconv.ParseBool(string(data))
@@ -124,7 +127,6 @@ func UnmarshalText(data []byte, v any) error {
 	default:
 		return &ErrUnmarshalUnsupportedType{Type: rt}
 	}
-	return nil
 }
 
 func ToBase64(raw []byte) []byte {

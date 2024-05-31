@@ -132,6 +132,9 @@ var unmarshalCases = []*UnmarshalCase{
 	{"UnmarshalerFailed2", &UnsignedIntegers{0x02}, []byte{1, 0, 0, 0, 0, 0, 0}, errInvalidDataLength},
 	{"Unsupported1", new([]int), []byte("any"), &ErrUnmarshalUnsupportedType{Type: reflect.TypeOf([]int{})}},
 	{"Unsupported2", &struct{}{}, []byte("any"), &ErrUnmarshalUnsupportedType{Type: reflect.TypeOf(struct{}{})}},
+	{"HexInt", new(int), []byte("0xFF"), nil},
+	{"OctUint", new(uint), []byte("077"), nil},
+	{"InvalidNumeric", new(float64), []byte("abcdef"), &ErrUnmarshalFailed{Data: []byte("abcdef"), Type: reflect.TypeOf(float64(0))}},
 }
 
 func TestUnmarshalText(t *testing.T) {
