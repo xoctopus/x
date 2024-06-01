@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"math/big"
 	"reflect"
 	"strconv"
 	"testing"
@@ -11,6 +12,7 @@ import (
 
 	. "github.com/onsi/gomega"
 
+	"github.com/xoctopus/x/misc/must"
 	"github.com/xoctopus/x/ptrx"
 	. "github.com/xoctopus/x/textx"
 )
@@ -82,7 +84,9 @@ var marshalCases = map[string]*MarshalCase{
 	"Float64":         {1.1, []byte("1.1"), nil},
 	"Bytes":           {[]byte("any"), ToBase64([]byte("any")), nil},
 	"Marshaller":      {Duration(time.Second), []byte("1s"), nil},
-	"Unsupported":     {struct{}{}, nil, &ErrMarshalUnsupportedType{Type: reflect.TypeOf(struct{}{})}},
+	// type big.Int impl MarshalText with pointer reference: (*big.Int)MarshalText
+	"AddrMarshaller": {must.BeTrueV(new(big.Int).SetString("100110011001", 10)), []byte("100110011001"), nil},
+	"Unsupported":    {struct{}{}, nil, &ErrMarshalUnsupportedType{Type: reflect.TypeOf(struct{}{})}},
 }
 
 func TestMarshalText(t *testing.T) {

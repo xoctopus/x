@@ -26,6 +26,11 @@ func MarshalText(v any) ([]byte, error) {
 			return marshaller.MarshalText()
 		}
 	}
+	if rv.CanAddr() {
+		if marshaller, ok := rv.Addr().Interface().(encoding.TextMarshaler); ok {
+			return marshaller.MarshalText()
+		}
+	}
 
 	switch kind := rv.Kind(); kind {
 	case reflect.String:
