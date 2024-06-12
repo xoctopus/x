@@ -185,3 +185,42 @@ func typeof(v any) reflect.Type {
 		return reflect.TypeOf(v)
 	}
 }
+
+func Set(v, d reflect.Value) bool {
+	if !v.IsValid() || !d.IsValid() {
+		return false
+	}
+
+	for v.Kind() == reflect.Pointer {
+		v = v.Elem()
+	}
+	for d.Kind() == reflect.Pointer {
+		d = d.Elem()
+	}
+
+	if !v.IsValid() || !d.IsValid() ||
+		v.Type() != d.Type() ||
+		v.Kind() != reflect.Struct {
+		return false
+	}
+
+	changed := false
+	for i := 0; i < v.NumField(); i++ {
+		sf := v.Type().Field(i)
+		if !sf.IsExported() {
+			continue
+		}
+		fvv := v.Field(i)
+		if !fvv.CanSet() {
+			continue
+		}
+		fvd := d.Field(i)
+		if IsZero(fvv) && !IsZero(fvd) {
+			fvv = IndirectNew(fvv)
+			fvd = Indirect(fvd)
+			fvv.Set(fvd)
+			changed = true
+		}
+	}
+	return changed
+}

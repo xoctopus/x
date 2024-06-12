@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"reflect"
 	"testing"
+	"unsafe"
 
 	. "github.com/onsi/gomega"
 
@@ -257,4 +258,65 @@ func TestIsNumeric(t *testing.T) {
 	for _, c := range cases {
 		NewWithT(t).Expect(IsNumeric(c.value)).To(Equal(c.expect))
 	}
+}
+
+func TestSet(t *testing.T) {
+	t.Run("InputInvalid", func(t *testing.T) {
+		v := InvalidValue
+		d := reflect.ValueOf(1)
+		NewWithT(t).Expect(Set(v, d)).To(BeFalse())
+	})
+	t.Run("InputElemInvalid", func(t *testing.T) {
+		v := reflect.ValueOf((*int)(nil))
+		d := reflect.ValueOf(1)
+		NewWithT(t).Expect(Set(v, d)).To(BeFalse())
+	})
+
+	type Embed struct {
+		F *int
+		G *string
+	}
+	type Struct struct {
+		A int
+		b string
+		C string
+		D *int
+		E *Embed
+		*Embed
+	}
+	v := &Struct{
+		A:     1,
+		b:     "",
+		C:     "",
+		D:     ptrx.Ptr(0),
+		E:     nil,
+		Embed: nil,
+	}
+	d := &Struct{
+		A:     3,
+		b:     "b",
+		C:     "C",
+		D:     ptrx.Ptr(10),
+		E:     &Embed{nil, ptrx.Ptr("E.G")},
+		Embed: &Embed{ptrx.Ptr(100), ptrx.Ptr("G")},
+	}
+	Set(reflect.ValueOf(v), reflect.ValueOf(d))
+	// skip because v.A is not zero
+	NewWithT(t).Expect(v.A).To(Equal(1))
+	// skip because v.b is not exported
+	NewWithT(t).Expect(v.b).To(Equal(""))
+	// v.C set with d.C
+	NewWithT(t).Expect(v.C).To(Equal(d.C))
+	// v.D set with d.D
+	NewWithT(t).Expect(unsafe.Pointer(v.D)).NotTo(Equal(unsafe.Pointer(d.D)))
+	NewWithT(t).Expect(*v.D).To(Equal(*d.D))
+	// v.E set with d.E	but not deep copy
+	NewWithT(t).Expect(unsafe.Pointer(v.E)).NotTo(Equal(unsafe.Pointer(d.E)))
+	NewWithT(t).Expect(v.E.F).To(BeNil())
+	NewWithT(t).Expect(*v.E.G).To(Equal(*d.E.G))
+	NewWithT(t).Expect(unsafe.Pointer(v.E.G)).To(Equal(unsafe.Pointer(d.E.G)))
+	// v.Embed set with d.Embed but not deep copy
+	NewWithT(t).Expect(unsafe.Pointer(v.Embed)).NotTo(Equal(unsafe.Pointer(d.Embed)))
+	NewWithT(t).Expect(unsafe.Pointer(v.F)).To(Equal(unsafe.Pointer(d.F)))
+	NewWithT(t).Expect(unsafe.Pointer(v.G)).To(Equal(unsafe.Pointer(d.G)))
 }
