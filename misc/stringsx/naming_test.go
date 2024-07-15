@@ -9,6 +9,8 @@ import (
 )
 
 func TestNaming(t *testing.T) {
+	t.Run("Common", func(t *testing.T) {
+	})
 	name := "i_am_a_10_years_senior"
 
 	NewWithT(t).Expect(LowerCamelCase(name)).To(Equal("iAmA10YearsSenior"))
@@ -19,4 +21,8 @@ func TestNaming(t *testing.T) {
 	NewWithT(t).Expect(LowerDashJoint(name)).To(Equal("i-am-a-10-years-senior"))
 
 	NewWithT(t).Expect(UpperCamelCase("OrgID")).To(Equal("OrgID"))
+	NewWithT(t).Expect(LowerCamelCase("OrgID")).To(Equal("orgId"))
+	NewWithT(t).Expect(LowerSnakeCase("OrgID")).To(Equal("org_id"))
+	NewWithT(t).Expect(UpperSnakeCase("OrgID")).To(Equal("ORG_ID"))
+	NewWithT(t).Expect(LowerDashJoint("OrgID")).To(Equal("org-id"))
 }
