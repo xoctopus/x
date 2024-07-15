@@ -1,20 +1,15 @@
 package reflectx
 
 import (
+	"reflect"
 	"strconv"
 	"strings"
 )
 
-func ParseTagKeyAndFlags(tag string) (string, map[string]struct{}) {
-	values := strings.Split(tag, ",")
-	flags := make(map[string]struct{})
-	for _, flag := range values[1:] {
-		flags[flag] = struct{}{}
-	}
-	return values[0], flags
-}
-
-func ParseStructTag(tag string) map[string]string {
+// ParseStructTag parse struct tag to tag key/value map
+// eg: `tagKey:"tagName,tagFlag1,tagFlag2=v"` will parsed to
+// map[string]string{"cmd": "tagName,tagFlag1,tagFlag2=v"}
+func ParseStructTag(tag reflect.StructTag) map[string]string {
 	flags := map[string]string{}
 
 	for i := 0; tag != ""; {
@@ -36,7 +31,7 @@ func ParseStructTag(tag string) map[string]string {
 		if i == 0 || i+1 >= len(tag) || tag[i] != ':' || tag[i+1] != '"' {
 			break
 		}
-		name := tag[:i]
+		name := string(tag[:i])
 		tag = tag[i+1:]
 
 		// meet flag value and unquote it
@@ -50,7 +45,7 @@ func ParseStructTag(tag string) map[string]string {
 		if i >= len(tag) {
 			break
 		}
-		quoted := tag[:i+1]
+		quoted := string(tag[:i+1])
 		tag = tag[i+1:]
 		value, err := strconv.Unquote(quoted)
 		if err != nil {
@@ -59,4 +54,16 @@ func ParseStructTag(tag string) map[string]string {
 		flags[name] = value
 	}
 	return flags
+}
+
+// ParseTagValue parse tag value to name and flags
+// eg: "tagName,tagFlag1,tagFlag2=v" will be parsed to
+// name: tagName, flags: map[string]{"tagFlag1", "tagFlag2=v"}
+func ParseTagValue(tagValue string) (string, map[string]struct{}) {
+	values := strings.Split(tagValue, ",")
+	flags := make(map[string]struct{})
+	for _, flag := range values[1:] {
+		flags[flag] = struct{}{}
+	}
+	return values[0], flags
 }
