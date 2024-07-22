@@ -71,6 +71,20 @@ func TestContext(t *testing.T) {
 		v = ctx.MustFrom(root)
 		NewWithT(t).Expect(v.Int).To(Equal(6))
 	})
+
+	t.Run("Compose", func(t *testing.T) {
+		ctx := contextx.New[*Value]()
+		root := contextx.WithContextCompose(
+			ctx.Compose(&Value{7}),
+		)(empty)
+
+		v, ok := ctx.From(root)
+		NewWithT(t).Expect(ok).To(BeTrue())
+		NewWithT(t).Expect(v.Int).To(Equal(7))
+
+		v = ctx.MustFrom(root)
+		NewWithT(t).Expect(v.Int).To(Equal(7))
+	})
 }
 
 func BenchmarkCtx_MustFrom(b *testing.B) {

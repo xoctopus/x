@@ -56,6 +56,7 @@ type Context[T any] interface {
 	With(context.Context, T) context.Context
 	From(context.Context) (T, bool)
 	MustFrom(context.Context) T
+	Compose(v T) WithContext
 }
 
 type ctx[T any] struct {
@@ -81,4 +82,10 @@ func (c *ctx[T]) From(ctx context.Context) (T, bool) {
 		return v, ok
 	}
 	return *new(T), false
+}
+
+func (c *ctx[T]) Compose(v T) WithContext {
+	return func(ctx context.Context) context.Context {
+		return c.With(ctx, v)
+	}
 }
