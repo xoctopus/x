@@ -320,3 +320,16 @@ func TestSet(t *testing.T) {
 	NewWithT(t).Expect(unsafe.Pointer(v.F)).To(Equal(unsafe.Pointer(d.F)))
 	NewWithT(t).Expect(unsafe.Pointer(v.G)).To(Equal(unsafe.Pointer(d.G)))
 }
+
+func TestCanElem(t *testing.T) {
+	for _, v := range []any{
+		make(chan int),
+		[3]string{},
+		[]int{},
+		map[string]int{},
+		new(int),
+	} {
+		kind := reflect.TypeOf(v).Kind()
+		NewWithT(t).Expect(CanElem(kind)).To(BeTrue())
+	}
+}

@@ -224,3 +224,8 @@ func Set(v, d reflect.Value) bool {
 	}
 	return changed
 }
+
+func CanElem(k reflect.Kind) bool {
+	return k == reflect.Chan || k == reflect.Pointer || k == reflect.Map ||
+		k == reflect.Slice || k == reflect.Array
+}
