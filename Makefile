@@ -1,4 +1,6 @@
-PACKAGES=$(shell go list ./... | grep -E -v 'example|proto|testdata')
+PACKAGES=$(shell go list ./... | grep -E -v 'example|proto|testdata|internal')
+FORMAT_FILES=`find . -type f -name '*.go' | grep -E -v '_generated.go|.pb.go'`
+
 
 debug:
 	@echo ${PACKAGES}
@@ -27,3 +29,19 @@ report:
 	@echo "done\n"
 
 check: tidy vet test
+
+MOD=$(shell cat go.mod | grep ^module -m 1 | awk '{ print $$2; }' || '')
+FILE_LIST=$(shell find . -type f -name '*.go' | grep -E -v '_generated.go|.pb.go')
+
+.PHONY: fmt
+fmt:
+	@echo ${MOD}
+	@for item in ${FILE_LIST} ; \
+	do \
+		if [ -z ${MOD} ]; then \
+		        goimports -d -w $$item ; \
+		else \
+		        goimports -d -w -local "${MOD}" $$item ; \
+		fi \
+	done
+
