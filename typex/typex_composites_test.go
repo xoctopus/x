@@ -4,18 +4,11 @@ import (
 	"reflect"
 	"testing"
 
-	. "github.com/onsi/gomega"
-
-	. "github.com/xoctopus/x/typex"
-	"github.com/xoctopus/x/typex/internal"
 	"github.com/xoctopus/x/typex/testdata"
 )
 
 func TestTypes_Composites(t *testing.T) {
-	cases := []struct {
-		name string
-		c    *CaseAssertion
-	}{
+	cases := []Case{
 		{
 			"EmptyArray",
 			&CaseAssertion{
@@ -249,6 +242,13 @@ func TestTypes_Composites(t *testing.T) {
 				Comparable:    false,
 				Key:           "nil",
 				Elem:          "net.Addr",
+				NumMethod:     1,
+				Methods: []MethodAssertion{
+					{
+						Name: "Len",
+						Type: "func(github.com/xoctopus/x/typex/testdata.TypedSlice[net.Addr]) int",
+					},
+				},
 			},
 		},
 		{
@@ -279,6 +279,21 @@ func TestTypes_Composites(t *testing.T) {
 				Comparable:    false,
 				Key:           "github.com/xoctopus/x/typex/testdata.String",
 				Elem:          "int",
+			},
+		},
+		{
+			"TypedMap3",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "TypedMap[github.com/xoctopus/x/typex/testdata.Serialized[string],github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+				String:        "github.com/xoctopus/x/typex/testdata.TypedMap[github.com/xoctopus/x/typex/testdata.Serialized[string],github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+				Kind:          reflect.Map,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    false,
+				Key:           "github.com/xoctopus/x/typex/testdata.Serialized[string]",
+				Elem:          "github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]",
 			},
 		},
 		{
@@ -313,19 +328,5 @@ func TestTypes_Composites(t *testing.T) {
 		},
 	}
 
-	rtype := reflect.TypeOf(testdata.CompositeBasics{})
-	for i, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			tt := rtype.Field(i).Type
-			NewWithT(t).Expect(rtype.Field(i).Name).To(Equal(c.name))
-
-			rt := NewRType(tt)
-			gt := NewGType(tt)
-
-			NewWithT(t).Expect(rt.Unwrap()).To(Equal(tt))
-			NewWithT(t).Expect(gt.Unwrap()).To(Equal(internal.NewTypesTypeFromReflectType(tt)))
-
-			c.c.Check(t, rt, gt)
-		})
-	}
+	RunCase(t, cases, testdata.CompositeCases)
 }

@@ -1,4 +1,4 @@
-PACKAGES=$(shell go list ./... | grep -E -v 'example|proto|testdata|internal')
+PACKAGES=$(shell go list ./... | grep -E -v 'example|proto|testdata')
 FORMAT_FILES=`find . -type f -name '*.go' | grep -E -v '_generated.go|.pb.go'`
 
 

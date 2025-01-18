@@ -1,8 +1,8 @@
 package typex_test
 
 import (
-	"bytes"
 	"fmt"
+	"go/types"
 	"reflect"
 	"strconv"
 	"testing"
@@ -10,32 +10,22 @@ import (
 	. "github.com/onsi/gomega"
 
 	. "github.com/xoctopus/x/typex"
+	"github.com/xoctopus/x/typex/internal"
+	"github.com/xoctopus/x/typex/testdata"
 )
 
 func typename(t Type) string {
 	if t == nil {
 		return "nil"
 	}
-
-	buf := bytes.NewBuffer(nil)
-	if t.Name() == "" {
-		for t.Kind() == reflect.Pointer {
-			buf.WriteByte('*')
-			t = t.Elem()
-		}
+	switch x := t.(type) {
+	case *GType:
+		return x.String()
+	case *RType:
+		return x.String()
+	default:
+		return "nil"
 	}
-
-	if name := t.Name(); name != "" {
-		if path := t.PkgPath(); path != "" {
-			buf.WriteString(path)
-			buf.WriteRune('.')
-		}
-		buf.WriteString(name)
-		return buf.String()
-	}
-
-	buf.WriteString(t.String())
-	return buf.String()
 }
 
 func NewBases() *Bases {
@@ -77,6 +67,8 @@ func (b *Bases) CheckImplements(t *testing.T, rt *RType, gt *GType, assertions [
 			NewWithT(t).Expect(assertions[i]).To(BeFalse())
 		}
 	}
+	NewWithT(t).Expect(rt.Implements(nil)).To(BeFalse())
+	NewWithT(t).Expect(gt.Implements(nil)).To(BeFalse())
 }
 
 func (b *Bases) CheckAssignableTo(t *testing.T, rt *RType, gt *GType, assertions []bool) {
@@ -128,11 +120,13 @@ type FieldAssertion struct {
 }
 
 func (c *FieldAssertion) Check(t *testing.T, f StructField) {
-	NewWithT(t).Expect(f.Name()).To(Equal(c.Name))
-	NewWithT(t).Expect(f.PkgPath()).To(Equal(c.PkgPath))
-	NewWithT(t).Expect(typename(f.Type())).To(Equal(c.Type))
-	NewWithT(t).Expect(string(f.Tag())).To(Equal(c.Tag))
-	NewWithT(t).Expect(f.Anonymous()).To(Equal(c.Anonymous))
+	t.Run(fmt.Sprintf("%T", f), func(t *testing.T) {
+		NewWithT(t).Expect(f.Name()).To(Equal(c.Name))
+		NewWithT(t).Expect(f.PkgPath()).To(Equal(c.PkgPath))
+		NewWithT(t).Expect(typename(f.Type())).To(Equal(c.Type))
+		NewWithT(t).Expect(string(f.Tag())).To(Equal(c.Tag))
+		NewWithT(t).Expect(f.Anonymous()).To(Equal(c.Anonymous))
+	})
 }
 
 type MethodAssertion struct {
@@ -142,9 +136,11 @@ type MethodAssertion struct {
 }
 
 func (c *MethodAssertion) Check(t *testing.T, m Method) {
-	NewWithT(t).Expect(m.PkgPath()).To(Equal(c.PkgPath))
-	NewWithT(t).Expect(m.Name()).To(Equal(c.Name))
-	NewWithT(t).Expect(typename(m.Type())).To(Equal(c.Type))
+	t.Run(fmt.Sprintf("%T", m), func(t *testing.T) {
+		NewWithT(t).Expect(m.PkgPath()).To(Equal(c.PkgPath))
+		NewWithT(t).Expect(m.Name()).To(Equal(c.Name))
+		NewWithT(t).Expect(typename(m.Type())).To(Equal(c.Type))
+	})
 }
 
 type CaseAssertion struct {
@@ -233,6 +229,8 @@ func (c *CaseAssertion) Check(t *testing.T, rt *RType, gt *GType) {
 				c.Fields[i].Check(t, gt.Field(i))
 			})
 		}
+		NewWithT(t).Expect(rt.Field(c.NumField + 1)).To(BeNil())
+		NewWithT(t).Expect(gt.Field(c.NumField + 1)).To(BeNil())
 		t.Run("FieldByName", func(t *testing.T) {
 			for i, name := range []string{"unexported", "String", "Name"} {
 				t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -279,6 +277,8 @@ func (c *CaseAssertion) Check(t *testing.T, rt *RType, gt *GType) {
 				c.Methods[i].Check(t, gt.Method(i))
 			})
 		}
+		NewWithT(t).Expect(rt.Method(c.NumMethod + 1)).To(BeNil())
+		NewWithT(t).Expect(gt.Method(c.NumMethod + 1)).To(BeNil())
 		t.Run("MethodByName", func(t *testing.T) {
 			for _, name := range []string{"String", "_", "Name"} {
 				_, expect := tt.MethodByName(name)
@@ -301,6 +301,8 @@ func (c *CaseAssertion) Check(t *testing.T, rt *RType, gt *GType) {
 			NewWithT(t).Expect(typename(rt.In(i))).To(Equal(c.Ins[i]))
 			NewWithT(t).Expect(typename(gt.In(i))).To(Equal(c.Ins[i]))
 		}
+		NewWithT(t).Expect(rt.In(c.NumIn + 1)).To(BeNil())
+		NewWithT(t).Expect(gt.In(c.NumIn + 1)).To(BeNil())
 	})
 	t.Run("Outs", func(t *testing.T) {
 		NewWithT(t).Expect(rt.NumOut()).To(Equal(c.NumOut))
@@ -310,55 +312,60 @@ func (c *CaseAssertion) Check(t *testing.T, rt *RType, gt *GType) {
 			NewWithT(t).Expect(typename(rt.Out(i))).To(Equal(c.Outs[i]))
 			NewWithT(t).Expect(typename(gt.Out(i))).To(Equal(c.Outs[i]))
 		}
+		NewWithT(t).Expect(rt.Out(c.NumOut + 1)).To(BeNil())
+		NewWithT(t).Expect(gt.Out(c.NumOut + 1)).To(BeNil())
 	})
 }
 
-/*
-type Types struct {
-	Array                    [3]int
-	ArrayPtr                 *[3]int
-	NamedArray               testdata.Array
-	NamedArrayPtr            *testdata.Array
-	Map                      map[string]int
-	MapPtr                   *map[string]int
-	NamedMap                 testdata.Map
-	NamedMapPtr              *testdata.Map
-	Slice                    []string
-	SlicePtr                 *[]string
-	NamedSlice               testdata.Slice
-	NamedSlicePtr            *testdata.Slice
-	NamedChan                testdata.Chan
-	Func                     func(x, y string) int
-	NamedFunc                testdata.Func
-	Interface                any
-	NamedInterface           testdata.Interface
-	NamedInterfaceImpl       testdata.InterfaceImpl
-	NamedInterfaceImplPtr    *testdata.InterfaceImpl
-	NamedInterfacePtrImpl    testdata.InterfacePtrImpl
-	NamedInterfacePtrImplPtr *testdata.InterfacePtrImpl
-	Struct                   testdata.Struct
-	StructPtr                *testdata.Struct
-	Enum                     testdata.Enum
-	EnumPtr                  *testdata.Enum
-	MixedInterface           testdata.MixedInterface
-	MixedInterfaceImpl       testdata.MixedInterfaceImpl
-	MixedInterfaceImplPtr    *testdata.MixedInterfaceImpl
-	AnySliceInt              testdata.AnySlice[int]
-	AnySliceEnum             testdata.AnySlice[testdata.Enum]
-	AnyArrayString           testdata.AnyArray[string]
-	AnyArrayInterface        testdata.AnyArray[testdata.Interface]
-	AnyMapIntString          testdata.AnyMap[int, string]
-	EnumMap                  testdata.EnumMap
-	AnyStructAny             testdata.AnyStruct[any]
-	AnyStructAnyPtr          *testdata.AnyStruct[any]
-	AnyStructNamedInterface  testdata.AnyStruct[testdata.Interface]
-	AnyComposeStringInt      testdata.AnyCompose[string, int]
-	AnyComposeStringerFloat  testdata.AnyCompose[fmt.Stringer, float32]
-	AnonymousStruct          struct{ testdata.AnyStruct[any] }
-	NamedAnyInterface        testdata.AnyInterface[int, fmt.Stringer]
-	UnameStructPtrVar        *struct {
-		testdata.AnyCompose[testdata.AnyStruct[fmt.Stringer], testdata.Int]
-	}
-	Error error
+type Case struct {
+	Name string
+	Case *CaseAssertion
 }
-*/
+
+func RunCase(t *testing.T, cc1 []Case, cc2 []*testdata.Case) {
+	NewWithT(t).Expect(len(cc1)).To(Equal(len(cc2)))
+	for i := range len(cc1) {
+		NewWithT(t).Expect(cc1[i].Name).To(Equal(cc2[i].Name))
+
+		t.Run(cc1[i].Name, func(t *testing.T) {
+			tt := cc2[i].Type
+			rt := NewRType(tt)
+			gt := NewGType(tt)
+			NewWithT(t).Expect(reflect.DeepEqual(rt.Unwrap(), tt)).To(BeTrue())
+			NewWithT(t).Expect(types.Identical(gt.Unwrap().(types.Type), internal.NewTypesType(tt))).To(BeTrue())
+			cc1[i].Case.Check(t, rt, gt)
+		})
+	}
+}
+
+func TestNewTypes(t *testing.T) {
+	t.Run("NewGType", func(t *testing.T) {
+		t.Run("NotTypes", func(t *testing.T) {
+			defer func() {
+				v := recover()
+				NewWithT(t).Expect(v).NotTo(BeNil())
+			}()
+			NewGType("")
+		})
+		t.Run("UnexpectedTypesType", func(t *testing.T) {
+			defer func() {
+				v := recover()
+				NewWithT(t).Expect(v).NotTo(BeNil())
+			}()
+			tuple := types.NewTuple(types.NewVar(0, nil, "", types.Typ[types.Int]))
+			NewGType(tuple)
+		})
+		t.Run("InvalidGType", func(t *testing.T) {
+			defer func() {
+				v := recover()
+				NewWithT(t).Expect(v).NotTo(BeNil())
+			}()
+			tt := GType{}
+			tt.Kind()
+		})
+	})
+	t.Run("NewRTypeByValue", func(t *testing.T) {
+		tt := NewRType(1)
+		NewWithT(t).Expect(tt.Unwrap()).To(Equal(reflect.TypeOf(1)))
+	})
+}

@@ -23,3 +23,7 @@ type Numeric interface {
 type Complex interface {
 	complex64 | complex128
 }
+
+type CanBeSerialized interface {
+	string | []byte
+}

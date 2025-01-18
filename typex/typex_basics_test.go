@@ -4,18 +4,11 @@ import (
 	"reflect"
 	"testing"
 
-	. "github.com/onsi/gomega"
-
-	. "github.com/xoctopus/x/typex"
-	"github.com/xoctopus/x/typex/internal"
 	"github.com/xoctopus/x/typex/testdata"
 )
 
 func TestTypes_Basics(t *testing.T) {
-	cases := []struct {
-		name string
-		c    *CaseAssertion
-	}{
+	cases := []Case{
 		{
 			"String",
 			&CaseAssertion{
@@ -571,19 +564,5 @@ func TestTypes_Basics(t *testing.T) {
 		},
 	}
 
-	rtype := reflect.TypeOf(testdata.Basics{})
-	for i, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			tt := rtype.Field(i).Type
-			NewWithT(t).Expect(rtype.Field(i).Name).To(Equal(c.name))
-
-			rt := NewRType(tt)
-			gt := NewGType(tt)
-
-			NewWithT(t).Expect(rt.Unwrap()).To(Equal(tt))
-			NewWithT(t).Expect(gt.Unwrap()).To(Equal(internal.NewTypesTypeFromReflectType(tt)))
-
-			c.c.Check(t, rt, gt)
-		})
-	}
+	RunCase(t, cases, testdata.BasicCases)
 }

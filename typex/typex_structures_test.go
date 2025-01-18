@@ -4,18 +4,11 @@ import (
 	"reflect"
 	"testing"
 
-	. "github.com/onsi/gomega"
-
-	. "github.com/xoctopus/x/typex"
-	"github.com/xoctopus/x/typex/internal"
 	"github.com/xoctopus/x/typex/testdata"
 )
 
-func TestTypes_CompositeStructures(t *testing.T) {
-	cases := []struct {
-		name string
-		c    *CaseAssertion
-	}{
+func TestTypes_Structures(t *testing.T) {
+	cases := []Case{
 		{
 			"SimpleStruct",
 			&CaseAssertion{
@@ -62,6 +55,22 @@ func TestTypes_CompositeStructures(t *testing.T) {
 			},
 		},
 		{
+			"SimpleStructPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.SimpleStruct",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.SimpleStruct",
+				NumField:      0,
+			},
+		},
+		{
 			"EmbedSimpleStruct",
 			&CaseAssertion{
 				PkgPath:       "github.com/xoctopus/x/typex/testdata",
@@ -86,6 +95,21 @@ func TestTypes_CompositeStructures(t *testing.T) {
 						Type: "string",
 					},
 				},
+			},
+		},
+		{
+			"EmbedSimpleStructPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.EmbedSimpleStruct",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.EmbedSimpleStruct",
 			},
 		},
 		{
@@ -343,6 +367,21 @@ func TestTypes_CompositeStructures(t *testing.T) {
 			},
 		},
 		{
+			"EmbedFieldOverwritten1Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.EmbedFieldOverwritten1",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.EmbedFieldOverwritten1",
+			},
+		},
+		{
 			"EmbedFieldOverwritten2",
 			&CaseAssertion{
 				PkgPath:       "github.com/xoctopus/x/typex/testdata",
@@ -369,6 +408,21 @@ func TestTypes_CompositeStructures(t *testing.T) {
 					},
 				},
 				NumMethod: 0,
+			},
+		},
+		{
+			"EmbedFieldOverwritten2Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.EmbedFieldOverwritten2",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.EmbedFieldOverwritten2",
 			},
 		},
 		{
@@ -403,6 +457,28 @@ func TestTypes_CompositeStructures(t *testing.T) {
 			},
 		},
 		{
+			"EmbedFieldOverwritten3Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.EmbedFieldOverwritten3",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.EmbedFieldOverwritten3",
+				NumMethod:     1,
+				Methods: []MethodAssertion{
+					{
+						Name: "Name",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.EmbedFieldOverwritten3) github.com/xoctopus/x/typex/testdata.String",
+					},
+				},
+			},
+		},
+		{
 			"InheritedMethodOverwritten1",
 			&CaseAssertion{
 				PkgPath:       "github.com/xoctopus/x/typex/testdata",
@@ -429,6 +505,21 @@ func TestTypes_CompositeStructures(t *testing.T) {
 					},
 				},
 				NumMethod: 0,
+			},
+		},
+		{
+			"InheritedMethodOverwritten1Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.InheritedMethodOverwritten1",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.InheritedMethodOverwritten1",
 			},
 		},
 		{
@@ -461,6 +552,21 @@ func TestTypes_CompositeStructures(t *testing.T) {
 			},
 		},
 		{
+			"InheritedMethodOverwritten2Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.InheritedMethodOverwritten2",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.InheritedMethodOverwritten2",
+			},
+		},
+		{
 			"InheritedMethodOverwritten3",
 			&CaseAssertion{
 				PkgPath:       "github.com/xoctopus/x/typex/testdata",
@@ -487,6 +593,21 @@ func TestTypes_CompositeStructures(t *testing.T) {
 					},
 				},
 				NumMethod: 0,
+			},
+		},
+		{
+			"InheritedMethodOverwritten3Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.InheritedMethodOverwritten3",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.InheritedMethodOverwritten3",
 			},
 		},
 		{
@@ -521,7 +642,53 @@ func TestTypes_CompositeStructures(t *testing.T) {
 			},
 		},
 		{
+			"InheritedMethodOverwritten4Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.InheritedMethodOverwritten4",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.InheritedMethodOverwritten4",
+				NumMethod:     1,
+				Methods: []MethodAssertion{
+					{
+						Name: "Name",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.InheritedMethodOverwritten4) github.com/xoctopus/x/typex/testdata.Int",
+					},
+				},
+			},
+		},
+		{
 			"InheritedMethodOverwritten5",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "InheritedMethodOverwritten5",
+				String:        "github.com/xoctopus/x/typex/testdata.InheritedMethodOverwritten5",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      1,
+				Fields: []FieldAssertion{
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNamePtrMethod",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNamePtrMethod",
+						Anonymous: true,
+					},
+				},
+			},
+		},
+		{
+			"InheritedMethodOverwritten5Ptr",
 			&CaseAssertion{
 				PkgPath:       "",
 				Name:          "",
@@ -541,68 +708,6 @@ func TestTypes_CompositeStructures(t *testing.T) {
 						Type: "func(*github.com/xoctopus/x/typex/testdata.InheritedMethodOverwritten5) float32",
 					},
 				},
-			},
-		},
-		{
-			"EmbedFieldsConflict1",
-			&CaseAssertion{
-				PkgPath:       "github.com/xoctopus/x/typex/testdata",
-				Name:          "EmbedFieldsConflict1",
-				String:        "github.com/xoctopus/x/typex/testdata.EmbedFieldsConflict1",
-				Kind:          reflect.Struct,
-				Implements:    []bool{false, false, true, false, false, false},
-				AssignableTo:  []bool{false, false, true, false, false, false},
-				ConvertibleTo: []bool{false, false, true, false, false, false},
-				Comparable:    true,
-				Key:           "nil",
-				Elem:          "nil",
-				NumField:      2,
-				Fields: []FieldAssertion{
-					{
-						PkgPath:   "github.com/xoctopus/x/typex/testdata",
-						Name:      "hasNameField",
-						Type:      "github.com/xoctopus/x/typex/testdata.hasNameField",
-						Anonymous: true,
-					},
-					{
-						PkgPath:   "github.com/xoctopus/x/typex/testdata",
-						Name:      "hasNameField2",
-						Type:      "github.com/xoctopus/x/typex/testdata.hasNameField2",
-						Anonymous: true,
-					},
-				},
-				NumMethod: 0,
-			},
-		},
-		{
-			"EmbedFieldsConflict2",
-			&CaseAssertion{
-				PkgPath:       "github.com/xoctopus/x/typex/testdata",
-				Name:          "EmbedFieldsConflict2",
-				String:        "github.com/xoctopus/x/typex/testdata.EmbedFieldsConflict2",
-				Kind:          reflect.Struct,
-				Implements:    []bool{false, false, true, false, false, false},
-				AssignableTo:  []bool{false, false, true, false, false, false},
-				ConvertibleTo: []bool{false, false, true, false, false, false},
-				Comparable:    true,
-				Key:           "nil",
-				Elem:          "nil",
-				NumField:      2,
-				Fields: []FieldAssertion{
-					{
-						PkgPath:   "github.com/xoctopus/x/typex/testdata",
-						Name:      "hasNameField",
-						Type:      "github.com/xoctopus/x/typex/testdata.hasNameField",
-						Anonymous: true,
-					},
-					{
-						PkgPath:   "github.com/xoctopus/x/typex/testdata",
-						Name:      "hasNameField2",
-						Type:      "*github.com/xoctopus/x/typex/testdata.hasNameField2",
-						Anonymous: true,
-					},
-				},
-				NumMethod: 0,
 			},
 		},
 		{
@@ -637,6 +742,113 @@ func TestTypes_CompositeStructures(t *testing.T) {
 			},
 		},
 		{
+			"EmbedFieldAndMethodConflictPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.EmbedFieldAndMethodConflict",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.EmbedFieldAndMethodConflict",
+			},
+		},
+		{
+			"EmbedFieldsConflict1",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "EmbedFieldsConflict1",
+				String:        "github.com/xoctopus/x/typex/testdata.EmbedFieldsConflict1",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      2,
+				Fields: []FieldAssertion{
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameField",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNameField",
+						Anonymous: true,
+					},
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameField2",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNameField2",
+						Anonymous: true,
+					},
+				},
+				NumMethod: 0,
+			},
+		},
+		{
+			"EmbedFieldsConflict1Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.EmbedFieldsConflict1",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.EmbedFieldsConflict1",
+			},
+		},
+		{
+			"EmbedFieldsConflict2",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "EmbedFieldsConflict2",
+				String:        "github.com/xoctopus/x/typex/testdata.EmbedFieldsConflict2",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      2,
+				Fields: []FieldAssertion{
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameField",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNameField",
+						Anonymous: true,
+					},
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameField2",
+						Type:      "*github.com/xoctopus/x/typex/testdata.hasNameField2",
+						Anonymous: true,
+					},
+				},
+				NumMethod: 0,
+			},
+		},
+		{
+			"EmbedFieldsConflict2Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.EmbedFieldsConflict2",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.EmbedFieldsConflict2",
+			},
+		},
+		{
 			"InheritedMethodsConflict1",
 			&CaseAssertion{
 				PkgPath:       "github.com/xoctopus/x/typex/testdata",
@@ -665,6 +877,21 @@ func TestTypes_CompositeStructures(t *testing.T) {
 					},
 				},
 				NumMethod: 0,
+			},
+		},
+		{
+			"InheritedMethodsConflict1Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.InheritedMethodsConflict1",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.InheritedMethodsConflict1",
 			},
 		},
 		{
@@ -699,6 +926,21 @@ func TestTypes_CompositeStructures(t *testing.T) {
 			},
 		},
 		{
+			"InheritedMethodsConflict2Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.InheritedMethodsConflict2",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.InheritedMethodsConflict2",
+			},
+		},
+		{
 			"InheritedMethodsConflict3",
 			&CaseAssertion{
 				PkgPath:       "github.com/xoctopus/x/typex/testdata",
@@ -730,7 +972,52 @@ func TestTypes_CompositeStructures(t *testing.T) {
 			},
 		},
 		{
+			"InheritedMethodsConflict3Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.InheritedMethodsConflict3",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.InheritedMethodsConflict3",
+			},
+		},
+		{
 			"InheritedMethodsConflict4",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "InheritedMethodsConflict4",
+				String:        "github.com/xoctopus/x/typex/testdata.InheritedMethodsConflict4",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      2,
+				Fields: []FieldAssertion{
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameMethod",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNameMethod",
+						Anonymous: true,
+					},
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNamePtrMethod",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNamePtrMethod",
+						Anonymous: true,
+					},
+				},
+			},
+		},
+		{
+			"InheritedMethodsConflict4Ptr",
 			&CaseAssertion{
 				PkgPath:       "",
 				Name:          "",
@@ -778,7 +1065,52 @@ func TestTypes_CompositeStructures(t *testing.T) {
 			},
 		},
 		{
+			"InheritedMethodsConflict5Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.InheritedMethodsConflict5",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.InheritedMethodsConflict5",
+			},
+		},
+		{
 			"InheritedMethodsConflict6",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "InheritedMethodsConflict6",
+				String:        "github.com/xoctopus/x/typex/testdata.InheritedMethodsConflict6",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      2,
+				Fields: []FieldAssertion{
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameMethod",
+						Type:      "*github.com/xoctopus/x/typex/testdata.hasNameMethod",
+						Anonymous: true,
+					},
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNamePtrMethod",
+						Type:      "*github.com/xoctopus/x/typex/testdata.hasNamePtrMethod",
+						Anonymous: true,
+					},
+				},
+			},
+		},
+		{
+			"InheritedMethodsConflict6Ptr",
 			&CaseAssertion{
 				PkgPath:       "",
 				Name:          "",
@@ -799,21 +1131,999 @@ func TestTypes_CompositeStructures(t *testing.T) {
 				},
 			},
 		},
+		{
+			"InheritedMethodAndFieldsConflict1",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "InheritedMethodAndFieldsConflict1",
+				String:        "github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict1",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      2,
+				Fields: []FieldAssertion{
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameField",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNameField",
+						Anonymous: true,
+					},
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameMethod",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNameMethod",
+						Anonymous: true,
+					},
+				},
+			},
+		},
+		{
+			"InheritedMethodAndFieldsConflict1Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict1",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict1",
+			},
+		},
+		{
+			"InheritedMethodAndFieldsConflict2",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "InheritedMethodAndFieldsConflict2",
+				String:        "github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict2",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      2,
+				Fields: []FieldAssertion{
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameField",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNameField",
+						Anonymous: true,
+					},
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameMethod",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNameMethod",
+						Anonymous: true,
+					},
+				},
+				NumMethod: 1,
+				Methods: []MethodAssertion{
+					{
+						Name: "Name",
+						Type: "func(github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict2) string",
+					},
+				},
+			},
+		},
+		{
+			"InheritedMethodAndFieldsConflict2Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict2",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict2",
+				NumMethod:     1,
+				Methods: []MethodAssertion{
+					{
+						Name: "Name",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict2) string",
+					},
+				},
+			},
+		},
+		{
+			"InheritedMethodAndFieldsConflict3",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "InheritedMethodAndFieldsConflict3",
+				String:        "github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict3",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      3,
+				Fields: []FieldAssertion{
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameField",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNameField",
+						Anonymous: true,
+					},
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameMethod",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNameMethod",
+						Anonymous: true,
+					},
+					{
+						Name: "Name",
+						Type: "string",
+					},
+				},
+			},
+		},
+		{
+			"InheritedMethodAndFieldsConflict3Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict3",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict3",
+			},
+		},
+		{
+			"InheritedMethodAndFieldsConflict4",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "InheritedMethodAndFieldsConflict4",
+				String:        "github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict4",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      3,
+				Fields: []FieldAssertion{
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameField",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNameField",
+						Anonymous: true,
+					},
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameField2",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNameField2",
+						Anonymous: true,
+					},
+					{
+						PkgPath:   "github.com/xoctopus/x/typex/testdata",
+						Name:      "hasNameMethod",
+						Type:      "github.com/xoctopus/x/typex/testdata.hasNameMethod",
+						Anonymous: true,
+					},
+				},
+			},
+		},
+		{
+			"InheritedMethodAndFieldsConflict4Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict4",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.InheritedMethodAndFieldsConflict4",
+			},
+		},
+		{
+			"HasUnexportedField",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "HasUnexportedField",
+				String:        "github.com/xoctopus/x/typex/testdata.HasUnexportedField",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				Len:           0,
+				NumField:      1,
+				Fields: []FieldAssertion{
+					{
+						PkgPath: "github.com/xoctopus/x/typex/testdata",
+						Name:    "str",
+						Type:    "string",
+					},
+				},
+			},
+		},
+		{
+			"HasUnexportedFieldPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.HasUnexportedField",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.HasUnexportedField",
+			},
+		},
+		{
+			"HasUnexportedMethod",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "HasUnexportedMethod",
+				String:        "github.com/xoctopus/x/typex/testdata.HasUnexportedMethod",
+				Kind:          reflect.Struct,
+				Implements:    []bool{true, false, true, false, false, false},
+				AssignableTo:  []bool{true, false, true, false, true, false},
+				ConvertibleTo: []bool{true, false, true, false, true, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumMethod:     1,
+				Methods: []MethodAssertion{
+					{
+						Name: "String",
+						Type: "func(github.com/xoctopus/x/typex/testdata.HasUnexportedMethod) string",
+					},
+				},
+			},
+		},
+		{
+			"HasUnexportedMethodPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.HasUnexportedMethod",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{true, false, true, false, false, false},
+				AssignableTo:  []bool{true, false, true, false, false, false},
+				ConvertibleTo: []bool{true, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.HasUnexportedMethod",
+				NumMethod:     1,
+				Methods: []MethodAssertion{
+					{
+						Name: "String",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.HasUnexportedMethod) string",
+					},
+				},
+			},
+		},
+		{
+			"SerializedString",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "Serialized[string]",
+				String:        "github.com/xoctopus/x/typex/testdata.Serialized[string]",
+				Kind:          reflect.Struct,
+				Implements:    []bool{true, true, true, false, false, false},
+				AssignableTo:  []bool{true, true, true, false, false, false},
+				ConvertibleTo: []bool{true, true, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      1,
+				Fields: []FieldAssertion{
+					{
+						PkgPath: "github.com/xoctopus/x/typex/testdata",
+						Name:    "data",
+						Type:    "string",
+					},
+				},
+				NumMethod: 3,
+				Methods: []MethodAssertion{
+					{
+						Name: "Bytes",
+						Type: "func(github.com/xoctopus/x/typex/testdata.Serialized[string]) []uint8",
+					},
+					{
+						Name: "Data",
+						Type: "func(github.com/xoctopus/x/typex/testdata.Serialized[string]) string",
+					},
+					{
+						Name: "String",
+						Type: "func(github.com/xoctopus/x/typex/testdata.Serialized[string]) string",
+					},
+				},
+			},
+		},
+		{
+			"SerializedStringPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.Serialized[string]",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{true, true, true, false, false, false},
+				AssignableTo:  []bool{true, true, true, false, false, false},
+				ConvertibleTo: []bool{true, true, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.Serialized[string]",
+				NumMethod:     3,
+				Methods: []MethodAssertion{
+					{
+						Name: "Bytes",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.Serialized[string]) []uint8",
+					},
+					{
+						Name: "Data",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.Serialized[string]) string",
+					},
+					{
+						Name: "String",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.Serialized[string]) string",
+					},
+				},
+			},
+		},
+		{
+			"SerializedBytes",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "Serialized[[]uint8]",
+				String:        "github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]",
+				Kind:          reflect.Struct,
+				Implements:    []bool{true, true, true, false, false, false},
+				AssignableTo:  []bool{true, true, true, false, false, false},
+				ConvertibleTo: []bool{true, true, true, false, false, false},
+				Comparable:    false,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      1,
+				Fields: []FieldAssertion{
+					{
+						PkgPath: "github.com/xoctopus/x/typex/testdata",
+						Name:    "data",
+						Type:    "[]uint8",
+					},
+				},
+				NumMethod: 3,
+				Methods: []MethodAssertion{
+					{
+						Name: "Bytes",
+						Type: "func(github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]) []uint8",
+					},
+					{
+						Name: "Data",
+						Type: "func(github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]) []uint8",
+					},
+					{
+						Name: "String",
+						Type: "func(github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]) string",
+					},
+				},
+			},
+		},
+		{
+			"SerializedBytesPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{true, true, true, false, false, false},
+				AssignableTo:  []bool{true, true, true, false, false, false},
+				ConvertibleTo: []bool{true, true, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]",
+				NumMethod:     3,
+				Methods: []MethodAssertion{
+					{
+						Name: "Bytes",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]) []uint8",
+					},
+					{
+						Name: "Data",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]) []uint8",
+					},
+					{
+						Name: "String",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]) string",
+					},
+				},
+			},
+		},
+		{
+			"IntBTreeNode",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "BTreeNode[int]",
+				String:        "github.com/xoctopus/x/typex/testdata.BTreeNode[int]",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      4,
+				Fields: []FieldAssertion{
+					{
+						Name: "Value",
+						Type: "int",
+					},
+					{
+						Name: "Left",
+						Type: "*github.com/xoctopus/x/typex/testdata.BTreeNode[int]",
+					},
+					{
+						Name: "Right",
+						Type: "*github.com/xoctopus/x/typex/testdata.BTreeNode[int]",
+					},
+					{
+						Name: "Parent",
+						Type: "*github.com/xoctopus/x/typex/testdata.BTreeNode[int]",
+					},
+				},
+			},
+		},
+		{
+			"IntBTreeNodePtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.BTreeNode[int]",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.BTreeNode[int]",
+				NumField:      0,
+				NumMethod:     1,
+				Methods: []MethodAssertion{
+					{
+						Name: "InsertLeft",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.BTreeNode[int], int) *github.com/xoctopus/x/typex/testdata.BTreeNode[int]",
+					},
+				},
+			},
+		},
+		{
+			"SerializedBytesBTreeNode",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "BTreeNode[github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+				String:        "github.com/xoctopus/x/typex/testdata.BTreeNode[github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    false,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      4,
+				Fields: []FieldAssertion{
+					{
+						Name: "Value",
+						Type: "github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]",
+					},
+					{
+						Name: "Left",
+						Type: "*github.com/xoctopus/x/typex/testdata.BTreeNode[github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+					},
+					{
+						Name: "Right",
+						Type: "*github.com/xoctopus/x/typex/testdata.BTreeNode[github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+					},
+					{
+						Name: "Parent",
+						Type: "*github.com/xoctopus/x/typex/testdata.BTreeNode[github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+					},
+				},
+			},
+		},
+		{
+			"SerializedBytesBTreeNodePtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.BTreeNode[github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.BTreeNode[github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+				NumField:      0,
+				NumMethod:     1,
+				Methods: []MethodAssertion{
+					{
+						Name: "InsertLeft",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.BTreeNode[github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]], github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]) *github.com/xoctopus/x/typex/testdata.BTreeNode[github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+					},
+				},
+			},
+		},
+		{
+			"CircleEmbedsA",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "CircleEmbedsA",
+				String:        "github.com/xoctopus/x/typex/testdata.CircleEmbedsA",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      1,
+				Fields: []FieldAssertion{
+					{
+						Name:      "CircleEmbedsB",
+						Type:      "github.com/xoctopus/x/typex/testdata.CircleEmbedsB",
+						Anonymous: true,
+					},
+				},
+			},
+		},
+		{
+			"CircleEmbedsAPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.CircleEmbedsA",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.CircleEmbedsA",
+			},
+		},
+		{
+			"CircleEmbedsB",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "CircleEmbedsB",
+				String:        "github.com/xoctopus/x/typex/testdata.CircleEmbedsB",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      1,
+				Fields: []FieldAssertion{
+					{
+						Name:      "CircleEmbedsC",
+						Type:      "*github.com/xoctopus/x/typex/testdata.CircleEmbedsC",
+						Anonymous: true,
+					},
+				},
+			},
+		},
+		{
+			"CircleEmbedsBPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.CircleEmbedsB",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.CircleEmbedsB",
+			},
+		},
+		{
+			"CircleEmbedsC",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "CircleEmbedsC",
+				String:        "github.com/xoctopus/x/typex/testdata.CircleEmbedsC",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      2,
+				Fields: []FieldAssertion{
+					{
+						Name:      "CircleEmbedsA",
+						Type:      "github.com/xoctopus/x/typex/testdata.CircleEmbedsA",
+						Anonymous: true,
+					},
+					{
+						Name:      "CircleEmbedsB",
+						Type:      "github.com/xoctopus/x/typex/testdata.CircleEmbedsB",
+						Anonymous: true,
+					},
+				},
+			},
+		},
+		{
+			"CircleEmbedsCPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.CircleEmbedsC",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.CircleEmbedsC",
+			},
+		},
+		{
+			"TypeParamPass1",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "TypeParamPass[string,net.Addr]",
+				String:        "github.com/xoctopus/x/typex/testdata.TypeParamPass[string,net.Addr]",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      3,
+				Fields: []FieldAssertion{
+					{
+						PkgPath: "github.com/xoctopus/x/typex/testdata",
+						Name:    "t1",
+						Type:    "string",
+					},
+					{
+						PkgPath: "github.com/xoctopus/x/typex/testdata",
+						Name:    "t2",
+						Type:    "net.Addr",
+					},
+					{
+						Name:      "BTreeNode",
+						Type:      "*github.com/xoctopus/x/typex/testdata.BTreeNode[net.Addr]",
+						Anonymous: true,
+					},
+				},
+				NumMethod: 1,
+				Methods: []MethodAssertion{
+					{
+						Name: "InsertLeft",
+						Type: "func(github.com/xoctopus/x/typex/testdata.TypeParamPass[string,net.Addr], net.Addr) *github.com/xoctopus/x/typex/testdata.BTreeNode[net.Addr]",
+					},
+				},
+			},
+		},
+		{
+			"TypeParamPass1Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.TypeParamPass[string,net.Addr]",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.TypeParamPass[string,net.Addr]",
+				NumMethod:     2,
+				Methods: []MethodAssertion{
+					{
+						Name: "Deal",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.TypeParamPass[string,net.Addr], string) net.Addr",
+					},
+					{
+						Name: "InsertLeft",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.TypeParamPass[string,net.Addr], net.Addr) *github.com/xoctopus/x/typex/testdata.BTreeNode[net.Addr]",
+					},
+				},
+			},
+		},
+		{
+			"TypeParamPass2",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "TypeParamPass[github.com/xoctopus/x/typex/testdata.Serialized[string],github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+				String:        "github.com/xoctopus/x/typex/testdata.TypeParamPass[github.com/xoctopus/x/typex/testdata.Serialized[string],github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    false,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      3,
+				Fields: []FieldAssertion{
+					{
+						PkgPath: "github.com/xoctopus/x/typex/testdata",
+						Name:    "t1",
+						Type:    "github.com/xoctopus/x/typex/testdata.Serialized[string]",
+					},
+					{
+						PkgPath: "github.com/xoctopus/x/typex/testdata",
+						Name:    "t2",
+						Type:    "github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]",
+					},
+					{
+						PkgPath:   "",
+						Name:      "BTreeNode",
+						Type:      "*github.com/xoctopus/x/typex/testdata.BTreeNode[github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+						Anonymous: true,
+					},
+				},
+				NumMethod: 1,
+				Methods: []MethodAssertion{
+					{
+						Name: "InsertLeft",
+						Type: "func(github.com/xoctopus/x/typex/testdata.TypeParamPass[github.com/xoctopus/x/typex/testdata.Serialized[string],github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]], github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]) *github.com/xoctopus/x/typex/testdata.BTreeNode[github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+					},
+				},
+			},
+		},
+		{
+			"TypeParamPass2Ptr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.TypeParamPass[github.com/xoctopus/x/typex/testdata.Serialized[string],github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.TypeParamPass[github.com/xoctopus/x/typex/testdata.Serialized[string],github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+				NumMethod:     2,
+				Methods: []MethodAssertion{
+					{
+						Name: "Deal",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.TypeParamPass[github.com/xoctopus/x/typex/testdata.Serialized[string],github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]], github.com/xoctopus/x/typex/testdata.Serialized[string]) github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]",
+					},
+					{
+						Name: "InsertLeft",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.TypeParamPass[github.com/xoctopus/x/typex/testdata.Serialized[string],github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]], github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]) *github.com/xoctopus/x/typex/testdata.BTreeNode[github.com/xoctopus/x/typex/testdata.Serialized[[]uint8]]",
+					},
+				},
+			},
+		},
+		{
+			"UncomparableStruct",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "UncomparableStruct",
+				String:        "github.com/xoctopus/x/typex/testdata.UncomparableStruct",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    false,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      1,
+				Fields: []FieldAssertion{
+					{
+						PkgPath: "github.com/xoctopus/x/typex/testdata",
+						Name:    "v",
+						Type:    "map[string]interface {}",
+					},
+				},
+			},
+		},
+		{
+			"UncomparableStructPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.UncomparableStruct",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.UncomparableStruct",
+			},
+		},
+		{
+			"UnameStruct",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "struct { github.com/xoctopus/x/typex/testdata.Int }",
+				Kind:          reflect.Struct,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      1,
+				Fields: []FieldAssertion{
+					{
+						PkgPath:   "",
+						Name:      "Int",
+						Type:      "github.com/xoctopus/x/typex/testdata.Int",
+						Anonymous: true,
+					},
+				},
+			},
+		},
+		{
+			"UnameStructPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*struct { github.com/xoctopus/x/typex/testdata.Int }",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "struct { github.com/xoctopus/x/typex/testdata.Int }",
+			},
+		},
+		{
+			"ValuerString",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "Valuer[string]",
+				String:        "github.com/xoctopus/x/typex/testdata.Valuer[string]",
+				Kind:          reflect.Struct,
+				Implements:    []bool{true, false, true, false, false, false},
+				AssignableTo:  []bool{true, false, true, false, false, false},
+				ConvertibleTo: []bool{true, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "nil",
+				NumField:      1,
+				Fields: []FieldAssertion{
+					{
+						PkgPath: "github.com/xoctopus/x/typex/testdata",
+						Name:    "v",
+						Type:    "string",
+					},
+				},
+				NumMethod: 1,
+				Methods: []MethodAssertion{
+					{
+						Name: "String",
+						Type: "func(github.com/xoctopus/x/typex/testdata.Valuer[string]) string",
+					},
+				},
+			},
+		},
+		{
+			"ValuerStringPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.Valuer[string]",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{true, false, true, false, false, false},
+				AssignableTo:  []bool{true, false, true, false, false, false},
+				ConvertibleTo: []bool{true, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.Valuer[string]",
+				NumMethod:     1,
+				Methods: []MethodAssertion{
+					{
+						Name: "String",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.Valuer[string]) string",
+					},
+				},
+			},
+		},
+		{
+			"MapBTreeNodeInt",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "MapBTreeNode[int]",
+				String:        "github.com/xoctopus/x/typex/testdata.MapBTreeNode[int]",
+				Kind:          reflect.Map,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    false,
+				Key:           "int",
+				Elem:          "*github.com/xoctopus/x/typex/testdata.BTreeNode[int]",
+			},
+		},
+		{
+			"MapBTreeNodeIntPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.MapBTreeNode[int]",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.MapBTreeNode[int]",
+			},
+		},
+		{
+			"TypedSliceAlias",
+			&CaseAssertion{
+				PkgPath:       "github.com/xoctopus/x/typex/testdata",
+				Name:          "TypedSlice[net.Addr]",
+				String:        "github.com/xoctopus/x/typex/testdata.TypedSlice[net.Addr]",
+				Kind:          reflect.Slice,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    false,
+				Key:           "nil",
+				Elem:          "net.Addr",
+				NumMethod:     1,
+				Methods: []MethodAssertion{
+					{
+						Name: "Len",
+						Type: "func(github.com/xoctopus/x/typex/testdata.TypedSlice[net.Addr]) int",
+					},
+				},
+			},
+		},
+		{
+			"TypedSliceAliasPtr",
+			&CaseAssertion{
+				PkgPath:       "",
+				Name:          "",
+				String:        "*github.com/xoctopus/x/typex/testdata.TypedSlice[net.Addr]",
+				Kind:          reflect.Pointer,
+				Implements:    []bool{false, false, true, false, false, false},
+				AssignableTo:  []bool{false, false, true, false, false, false},
+				ConvertibleTo: []bool{false, false, true, false, false, false},
+				Comparable:    true,
+				Key:           "nil",
+				Elem:          "github.com/xoctopus/x/typex/testdata.TypedSlice[net.Addr]",
+				NumMethod:     1,
+				Methods: []MethodAssertion{
+					{
+						Name: "Len",
+						Type: "func(*github.com/xoctopus/x/typex/testdata.TypedSlice[net.Addr]) int",
+					},
+				},
+			},
+		},
 	}
 
-	rtype := reflect.TypeOf(testdata.Structures{})
-	for i, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			tt := rtype.Field(i).Type
-			NewWithT(t).Expect(rtype.Field(i).Name).To(Equal(c.name))
-
-			rt := NewRType(tt)
-			gt := NewGType(tt)
-
-			NewWithT(t).Expect(rt.Unwrap()).To(Equal(tt))
-			NewWithT(t).Expect(gt.Unwrap()).To(Equal(internal.NewTypesTypeFromReflectType(tt)))
-
-			c.c.Check(t, rt, gt)
-		})
-	}
+	RunCase(t, cases, testdata.StructureCases)
 }

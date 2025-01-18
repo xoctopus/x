@@ -26,7 +26,9 @@ type (
 	TypedMap[K comparable, V any] map[K]V
 )
 
-type CompositeBasics struct {
+func (v TypedSlice[T]) Len() int { return len(v) }
+
+type Composites struct {
 	EmptyArray      EmptyArray
 	Array           Array
 	AnyArray        AnyArray
@@ -44,6 +46,7 @@ type CompositeBasics struct {
 	TypedSlice      TypedSlice[net.Addr]
 	TypedMap        TypedMap[string, int]
 	TypedMap2       TypedMap[String, int]
+	TypedMap3       TypedMap[Serialized[string], Serialized[[]byte]]
 	StructSlice     []SimpleStruct
 	StructPtrSlice  []*SimpleStruct
 }

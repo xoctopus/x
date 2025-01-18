@@ -9,9 +9,13 @@ import (
 	"github.com/xoctopus/x/typex/internal"
 )
 
-func NewRType(t reflect.Type) *RType {
-	must.NotNilWrap(t, "invalid reflect.Type `t`")
-	return &RType{t: t}
+func NewRType(t any) *RType {
+	tt, ok := t.(reflect.Type)
+	if !ok {
+		tt = reflect.TypeOf(t)
+	}
+	must.NotNilWrap(tt, "invalid reflect.Type `t`")
+	return &RType{t: tt}
 }
 
 // RType wraps reflect.Type and implements typex.Type
@@ -25,7 +29,7 @@ func (t *RType) PkgPath() string { return t.t.PkgPath() }
 
 func (t *RType) Name() string { return t.t.Name() }
 
-func (t *RType) String() string { return NewT(t).String() }
+func (t *RType) String() string { return internal.ReflectTypeID(t.t) }
 
 func (t *RType) Kind() reflect.Kind { return t.t.Kind() }
 
@@ -38,7 +42,7 @@ func (t *RType) Implements(u Type) bool {
 		return false
 	case *GType:
 		if i, ok := x.t.Underlying().(*types.Interface); ok {
-			return types.Implements(internal.NewTypesTypeFromReflectType(t.t), i)
+			return types.Implements(internal.NewTypesType(t.t), i)
 		}
 		return false
 	default:
@@ -95,7 +99,7 @@ func (t *RType) NumField() int {
 }
 
 func (t *RType) Field(i int) StructField {
-	if t.Kind() == reflect.Struct {
+	if t.Kind() == reflect.Struct && i < t.t.NumField() {
 		return &RStructField{sf: t.t.Field(i)}
 	}
 	return nil
@@ -152,7 +156,10 @@ func (t *RType) NumIn() int {
 }
 
 func (t *RType) In(i int) Type {
-	return NewRType(t.t.In(i))
+	if i < t.NumIn() {
+		return NewRType(t.t.In(i))
+	}
+	return nil
 }
 
 func (t *RType) NumOut() int {
@@ -163,7 +170,10 @@ func (t *RType) NumOut() int {
 }
 
 func (t *RType) Out(i int) Type {
-	return NewRType(t.t.Out(i))
+	if i < t.NumOut() {
+		return NewRType(t.t.Out(i))
+	}
+	return nil
 }
 
 type RStructField struct {
