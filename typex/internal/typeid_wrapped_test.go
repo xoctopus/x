@@ -196,7 +196,6 @@ func TestTypeID(t *testing.T) {
 		}()
 		ReflectTypeID(&MockInvalidType{})
 	})
-
 }
 
 type MockInvalidType struct {

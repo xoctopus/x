@@ -15,7 +15,7 @@ import (
 func TestIndirect(t *testing.T) {
 	v := &struct{ Any any }{Any: 100.1}
 
-	var cases = []*struct {
+	cases := []*struct {
 		input  any
 		expect reflect.Value
 	}{
@@ -43,7 +43,7 @@ func TestIndirectNew(t *testing.T) {
 	v3 := &struct{ Any any }{Any: new(****int)}
 	v4 := &struct{ v ***int }{}
 
-	var cases = []*struct {
+	cases := []*struct {
 		Input  any
 		expect reflect.Value
 	}{
@@ -72,7 +72,7 @@ func TestIndirectNew(t *testing.T) {
 }
 
 func TestDeref(t *testing.T) {
-	var cases = []*struct {
+	cases := []*struct {
 		input  any
 		expect reflect.Type
 	}{
@@ -95,7 +95,7 @@ func TestDeref(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	var cases = []*struct {
+	cases := []*struct {
 		value any
 		orig  reflect.Type
 		elem  reflect.Type
@@ -127,7 +127,7 @@ type Float float64
 func (v Float) IsZero() bool { return v == 0 }
 
 func TestIsZero(t *testing.T) {
-	var cases = []*struct {
+	cases := []*struct {
 		value any
 		empty bool
 	}{
@@ -166,7 +166,7 @@ func TestIsZero(t *testing.T) {
 }
 
 func TestTypename(t *testing.T) {
-	var cases = []*struct {
+	cases := []*struct {
 		value    any
 		typename string
 	}{
@@ -186,7 +186,7 @@ func TestTypename(t *testing.T) {
 type Byte byte
 
 func TestIsBytes(t *testing.T) {
-	var cases = []*struct {
+	cases := []*struct {
 		value  any
 		expect bool
 	}{
@@ -203,7 +203,7 @@ func TestIsBytes(t *testing.T) {
 }
 
 func TestIsInteger(t *testing.T) {
-	var cases = []*struct {
+	cases := []*struct {
 		value  any
 		expect bool
 	}{
@@ -221,7 +221,7 @@ func TestIsInteger(t *testing.T) {
 }
 
 func TestIsFloat(t *testing.T) {
-	var cases = []*struct {
+	cases := []*struct {
 		value  any
 		expect bool
 	}{
@@ -240,7 +240,7 @@ func TestIsFloat(t *testing.T) {
 }
 
 func TestIsNumeric(t *testing.T) {
-	var cases = []*struct {
+	cases := []*struct {
 		value  any
 		expect bool
 	}{

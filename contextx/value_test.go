@@ -74,7 +74,6 @@ func ExampleWithValue() {
 }
 
 func ExampleWithContextCompose() {
-
 	with := []contextx.WithContext{
 		func(ctx context.Context) context.Context {
 			return contextx.WithValue(ctx, key{}, 100)

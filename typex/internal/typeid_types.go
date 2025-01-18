@@ -12,7 +12,7 @@ import (
 )
 
 func InstTypeID(t types.Type, args []types.Type, wraps ...bool) string {
-	var wrap = len(wraps) > 0 && wraps[0]
+	wrap := len(wraps) > 0 && wraps[0]
 	switch x := t.(type) {
 	case *types.Basic:
 		return types.Typ[x.Kind()].String()

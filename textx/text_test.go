@@ -48,8 +48,10 @@ func (d UnsignedIntegers) UnmarshalText(data []byte) error {
 	return nil
 }
 
-type NamedString string
-type NamedInt int
+type (
+	NamedString string
+	NamedInt    int
+)
 
 func Benchmark_ParseFloatToBytes(b *testing.B) {
 	b.Run("append", func(b *testing.B) {
