@@ -24,8 +24,8 @@ type kv struct {
 
 func (c *kv) String() string {
 	return nameof(c.Context) +
-		".WithValue(type " + reflect.TypeOf(c.k).String() +
-		", val" + stringify(c.v) + ")"
+		".WithValue(key:" + reflect.TypeOf(c.k).String() +
+		", val:" + stringify(c.v) + ")"
 }
 
 func (c *kv) Value(k any) any {

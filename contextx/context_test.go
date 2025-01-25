@@ -2,6 +2,8 @@ package contextx_test
 
 import (
 	"context"
+	"fmt"
+	"net"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -9,121 +11,65 @@ import (
 	"github.com/xoctopus/x/contextx"
 )
 
-type Value struct {
-	Int int
-}
-
-var ValueContext = contextx.NewValue(&Value{1})
-
 func TestContext(t *testing.T) {
-	empty := context.Background()
-
-	t.Run("FailedToExtract", func(t *testing.T) {
-		t.Run("MustFrom", func(t *testing.T) {
-			defer func() {
-				err := recover().(error)
-				NewWithT(t).Expect(err.Error()).To(ContainSubstring("not found in context"))
-			}()
-
-			ctx := contextx.New[*Value](nil)
-			_ = ctx.MustFrom(empty)
-		})
-
-		t.Run("From", func(t *testing.T) {
-			ctx := contextx.New[*Value](contextx.With[*Value](&Value{2}))
-			v, ok := ctx.From(empty)
-			NewWithT(t).Expect(ok).To(BeFalse())
-			NewWithT(t).Expect(v).To(BeNil())
-		})
-	})
-
-	t.Run("FromValuer", func(t *testing.T) {
-		t.Run("New", func(t *testing.T) {
-			t.Run("With", func(t *testing.T) {
-				ctx := contextx.New(contextx.With(&Value{2}))
-				v := ctx.MustFrom(empty)
-				NewWithT(t).Expect(v).NotTo(BeNil())
-				NewWithT(t).Expect(v.Int).To(Equal(2))
+	t.Run("EmptyContext", func(t *testing.T) {
+		ctx := context.Background()
+		t.Run("NoDefaults", func(t *testing.T) {
+			t.Run("From", func(t *testing.T) {
+				val, ok := contextx.NewT[string]().From(ctx)
+				NewWithT(t).Expect(val).To(Equal(""))
+				NewWithT(t).Expect(ok).To(BeFalse())
 			})
-			t.Run("WithValuer", func(t *testing.T) {
-				ctx := contextx.New(contextx.WithValuer(func() *Value { return &Value{3} }))
-				v := ctx.MustFrom(empty)
-				NewWithT(t).Expect(v).NotTo(BeNil())
-				NewWithT(t).Expect(v.Int).To(Equal(3))
+			t.Run("MustFrom", func(t *testing.T) {
+				defer func() {
+					NewWithT(t).Expect(recover()).NotTo(BeNil())
+				}()
+				_ = contextx.NewT[string]().MustFrom(ctx)
 			})
 		})
-		t.Run("NewValue", func(t *testing.T) {
-			ctx := contextx.NewValue(&Value{4})
-			v := ctx.MustFrom(empty)
-			NewWithT(t).Expect(v).NotTo(BeNil())
-			NewWithT(t).Expect(v.Int).To(Equal(4))
+		t.Run("HasDefaults", func(t *testing.T) {
+			t.Run("From", func(t *testing.T) {
+				val, ok := contextx.NewV(t.Name()).From(ctx)
+				NewWithT(t).Expect(ok).To(BeTrue())
+				NewWithT(t).Expect(val).To(Equal(t.Name()))
+			})
+			t.Run("MustFrom", func(t *testing.T) {
+				val := contextx.NewT(contextx.WithDefault(t.Name())).MustFrom(ctx)
+				NewWithT(t).Expect(val).To(Equal(t.Name()))
+			})
 		})
 	})
+	t.Run("ValueContext", func(t *testing.T) {
+		c := contextx.NewT[string]()
+		ctx := c.With(context.Background(), t.Name())
 
-	t.Run("OverwriteByInjection", func(t *testing.T) {
-		ctx := contextx.NewValue(&Value{5})
-		root := ctx.With(empty, &Value{6})
-
-		v, ok := ctx.From(root)
+		val, ok := c.From(ctx)
 		NewWithT(t).Expect(ok).To(BeTrue())
-		NewWithT(t).Expect(v.Int).To(Equal(6))
+		NewWithT(t).Expect(val).To(Equal(t.Name()))
 
-		v = ctx.MustFrom(root)
-		NewWithT(t).Expect(v.Int).To(Equal(6))
-	})
-
-	t.Run("Compose", func(t *testing.T) {
-		ctx := contextx.New[*Value]()
-		root := contextx.WithContextCompose(
-			ctx.Compose(&Value{7}),
-		)(empty)
-
-		v, ok := ctx.From(root)
-		NewWithT(t).Expect(ok).To(BeTrue())
-		NewWithT(t).Expect(v.Int).To(Equal(7))
-
-		v = ctx.MustFrom(root)
-		NewWithT(t).Expect(v.Int).To(Equal(7))
+		val = c.MustFrom(ctx)
+		NewWithT(t).Expect(val).To(Equal(t.Name()))
 	})
 }
 
-func BenchmarkCtx_MustFrom(b *testing.B) {
-	empty := context.Background()
-	injected := ValueContext.With(empty, &Value{1})
+func ExampleCompose() {
+	c1 := contextx.NewT[string]()
+	c2 := contextx.NewT[int]()
+	c3 := contextx.NewT[fmt.Stringer]()
 
-	b.Run("FromValuer", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			ValueContext.MustFrom(empty)
-		}
-	})
+	ctx := contextx.Compose(
+		c1.WithCompose("1"),
+		c2.WithCompose(2),
+		c3.WithCompose(net.IPv4(1, 1, 1, 1)),
+	)(context.Background())
+	fmt.Println(ctx)
+	fmt.Println(c1.MustFrom(ctx))
+	fmt.Println(c2.MustFrom(ctx))
+	fmt.Println(c3.MustFrom(ctx))
 
-	b.Run("ExtractFromContext", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			ValueContext.MustFrom(injected)
-		}
-	})
-
-	overinjected := context.Background()
-	for i := 0; i < 1000; i++ {
-		overinjected = context.WithValue(overinjected, i, i)
-	}
-	overinjected = ValueContext.With(overinjected, &Value{1})
-
-	b.Run("OverInjected", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			ValueContext.MustFrom(overinjected)
-		}
-	})
-
-	overinjected2 := context.Background()
-	for i := 0; i < 1000; i++ {
-		overinjected = contextx.WithValue(overinjected, i, i)
-	}
-	overinjected2 = ValueContext.With(overinjected, &Value{1})
-
-	b.Run("OverInjected2", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			ValueContext.MustFrom(overinjected2)
-		}
-	})
+	// Output:
+	// context.Background.WithValue(key:*contextx.ctx[string], val:1).WithValue(key:*contextx.ctx[int], val:<not Stringer>).WithValue(key:*contextx.ctx[fmt.Stringer], val:1.1.1.1)
+	// 1
+	// 2
+	// 1.1.1.1
 }

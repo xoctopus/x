@@ -3,34 +3,28 @@ package contextx_test
 import (
 	"context"
 	"fmt"
-	"reflect"
+	"net"
 	"testing"
 	"time"
+
+	. "github.com/onsi/gomega"
 
 	"github.com/xoctopus/x/contextx"
 )
 
 type key struct{}
 
-func getValue(ctx context.Context) bool {
-	v := ctx.Value(key{})
-	_ = v
-	return true
-}
-
 func BenchmarkWithValue(b *testing.B) {
 	parent := context.Background()
 
 	b.Run("std.Context", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			ctx := context.WithValue(parent, key{}, nil)
-			getValue(ctx)
+			_ = context.WithValue(parent, key{}, nil)
 		}
 	})
 	b.Run("x.Contextx", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			ctx := contextx.WithValue(parent, key{}, nil)
-			getValue(ctx)
+			_ = contextx.WithValue(parent, key{}, nil)
 		}
 	})
 }
@@ -38,67 +32,60 @@ func BenchmarkWithValue(b *testing.B) {
 func TestWithValue(t *testing.T) {
 	t.Run("CatchParentIsNil", func(t *testing.T) {
 		defer func() {
-			t.Log(recover())
+			NewWithT(t).Expect(recover()).NotTo(BeNil())
 		}()
 		contextx.WithValue(nil, nil, nil)
 	})
 	t.Run("CatchKeyIsNil", func(t *testing.T) {
 		defer func() {
-			t.Log(recover())
+			NewWithT(t).Expect(recover()).NotTo(BeNil())
 		}()
 		contextx.WithValue(context.Background(), nil, nil)
 	})
+	ctx := contextx.WithValue(context.Background(), key{}, t.Name())
+	NewWithT(t).Expect(ctx.Value(key{})).To(Equal(t.Name()))
+
 }
 
-type fakeContext struct{}
+type MockContext struct{}
 
-func (fakeContext) Deadline() (time.Time, bool) { return time.Time{}, false }
+func (MockContext) Deadline() (time.Time, bool) { return time.Time{}, true }
 
-func (fakeContext) Done() <-chan struct{} { return nil }
+func (MockContext) Err() error { return nil }
 
-func (fakeContext) Err() error { return nil }
+func (MockContext) Done() <-chan struct{} { return nil }
 
-func (fakeContext) Value(any) any { return nil }
+func (MockContext) Value(any) any { return nil }
 
 func ExampleWithValue() {
-	ctx := contextx.WithValue(context.Background(), key{}, 100)
+	var ctx context.Context
 
-	fmt.Println(ctx.Value(key{}))
-	fmt.Println(ctx.Value(1))
+	type key1 struct{}
+	type key2 struct{}
+	type key3 struct{}
+	type key4 struct{}
+
+	ctx = contextx.WithValue(MockContext{}, key1{}, "1")
 	fmt.Println(ctx)
+	ctx = contextx.WithValue(ctx, key2{}, "2")
+	fmt.Println(ctx)
+	ctx = contextx.WithValue(ctx, key3{}, net.IPv4(1, 1, 1, 1))
+	fmt.Println(ctx)
+	ctx = contextx.WithValue(ctx, key4{}, 4)
+	fmt.Println(ctx)
+
+	fmt.Println("context value key1:", ctx.Value(key1{}))
+	fmt.Println("context value key2:", ctx.Value(key2{}))
+	fmt.Println("context value key3:", ctx.Value(key3{}))
+	fmt.Println("context value key4:", ctx.Value(key4{}))
 
 	// Output:
-	// 100
-	// <nil>
-	// context.Background.WithValue(type contextx_test.key, val<not Stringer>)
-}
-
-func ExampleWithContextCompose() {
-	with := []contextx.WithContext{
-		func(ctx context.Context) context.Context {
-			return contextx.WithValue(ctx, key{}, 100)
-		},
-		func(ctx context.Context) context.Context {
-			return contextx.WithValue(ctx, "key", "200")
-		},
-		func(ctx context.Context) context.Context {
-			return contextx.WithValue(ctx, "key", reflect.ValueOf(1))
-		},
-	}
-
-	compose := contextx.WithContextCompose(with...)
-
-	ctx := compose(fakeContext{})
-	fmt.Println(ctx.Value(key{}))
-	fmt.Println(ctx)
-
-	ctx = compose(context.Background())
-	fmt.Println(ctx.Value(key{}))
-	fmt.Println(ctx)
-
-	// Output:
-	// 100
-	// contextx_test.fakeContext.WithValue(type contextx_test.key, val<not Stringer>).WithValue(type string, val200).WithValue(type string, val<int Value>)
-	// 100
-	// context.Background.WithValue(type contextx_test.key, val<not Stringer>).WithValue(type string, val200).WithValue(type string, val<int Value>)
+	// contextx_test.MockContext.WithValue(key:contextx_test.key1, val:1)
+	// contextx_test.MockContext.WithValue(key:contextx_test.key1, val:1).WithValue(key:contextx_test.key2, val:2)
+	// contextx_test.MockContext.WithValue(key:contextx_test.key1, val:1).WithValue(key:contextx_test.key2, val:2).WithValue(key:contextx_test.key3, val:1.1.1.1)
+	// contextx_test.MockContext.WithValue(key:contextx_test.key1, val:1).WithValue(key:contextx_test.key2, val:2).WithValue(key:contextx_test.key3, val:1.1.1.1).WithValue(key:contextx_test.key4, val:<not Stringer>)
+	// context value key1: 1
+	// context value key2: 2
+	// context value key3: 1.1.1.1
+	// context value key4: 4
 }
