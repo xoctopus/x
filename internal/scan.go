@@ -70,7 +70,7 @@ func InspectFields(t types.Type, names *NamedBacktrace) (fields map[string][]*ty
 	return fields
 }
 
-func DirectedMethod(m *types.Func, t types.Type) bool {
+func IsDirectedMethod(m *types.Func, t types.Type) bool {
 	r := m.Signature().Recv().Type()
 	if x, ok := r.(*types.Pointer); ok {
 		r = x.Elem()
@@ -102,7 +102,7 @@ func ScanMethods(t types.Type) *Methods {
 			if !m.Exported() {
 				continue
 			}
-			if DirectedMethod(m, t) {
+			if IsDirectedMethod(m, t) {
 				final = m
 				break
 			}

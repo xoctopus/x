@@ -10,8 +10,7 @@ import (
 	"unsafe"
 
 	. "github.com/onsi/gomega"
-
-	. "github.com/xoctopus/x/typex/internal"
+	. "github.com/xoctopus/x/internal"
 	"github.com/xoctopus/x/typex/testdata"
 )
 

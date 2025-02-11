@@ -6,7 +6,7 @@ import (
 
 	. "github.com/onsi/gomega"
 
-	. "github.com/xoctopus/x/typex/internal"
+	. "github.com/xoctopus/x/internal"
 )
 
 func TestNamedBacktrace(t *testing.T) {

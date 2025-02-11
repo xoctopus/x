@@ -4,9 +4,9 @@ import (
 	"go/types"
 	"reflect"
 
+	"github.com/xoctopus/x/internal"
 	"github.com/xoctopus/x/misc/must"
 	"github.com/xoctopus/x/reflectx"
-	"github.com/xoctopus/x/typex/internal"
 )
 
 func NewRType(t any) *RType {

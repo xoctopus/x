@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/xoctopus/x/typex/internal"
+	"github.com/xoctopus/x/internal"
 )
 
 func NewGType(t any) (tt *GType) {
