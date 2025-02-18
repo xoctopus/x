@@ -55,7 +55,7 @@ type res[T any, E R] struct {
 	e E
 }
 
-func (r *res[T, E]) succeed() bool {
+func (r *res[T, E]) Succeed() bool {
 	succeed := false
 	switch e := any(r.e).(type) {
 	case struct{ error }:
@@ -66,15 +66,19 @@ func (r *res[T, E]) succeed() bool {
 	return succeed
 }
 
+func (r *res[T, E]) Failed() bool {
+	return !r.Succeed()
+}
+
 func (r *res[T, E]) Unwrap() T {
-	if r.succeed() {
+	if r.Succeed() {
 		return r.v
 	}
 	panic(r.e)
 }
 
 func (r *res[T, E]) UnwrapOr(v T) T {
-	if r.succeed() {
+	if r.Succeed() {
 		return r.v
 	}
 	return v
