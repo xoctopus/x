@@ -78,10 +78,10 @@ func (r *res[T, E]) Unwrap() T {
 }
 
 func (r *res[T, E]) UnwrapOr(v T) T {
-	if r.Succeed() {
-		return r.v
+	if r.Failed() {
+		return v
 	}
-	return v
+	return r.v
 }
 
 /*
