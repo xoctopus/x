@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/gomega"
 
-	. "github.com/xoctopus/x/misc/stringsx"
+	. "github.com/xoctopus/x/stringsx"
 )
 
 func TestAtoi(t *testing.T) {
