@@ -45,6 +45,9 @@ func TestParseStructTag(t *testing.T) {
 	flags = ParseStructTag(`name:abc`)
 	NewWithT(t).Expect(len(flags)).To(Equal(0))
 
-	flags = ParseStructTag(`name:"abc`)
+	flags = ParseStructTag(`name:   "abc`)
+	NewWithT(t).Expect(len(flags)).To(Equal(0))
+
+	flags = ParseStructTag(`name:    abc`)
 	NewWithT(t).Expect(len(flags)).To(Equal(0))
 }

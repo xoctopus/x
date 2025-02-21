@@ -43,15 +43,13 @@ func ParseStructTag(tag reflect.StructTag) map[string]string {
 			i++
 		}
 		if i >= len(tag) {
-			break
+			break // not a quoted string
 		}
 		quoted := string(tag[:i+1])
-		tag = tag[i+1:]
 		value, err := strconv.Unquote(quoted)
-		if err != nil {
-			break
-		}
+		mustBeTrue(err == nil, "invalid quoted value")
 		flags[name] = value
+		tag = tag[i+1:]
 	}
 	return flags
 }

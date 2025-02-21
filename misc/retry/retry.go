@@ -2,10 +2,7 @@ package retry
 
 import (
 	"log"
-	"reflect"
 	"time"
-
-	"github.com/xoctopus/x/reflectx"
 )
 
 type Retry struct {
@@ -14,7 +11,7 @@ type Retry struct {
 }
 
 func (r *Retry) SetDefault() {
-	reflectx.Set(reflect.ValueOf(r), reflect.ValueOf(Default))
+	*r = *Default
 }
 
 func (r Retry) Do(exec func() error) (err error) {
