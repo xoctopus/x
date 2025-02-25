@@ -80,31 +80,33 @@ func TestXmap_Load(t *testing.T) {
 	m1.BatchStore([]*int{k1, k2}, []int{101, 102})
 	m2.BatchStore([]any{k1, k2}, []any{101, 102})
 
-	equal := func(k1, k2 any) bool {
-		if k1 == k2 {
-			return true
+	equal := func(x *int) func(k any) bool {
+		return func(k any) bool {
+			if k == x {
+				return true
+			}
+			return reflect.DeepEqual(x, k)
 		}
-		return reflect.DeepEqual(k1, k2)
 	}
 
 	k1_ := ptrx.Ptr(1)
 
-	NewWithT(t).Expect(results(m1.LoadEq(k1, equal))).To(Equal([]any{101, true}))
-	NewWithT(t).Expect(results(m2.LoadEq(k1, equal))).To(Equal([]any{101, true}))
-	NewWithT(t).Expect(results(m1.LoadEq(k1_, equal))).To(Equal([]any{101, true}))
-	NewWithT(t).Expect(results(m2.LoadEq(k1_, equal))).To(Equal([]any{101, true}))
-	NewWithT(t).Expect(results(m1.LoadEq(ptrx.Ptr(5), equal))).To(Equal([]any{0, false}))
-	NewWithT(t).Expect(results(m2.LoadEq(ptrx.Ptr(5), equal))).To(Equal([]any{nil, false}))
+	NewWithT(t).Expect(results(m1.LoadEq(equal(k1)))).To(Equal([]any{101, true}))
+	NewWithT(t).Expect(results(m2.LoadEq(equal(k1)))).To(Equal([]any{101, true}))
+	NewWithT(t).Expect(results(m1.LoadEq(equal(k1_)))).To(Equal([]any{101, true}))
+	NewWithT(t).Expect(results(m2.LoadEq(equal(k1_)))).To(Equal([]any{101, true}))
+	NewWithT(t).Expect(results(m1.LoadEq(equal(ptrx.Ptr(5))))).To(Equal([]any{0, false}))
+	NewWithT(t).Expect(results(m2.LoadEq(equal(ptrx.Ptr(5))))).To(Equal([]any{nil, false}))
 
 	m1.Store(k1_, 105)
 	m2.Store(k1_, 105)
 
-	NewWithT(t).Expect(m1.LoadEqs(k1, equal)).To(ConsistOf(101, 105))
-	NewWithT(t).Expect(m2.LoadEqs(k1, equal)).To(ConsistOf(101, 105))
-	NewWithT(t).Expect(m1.LoadEqs(ptrx.Ptr(1), equal)).To(ConsistOf(101, 105))
-	NewWithT(t).Expect(m2.LoadEqs(ptrx.Ptr(1), equal)).To(ConsistOf(101, 105))
-	NewWithT(t).Expect(m1.LoadEqs(ptrx.Ptr(5), equal)).To(HaveLen(0))
-	NewWithT(t).Expect(m2.LoadEqs(ptrx.Ptr(5), equal)).To(HaveLen(0))
+	NewWithT(t).Expect(m1.LoadEqs(equal(k1))).To(ConsistOf(101, 105))
+	NewWithT(t).Expect(m2.LoadEqs(equal(k1))).To(ConsistOf(101, 105))
+	NewWithT(t).Expect(m1.LoadEqs(equal(k1_))).To(ConsistOf(101, 105))
+	NewWithT(t).Expect(m2.LoadEqs(equal(k1_))).To(ConsistOf(101, 105))
+	NewWithT(t).Expect(m1.LoadEqs(equal(ptrx.Ptr(5)))).To(HaveLen(0))
+	NewWithT(t).Expect(m2.LoadEqs(equal(ptrx.Ptr(5)))).To(HaveLen(0))
 
 	keys1 := mapx.Keys(m1)
 	keys2 := mapx.Keys(m2)

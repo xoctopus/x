@@ -41,9 +41,9 @@ func (m xmap[K, V]) Load(k K) (v V, loaded bool) {
 	return
 }
 
-func (m xmap[K, V]) LoadEq(k K, eq func(any, any) bool) (value V, loaded bool) {
+func (m xmap[K, V]) LoadEq(eq func(any) bool) (value V, loaded bool) {
 	m.Range(func(key K, val V) bool {
-		if eq(key, k) {
+		if eq(key) {
 			value, loaded = val, true
 			return false
 		}
@@ -52,9 +52,9 @@ func (m xmap[K, V]) LoadEq(k K, eq func(any, any) bool) (value V, loaded bool) {
 	return
 }
 
-func (m xmap[K, V]) LoadEqs(k K, eq func(any, any) bool) (values []V) {
+func (m xmap[K, V]) LoadEqs(eq func(any) bool) (values []V) {
 	m.Range(func(key K, value V) bool {
-		if eq(key, k) {
+		if eq(key) {
 			values = append(values, value)
 		}
 		return true
@@ -204,9 +204,9 @@ func (s *smap) Exists(k any) bool {
 	return exists
 }
 
-func (s *smap) LoadEq(k any, eq func(any, any) bool) (value any, loaded bool) {
+func (s *smap) LoadEq(eq func(any) bool) (value any, loaded bool) {
 	s.Range(func(key, val any) bool {
-		if eq(key, k) {
+		if eq(key) {
 			value, loaded = val, true
 			return false
 		}
@@ -215,9 +215,9 @@ func (s *smap) LoadEq(k any, eq func(any, any) bool) (value any, loaded bool) {
 	return
 }
 
-func (s *smap) LoadEqs(k any, eq func(any, any) bool) (values []any) {
+func (s *smap) LoadEqs(eq func(any) bool) (values []any) {
 	s.Range(func(key, value any) bool {
-		if eq(key, k) {
+		if eq(key) {
 			values = append(values, value)
 		}
 		return true
@@ -255,8 +255,8 @@ type Result[V any] struct {
 type Map[K comparable, V any] interface {
 	Exists(K) bool
 	Load(K) (V, bool)
-	LoadEq(K, func(any, any) bool) (V, bool)
-	LoadEqs(K, func(any, any) bool) []V
+	LoadEq(func(any) bool) (V, bool)
+	LoadEqs(func(any) bool) []V
 	BatchLoad(...K) []Result[V]
 	Store(K, V)
 	BatchStore([]K, []V)
