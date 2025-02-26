@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/xoctopus/x/misc/must"
 )
 
 // ParseStructTag parse struct tag to tag key/value map
@@ -47,7 +49,7 @@ func ParseStructTag(tag reflect.StructTag) map[string]string {
 		}
 		quoted := string(tag[:i+1])
 		value, err := strconv.Unquote(quoted)
-		mustBeTrue(err == nil, "invalid quoted value")
+		must.NoErrorWrap(err, "invalid quoted value")
 		flags[name] = value
 		tag = tag[i+1:]
 	}
