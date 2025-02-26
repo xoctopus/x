@@ -3,11 +3,11 @@ package must_test
 import (
 	"fmt"
 	"reflect"
+	"unsafe"
 
 	"github.com/pkg/errors"
 
 	"github.com/xoctopus/x/misc/must"
-	"github.com/xoctopus/x/ptrx"
 )
 
 func ReturnError() error {
@@ -117,53 +117,48 @@ func ExampleBeTrueWrap() {
 }
 
 func ExampleNotNilV() {
-	func() {
-		defer func() {
-			fmt.Println(recover())
-		}()
-		must.NotNilV((*int)(nil))
-	}()
+	rv := reflect.ValueOf(struct {
+		V0 any
+		V7 error
+		V8 reflect.Type
+		V1 chan error
+		V2 func()
+		V3 *int
+		V4 unsafe.Pointer
+		V5 []int
+		V6 map[string]int
+	}{})
+	for i := range rv.NumField() {
+		func(v any) {
+			defer func() {
+				if err := recover(); err != nil {
+					fmt.Println(err)
+				}
+			}()
+			must.NotNilV(v)
+		}(rv.Field(i).Interface())
+	}
+	fmt.Println(must.NotNilV(1))
+	fmt.Println(*must.NotNilV(new(int)))
 
-	func() {
-		defer func() {
-			fmt.Println(recover())
-		}()
-		must.NotNilV(any((*int)(nil)))
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
 	}()
-
-	func() {
-		defer func() {
-			fmt.Println(recover())
-		}()
-		fmt.Println(must.NotNilV(1))
-		fmt.Println(*must.NotNilV(ptrx.Ptr(1)))
-		must.NotNilV(reflect.TypeOf(nil))
-	}()
+	must.NotNilWrap((*int)(nil), "business message %v", 100)
 
 	// Output:
-	// must not nil: invalid value
-	// must not nil: invalid value
+	// must not nil, but got invalid value
+	// must not nil, but got invalid value
+	// must not nil, but got invalid value
+	// must not nil for type `chan error`
+	// must not nil for type `func()`
+	// must not nil for type `*int`
+	// must not nil for type `unsafe.Pointer`
+	// must not nil for type `[]int`
+	// must not nil for type `map[string]int`
 	// 1
-	// 1
-	// must not nil: invalid value
-}
-
-func ExampleNotNilWrap() {
-	func() {
-		defer func() {
-			fmt.Println(recover())
-		}()
-		must.NotNilWrap((*int)(nil), "invalid business data1")
-	}()
-
-	func() {
-		defer func() {
-			fmt.Println(recover())
-		}()
-		must.NotNilWrap(any((*int)(nil)), "invalid business data2")
-	}()
-
-	// Output:
-	// must not nil, but got invalid value invalid business data1
-	// must not nil, but got invalid value invalid business data2
+	// 0
+	// must not nil for type `*int` business message 100
 }

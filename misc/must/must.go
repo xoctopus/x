@@ -1,9 +1,9 @@
 package must
 
 import (
-	"github.com/pkg/errors"
+	"reflect"
 
-	"github.com/xoctopus/x/reflectx"
+	"github.com/pkg/errors"
 )
 
 func NoError(err error) {
@@ -45,16 +45,31 @@ func BeTrueV[V any](v V, ok bool) V {
 }
 
 func NotNilV[V any](v V) V {
-	rv := reflectx.Indirect(v)
-	if rv == reflectx.InvalidValue {
-		panic("must not nil: invalid value")
-	}
+	NotNilWrap(any(v), "")
 	return v
 }
 
 func NotNilWrap(v any, msg string, args ...any) {
-	rv := reflectx.Indirect(v)
-	if rv == reflectx.InvalidValue {
-		panic(errors.Errorf("must not nil, but got invalid value "+msg, args...))
+	format := ""
+	rv := reflect.ValueOf(v)
+	switch kind := rv.Kind(); kind {
+	default:
+		return
+	case reflect.Invalid:
+		format = "must not nil, but got invalid value"
+		goto Panic
+	case reflect.Chan, reflect.Func, reflect.Pointer, reflect.UnsafePointer,
+		reflect.Slice, reflect.Map:
+		if rv.IsNil() {
+			format = "must not nil for type `%s`"
+			args = append([]any{rv.Type()}, args...)
+			goto Panic
+		}
+		return
 	}
+Panic:
+	if msg != "" {
+		format = format + " " + msg
+	}
+	panic(errors.Errorf(format, args...))
 }
