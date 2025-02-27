@@ -3,8 +3,10 @@ package must_test
 import (
 	"fmt"
 	"reflect"
+	"testing"
 	"unsafe"
 
+	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 
 	"github.com/xoctopus/x/misc/must"
@@ -161,4 +163,8 @@ func ExampleNotNilV() {
 	// 1
 	// 0
 	// must not nil for type `*int` business message 100
+}
+
+func TestIdenticalTypes(t *testing.T) {
+	NewWithT(t).Expect(must.IdenticalTypes(1, 1)).To(BeTrue())
 }

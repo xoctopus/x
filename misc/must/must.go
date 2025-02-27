@@ -73,3 +73,15 @@ Panic:
 	}
 	panic(errors.Errorf(format, args...))
 }
+
+func IdenticalTypes(t1, t2 any) bool {
+	rt1, ok := t1.(reflect.Type)
+	if !ok {
+		rt1 = reflect.TypeOf(t1)
+	}
+	rt2, ok := t2.(reflect.Type)
+	if !ok {
+		rt2 = reflect.TypeOf(t2)
+	}
+	return rt1 == rt2
+}
