@@ -12,17 +12,20 @@ import (
 )
 
 type Struct struct {
-	cannotSet int
-	CanSet    int
-	Any       any
-	Any2      any
-	Ptr       *int
-	Map       map[string]int
-	Slice     []any
-	Array     [5]any
-	Ref       *Struct
-	Func      func()
-	Chan      chan int
+	cannotSet  int
+	CanSet     int
+	Any        any
+	Any2       any
+	Ptr        *int
+	Map        map[string]int
+	Slice      []any
+	Array      [5]any
+	Ref        *Struct
+	Func       func()
+	Chan       chan int
+	unexported struct {
+		str string
+	}
 }
 
 type String string
@@ -87,6 +90,11 @@ func TestDeepCopy(t *testing.T) {
 		v2 := reflect.ValueOf(&Struct{Any: struct{ a string }{a: "a"}}).Elem().FieldByName("Any")
 		DeepCopy(v1, v2)
 	})
+	t.Run("Hack", func(t *testing.T) {
+		v1 := &struct{ str string }{str: "Any"}
+		v2 := Clone(v1)
+		NewWithT(t).Expect(v1).To(Equal(v2))
+	})
 
 	src := []any{
 		1,
@@ -99,4 +107,52 @@ func TestDeepCopy(t *testing.T) {
 	// src = append(src, src)
 	dst := Clone(src)
 	NewWithT(t).Expect(reflect.DeepEqual(src, dst)).To(BeTrue())
+}
+
+func TestHackFieldByName(t *testing.T) {
+	v := &struct {
+		a string
+		b struct {
+			b0 string
+		}
+	}{"a", struct {
+		b0 string
+	}{"b0"}}
+
+	rv := HackFieldByName(v, "a")
+	NewWithT(t).Expect(v.a).To(Equal("a"))
+	rv.Set(reflect.ValueOf("abc"))
+	NewWithT(t).Expect(v.a).To(Equal("abc"))
+
+	rv = HackField(v, 0)
+	rv.Set(reflect.ValueOf("bbb"))
+	NewWithT(t).Expect(v.a).To(Equal("bbb"))
+
+	rv = HackFieldByName(reflect.ValueOf(v), "a")
+	rv.Set(reflect.ValueOf("aaa"))
+	NewWithT(t).Expect(v.a).To(Equal("aaa"))
+
+	rv = HackFieldByName(&v.b, "b0")
+	rv.Set(reflect.ValueOf("def"))
+	NewWithT(t).Expect(v.b.b0).To(Equal("def"))
+
+	t.Run("NotStructValue", func(t *testing.T) {
+		defer func() {
+			testx.AssertRecoverContains(t, recover(), "not a struct value")
+		}()
+		HackFieldByName(1, "any")
+	})
+
+	t.Run("FieldNotFound", func(t *testing.T) {
+		defer func() {
+			testx.AssertRecoverContains(t, recover(), "not found")
+		}()
+		HackFieldByName(v, "any")
+	})
+	t.Run("CannotAddr", func(t *testing.T) {
+		defer func() {
+			testx.AssertRecoverContains(t, recover(), "cannot addr")
+		}()
+		HackFieldByName(*v, "a")
+	})
 }

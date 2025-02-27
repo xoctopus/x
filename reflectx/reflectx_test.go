@@ -14,6 +14,8 @@ import (
 func TestIndirect(t *testing.T) {
 	v := &struct{ Any any }{Any: 100.1}
 
+	type IntPtr *int
+
 	cases := []*struct {
 		input  any
 		expect reflect.Value
@@ -23,6 +25,7 @@ func TestIndirect(t *testing.T) {
 		{(*int)(nil), InvalidValue},
 		{ptrx.Ptr(ptrx.Ptr(0.2)), reflect.ValueOf(0.2)},
 		{reflect.ValueOf(v).Elem().Field(0), reflect.ValueOf(100.1)},
+		{ptrx.Ptr(IntPtr(ptrx.Ptr(1))), reflect.ValueOf(IntPtr(ptrx.Ptr(1)))},
 	}
 
 	for _, c := range cases {

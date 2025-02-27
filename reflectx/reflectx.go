@@ -21,11 +21,8 @@ func Indirect(v any) reflect.Value {
 		return InvalidValue
 	}
 
-	if rv.Kind() == reflect.Pointer {
-		return Indirect(rv.Elem())
-	}
-
-	if rv.Kind() == reflect.Interface {
+	if (rv.Kind() == reflect.Interface || rv.Kind() == reflect.Pointer) &&
+		rv.Type().Name() == "" {
 		return Indirect(rv.Elem())
 	}
 
@@ -189,13 +186,4 @@ func typeof(v any) reflect.Type {
 func CanElem(k reflect.Kind) bool {
 	return k == reflect.Chan || k == reflect.Pointer || k == reflect.Map ||
 		k == reflect.Slice || k == reflect.Array
-}
-
-func Clone[T any](src T) (dst T) {
-	s := reflect.ValueOf(src)
-	d := reflect.New(s.Type()).Elem()
-
-	deepCopy(d, s, make(map[uintptr]reflect.Value))
-
-	return d.Interface().(T)
 }
