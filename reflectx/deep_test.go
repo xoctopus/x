@@ -82,18 +82,20 @@ func TestDeepCopy(t *testing.T) {
 		v2 := reflect.ValueOf(&Struct{Func: func() {}}).Elem().FieldByName("Func")
 		DeepCopy(v1, v2)
 	})
-	t.Run("StructContainsUnexportedField", func(t *testing.T) {
-		defer func() {
-			NewWithT(t).Expect(testx.Recover(recover())).To(ContainSubstring("cannot be copied"))
-		}()
-		v1 := reflect.ValueOf(&Struct{}).Elem().FieldByName("Any")
-		v2 := reflect.ValueOf(&Struct{Any: struct{ a string }{a: "a"}}).Elem().FieldByName("Any")
-		DeepCopy(v1, v2)
-	})
 	t.Run("Hack", func(t *testing.T) {
-		v1 := &struct{ str string }{str: "Any"}
-		v2 := Clone(v1)
-		NewWithT(t).Expect(v1).To(Equal(v2))
+		t.Run("Success", func(t *testing.T) {
+			v1 := &struct{ str string }{str: "Any"}
+			v2 := Clone(v1)
+			NewWithT(t).Expect(v1).To(Equal(v2))
+		})
+		t.Run("Failed", func(t *testing.T) {
+			defer func() {
+				NewWithT(t).Expect(testx.Recover(recover())).To(ContainSubstring("cannot be copied"))
+			}()
+			v1 := &Struct{Any: struct{ str string }{str: "Any"}}
+			v2 := Clone(v1)
+			NewWithT(t).Expect(reflect.DeepEqual(v1, v2))
+		})
 	})
 
 	src := []any{

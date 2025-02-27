@@ -4,8 +4,6 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/pkg/errors"
-
 	"github.com/xoctopus/x/misc/must"
 )
 
@@ -75,26 +73,17 @@ func deepCopy(dst, src reflect.Value, visited map[uintptr]reflect.Value) {
 	case reflect.Struct:
 		typ := src.Type()
 		for i := range src.NumField() {
-			// must.BeTrueWrap(
-			// 		typ.Field(i).IsExported(),
-			// 		"struct type `%s` field `%s` cannot be copied",
-			// 		typ.String(), typ.Field(i).Name,
-			// 	)
 			if !typ.Field(i).IsExported() {
-				if !dst.Field(i).CanAddr() || !src.Field(i).CanAddr() {
-					panic(errors.Errorf("cannot be copied, unexported field `%s` of `%s` cannot addr", typ.Field(i).Name, typ))
-				}
-				ft := dst.Field(i).Type()
-				dstv := reflect.NewAt(ft, unsafe.Pointer(dst.Field(i).UnsafeAddr())).Elem()
-				srcv := reflect.NewAt(ft, unsafe.Pointer(src.Field(i).UnsafeAddr())).Elem()
-				deepCopy(dstv, srcv, visited)
+				must.BeTrueWrap(
+					dst.Field(i).CanAddr() && src.Field(i).CanAddr(),
+					"struct `%s` unexported field `%s` cannot be copied",
+					typ.String(), typ.Field(i).Name,
+				)
+				deepCopy(HackField(dst, i), HackField(src, i), visited)
 				continue
 			}
 			deepCopy(dst.Field(i), src.Field(i), visited)
 		}
-		// for i := range src.NumField() {
-		// 	deepCopy(dst.Field(i), src.Field(i), visited)
-		// }
 	default: // basic kinds
 		dst.Set(src)
 	}
