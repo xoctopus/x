@@ -2,7 +2,6 @@ package mapx_test
 
 import (
 	"reflect"
-	"sync"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -15,72 +14,11 @@ func results(v ...any) []any {
 	return v
 }
 
-func TestXmap_Load(t *testing.T) {
+func TestMap(t *testing.T) {
 	k1 := ptrx.Ptr(1)
 	k2 := ptrx.Ptr(2)
 	k3 := ptrx.Ptr(3)
-
-	NewWithT(t).Expect(k1).To(Equal(ptrx.Ptr(1)))
-	NewWithT(t).Expect(k1).To(BeEquivalentTo(ptrx.Ptr(1)))   // called reflect.DeepEqual
-	NewWithT(t).Expect(k1).NotTo(BeIdenticalTo(ptrx.Ptr(1))) // simple v1 == v2
-
-	m1 := mapx.NewXmap(map[*int]int{}, true)
-	m2 := mapx.NewSmap(&sync.Map{})
-
-	NewWithT(t).Expect(m1.Exists(k1)).To(BeFalse())
-	NewWithT(t).Expect(m2.Exists(k1)).To(Equal(m1.Exists(k1)))
-
-	NewWithT(t).Expect(results(m1.Load(k1))).To(Equal([]any{0, false}))
-	NewWithT(t).Expect(results(m2.Load(k1))).To(Equal([]any{nil, false}))
-
-	m1.Store(k1, 100)
-	m2.Store(k1, 100)
-
-	NewWithT(t).Expect(m1.BatchLoad(k1, k2)).To(Equal([]mapx.Result[int]{{100, true}, {}}))
-	NewWithT(t).Expect(m2.BatchLoad(k1, k2)).To(Equal([]mapx.Result[any]{{100, true}, {}}))
-
-	m1.BatchStore([]*int{k1, k2}, []int{101, 102})
-	m2.BatchStore([]any{k1, k2}, []any{101, 102})
-
-	NewWithT(t).Expect(results(m1.LoadOrStore(k1, 100))).To(Equal([]any{101, true}))
-	NewWithT(t).Expect(results(m2.LoadOrStore(k1, 100))).To(Equal([]any{101, true}))
-
-	NewWithT(t).Expect(results(m1.LoadOrStore(k3, 103))).To(Equal([]any{103, false}))
-	NewWithT(t).Expect(results(m2.LoadOrStore(k3, 103))).To(Equal([]any{103, false}))
-
-	NewWithT(t).Expect(results(m1.LoadAndDelete(k3))).To(Equal([]any{103, true}))
-	NewWithT(t).Expect(results(m2.LoadAndDelete(k3))).To(Equal([]any{103, true}))
-
-	NewWithT(t).Expect(results(m1.LoadAndDelete(ptrx.Ptr(1)))).To(Equal([]any{0, false}))
-	NewWithT(t).Expect(results(m2.LoadAndDelete(ptrx.Ptr(1)))).To(Equal([]any{nil, false}))
-
-	m1.Delete(k2)
-	m2.Delete(k2)
-	m1.BatchDelete(ptrx.Ptr(1))
-	m2.BatchDelete(ptrx.Ptr(1))
-
-	NewWithT(t).Expect(results(m1.Swap(k1, 100))).To(Equal([]any{101, true}))
-	NewWithT(t).Expect(results(m2.Swap(k1, 100))).To(Equal([]any{101, true}))
-
-	NewWithT(t).Expect(results(m1.Swap(k1, 102))).To(Equal([]any{100, true}))
-	NewWithT(t).Expect(results(m2.Swap(k1, 102))).To(Equal([]any{100, true}))
-
-	NewWithT(t).Expect(m1.CompareAndSwap(k1, 101, 102)).To(BeFalse())
-	NewWithT(t).Expect(m2.CompareAndSwap(k1, 101, 102)).To(BeFalse())
-
-	NewWithT(t).Expect(m1.CompareAndSwap(k1, 102, 101)).To(BeTrue())
-	NewWithT(t).Expect(m2.CompareAndSwap(k1, 102, 101)).To(BeTrue())
-
-	NewWithT(t).Expect(m1.CompareAndDelete(k1, 100)).To(BeFalse())
-	NewWithT(t).Expect(m2.CompareAndDelete(k1, 100)).To(BeFalse())
-
-	NewWithT(t).Expect(m1.CompareAndDelete(k1, 101)).To(BeTrue())
-	NewWithT(t).Expect(m2.CompareAndDelete(k1, 101)).To(BeTrue())
-
-	m1.BatchStore([]*int{k1, k2}, []int{101, 102})
-	m2.BatchStore([]any{k1, k2}, []any{101, 102})
-
-	equal := func(x *int) func(k any) bool {
+	equal := func(x any) func(k any) bool {
 		return func(k any) bool {
 			if k == x {
 				return true
@@ -89,37 +27,117 @@ func TestXmap_Load(t *testing.T) {
 		}
 	}
 
-	k1_ := ptrx.Ptr(1)
+	NewWithT(t).Expect(k1).To(Equal(ptrx.Ptr(1)))
+	NewWithT(t).Expect(k1).To(BeEquivalentTo(ptrx.Ptr(1)))   // called reflect.DeepEqual
+	NewWithT(t).Expect(k1).NotTo(BeIdenticalTo(ptrx.Ptr(1))) // simple v1 == v2
 
-	NewWithT(t).Expect(results(m1.LoadEq(equal(k1)))).To(Equal([]any{101, true}))
-	NewWithT(t).Expect(results(m2.LoadEq(equal(k1)))).To(Equal([]any{101, true}))
-	NewWithT(t).Expect(results(m1.LoadEq(equal(k1_)))).To(Equal([]any{101, true}))
-	NewWithT(t).Expect(results(m2.LoadEq(equal(k1_)))).To(Equal([]any{101, true}))
-	NewWithT(t).Expect(results(m1.LoadEq(equal(ptrx.Ptr(5))))).To(Equal([]any{0, false}))
-	NewWithT(t).Expect(results(m2.LoadEq(equal(ptrx.Ptr(5))))).To(Equal([]any{nil, false}))
+	for _, m := range []mapx.Map[any, any]{
+		mapx.NewXmap[any, any](),
+		mapx.NewSafeXmap[any, any](),
+		mapx.Wrap(map[any]any{}),
+		mapx.SafeWrap(map[any]any{}),
+		mapx.NewSmap[any, any](),
+	} {
+		NewWithT(t).Expect(m.Exists(k1)).To(BeFalse())
+		NewWithT(t).Expect(results(m.Load(k1))).To(Equal([]any{nil, false}))
 
-	m1.Store(k1_, 105)
-	m2.Store(k1_, 105)
+		m.Store(k1, 100)
+		NewWithT(t).Expect(m.BatchLoad(k1, k2)).To(Equal([]mapx.Result[any]{{100, true}, {}}))
 
-	NewWithT(t).Expect(m1.LoadEqs(equal(k1))).To(ConsistOf(101, 105))
-	NewWithT(t).Expect(m2.LoadEqs(equal(k1))).To(ConsistOf(101, 105))
-	NewWithT(t).Expect(m1.LoadEqs(equal(k1_))).To(ConsistOf(101, 105))
-	NewWithT(t).Expect(m2.LoadEqs(equal(k1_))).To(ConsistOf(101, 105))
-	NewWithT(t).Expect(m1.LoadEqs(equal(ptrx.Ptr(5)))).To(HaveLen(0))
-	NewWithT(t).Expect(m2.LoadEqs(equal(ptrx.Ptr(5)))).To(HaveLen(0))
+		m.BatchStore([]any{k1, k2}, []any{101, 102})
+		NewWithT(t).Expect(results(m.LoadOrStore(k1, 100))).To(Equal([]any{101, true}))
+		NewWithT(t).Expect(results(m.LoadOrStore(k3, 103))).To(Equal([]any{103, false}))
 
-	keys1 := mapx.Keys(m1)
-	keys2 := mapx.Keys(m2)
-	NewWithT(t).Expect(keys1).To(ConsistOf(keys2...))
+		NewWithT(t).Expect(results(m.LoadAndDelete(k3))).To(Equal([]any{103, true}))
+		NewWithT(t).Expect(results(m.LoadAndDelete(ptrx.Ptr(1)))).To(Equal([]any{nil, false}))
 
-	values1 := mapx.Values(m1)
-	values2 := mapx.Values(m2)
-	NewWithT(t).Expect(values1).To(ConsistOf(values2...))
+		m.Delete(ptrx.Ptr(1))
+		m.BatchDelete(ptrx.Ptr(1), k2)
+		NewWithT(t).Expect(results(m.Swap(k1, 100))).To(Equal([]any{101, true}))
+		NewWithT(t).Expect(results(m.Swap(k1, 102))).To(Equal([]any{100, true}))
 
-	NewWithT(t).Expect(mapx.Len(m1)).To(Equal(mapx.Len(m2)))
+		NewWithT(t).Expect(m.CompareAndSwap(k1, 101, 102)).To(BeFalse())
+		NewWithT(t).Expect(m.CompareAndSwap(k1, 102, 101)).To(BeTrue())
+		NewWithT(t).Expect(m.CompareAndDelete(k1, 100)).To(BeFalse())
+		NewWithT(t).Expect(m.CompareAndDelete(k1, 101)).To(BeTrue())
 
-	m1.Clear()
-	m2.Clear()
-	NewWithT(t).Expect(mapx.Len(m1)).To(Equal(0))
-	NewWithT(t).Expect(mapx.Len(m1)).To(Equal(mapx.Len(m2)))
+		m.BatchStore([]any{k1, k2}, []any{101, 102})
+
+		NewWithT(t).Expect(results(m.LoadEq(equal(k1)))).To(Equal([]any{101, true}))
+		NewWithT(t).Expect(results(m.LoadEq(equal(ptrx.Ptr(1))))).To(Equal([]any{101, true}))
+		NewWithT(t).Expect(results(m.LoadEq(equal(ptrx.Ptr(5))))).To(Equal([]any{nil, false}))
+
+		k := ptrx.Ptr(1)
+		m.Store(k, 105)
+		NewWithT(t).Expect(m.LoadEqs(equal(k1))).To(ConsistOf(101, 105))
+		NewWithT(t).Expect(m.LoadEqs(equal(k))).To(ConsistOf(101, 105))
+		NewWithT(t).Expect(m.LoadEqs(equal(ptrx.Ptr(5)))).To(HaveLen(0))
+
+		NewWithT(t).Expect(mapx.Keys(m)).To(ConsistOf(k1, k2, k))
+		NewWithT(t).Expect(mapx.Values(m)).To(ConsistOf(101, 102, 105))
+
+		NewWithT(t).Expect(mapx.Len(m)).To(Equal(3))
+
+		mm := m.Clone()
+		NewWithT(t).Expect(mapx.Len(m)).To(Equal(mapx.Len(mm)))
+		NewWithT(t).Expect(mapx.Equal(m, mm)).To(BeTrue())
+
+		m.Clear()
+		NewWithT(t).Expect(mapx.Len(m)).To(Equal(0))
+	}
+
+	t.Run("Equal", func(t *testing.T) {
+		t.Run("Empty", func(t *testing.T) {
+			NewWithT(t).Expect(mapx.Equal[any, any](nil, nil)).To(BeTrue())
+		})
+
+		m1 := mapx.NewSafeXmap[int, int]()
+		m1.BatchStore([]int{1, 2, 3}, []int{1, 2, 3})
+		m2 := mapx.NewSmap[int, int]()
+		m2.BatchStore([]int{1, 2, 3, 4}, []int{1, 2, 3, 4})
+
+		NewWithT(t).Expect(mapx.Equal(m1, m2)).To(BeFalse())
+		NewWithT(t).Expect(mapx.Equal(m2, m1)).To(BeFalse())
+
+		m1.Store(4, 4)
+		NewWithT(t).Expect(mapx.Equal(m1, m2)).To(BeTrue())
+		NewWithT(t).Expect(mapx.Equal(m2, m1)).To(BeTrue())
+	})
+}
+
+func TestSet(t *testing.T) {
+	for _, set := range []mapx.Set[int]{mapx.NewSet[int](), mapx.NewSafeSet[int]()} {
+		set.Store(1, 2, 3)
+		NewWithT(t).Expect(set.Exists(1)).To(BeTrue())
+		set.Delete(1)
+		NewWithT(t).Expect(set.Exists(1)).To(BeFalse())
+		NewWithT(t).Expect(set.Keys()).To(ConsistOf(2, 3))
+		NewWithT(t).Expect(set.Len()).To(Equal(2))
+
+		f := func(expect int, has *bool) func(k int) bool {
+			return func(k int) bool {
+				if k == expect {
+					*has = true
+					return false
+				}
+				return true
+			}
+		}
+
+		has := false
+		expect := 2
+		set.Range(f(expect, &has))
+		NewWithT(t).Expect(has).To(BeTrue())
+
+		has = false
+		expect = 1
+		set.Range(f(expect, &has))
+		NewWithT(t).Expect(has).To(BeFalse())
+
+		set2 := set.Clone()
+		NewWithT(t).Expect(set.Equal(set2)).To(BeTrue())
+
+		set.Clear()
+		NewWithT(t).Expect(set.Len()).To(Equal(0))
+	}
 }
