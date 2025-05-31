@@ -10,6 +10,12 @@ var (
 	InvalidType  = reflect.TypeOf(nil)
 )
 
+type ZeroChecker interface {
+	IsZero() bool
+}
+
+var TypeZeroChecker = reflect.TypeFor[ZeroChecker]()
+
 // Indirect deref all level pointer references
 func Indirect(v any) reflect.Value {
 	rv, ok := v.(reflect.Value)
@@ -96,35 +102,46 @@ func NewElem(t reflect.Type) reflect.Value {
 	return rv.Elem()
 }
 
-// IsZero check if input v is zero
+// IsZero checks whether the given value is zero or its underlying value is zero
+//
+// If the value implements the ZeroChecker interface, IsZero will use its IsZero
+// method to determine zero-ness. Special handling is provided for slices, maps,
+// strings, and channels, which are considered zero if their length is zero.
 func IsZero(v any) bool {
 	rv, ok := v.(reflect.Value)
 	if !ok {
 		rv = reflect.ValueOf(v)
 	}
-	kind := rv.Kind()
+
 	if !rv.IsValid() {
 		return true
 	}
-	if kind == reflect.Pointer || kind == reflect.Interface {
-		if rv.IsNil() {
+
+	for kind := rv.Kind(); kind == reflect.Pointer || kind == reflect.Interface; {
+		if !rv.IsValid() || rv.IsNil() {
 			return true
 		}
-		return IsZero(rv.Elem())
+		rv = rv.Elem()
+		kind = rv.Kind()
 	}
 
-	if rv.CanInterface() {
-		if checker, ok := rv.Interface().(interface{ IsZero() bool }); ok {
-			return checker.IsZero()
-		}
+	if rv.Type().Implements(TypeZeroChecker) {
+		return rv.Interface().(ZeroChecker).IsZero()
 	}
 
-	// check if a CanLen value's length is 0(not include Array type)
-	switch kind {
+	if rv.CanAddr() && reflect.PointerTo(rv.Type()).Implements(TypeZeroChecker) {
+		return rv.Addr().Interface().(ZeroChecker).IsZero()
+	}
+
+	if !rv.IsValid() || rv.IsZero() {
+		return true
+	}
+
+	switch rv.Kind() {
 	case reflect.Slice, reflect.Map, reflect.String, reflect.Chan:
 		return rv.Len() == 0
 	default:
-		return rv.IsZero()
+		return false
 	}
 }
 

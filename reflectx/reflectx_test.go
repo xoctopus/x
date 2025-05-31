@@ -119,18 +119,36 @@ func TestNew(t *testing.T) {
 	}
 }
 
-type Int int
+type Endpoint struct {
+	Host string
+	Port int16
+}
 
-func (v Int) IsZero() bool { return v == 0 }
+func (v Endpoint) IsZero() bool {
+	return v.Host == ""
+}
 
-type Float float64
+type Address struct {
+	Path string
+}
 
-func (v Float) IsZero() bool { return v == 0 }
+func (v *Address) IsZero() bool {
+	return v.Path == ""
+}
+
+type AlwaysZero struct{ V int }
+
+func (AlwaysZero) IsZero() bool { return true }
+
+type (
+	Int   int
+	Float float32
+)
 
 func TestIsZero(t *testing.T) {
 	cases := []*struct {
 		value any
-		empty bool
+		zero  bool
 	}{
 		{reflect.ValueOf(1), false},
 		{InvalidValue, true},
@@ -138,6 +156,7 @@ func TestIsZero(t *testing.T) {
 		{(*int)(nil), true},
 		{ptrx.Ptr(1), false},
 		{any(nil), true},
+		{new(any), true},
 		{[3]int{}, true},
 		{[3]int{1}, false},
 		{[0]int{}, true},
@@ -151,17 +170,18 @@ func TestIsZero(t *testing.T) {
 		{false, true},
 		{1, false},
 		{0, true},
-		{uint64(1), false},
-		{uint64(0), true},
-		{1.1, false},
-		{0.0, true},
-		{Int(1), false},
-		{Int(0), true},
-		{Float(0), true},
+		{Endpoint{Port: 80}, true},
+		{Endpoint{Host: "example.com"}, false},
+		{Address{}, true},
+		{&Address{Path: "/path/to/file"}, false},
+		{AlwaysZero{}, true},
+		{AlwaysZero{1}, true},
+		{struct{}{}, true},
+		{struct{ A int }{}, true},
 	}
 
 	for _, c := range cases {
-		NewWithT(t).Expect(IsZero(c.value)).To(Equal(c.empty))
+		NewWithT(t).Expect(IsZero(c.value)).To(Equal(c.zero))
 	}
 }
 
