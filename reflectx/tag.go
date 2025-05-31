@@ -1,18 +1,24 @@
 package reflectx
 
 import (
+	"fmt"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/xoctopus/x/misc/must"
 )
 
-// ParseStructTag parse struct tag to tag key/value map
-// eg: `tagKey:"tagName,tagFlag1,tagFlag2=v"` will parsed to
-// map[string]string{"cmd": "tagName,tagFlag1,tagFlag2=v"}
-func ParseStructTag(tag reflect.StructTag) map[string]string {
-	flags := map[string]string{}
+// ParseFlags parses struct tag annotations into a structured Flags map.
+// It supports tag formats like: `key:"value,opt1,opt2=v2"`.
+// Each key-value pair in the tag is processed into a Flag with Value and Options.
+// Conflicting tags (i.e., duplicate keys) will be detected and removed.
+// The function also handles quoted values and options with or without values.
+func ParseFlags(tag reflect.StructTag) Flags {
+	var (
+		full      = tag
+		flags     = map[string]string{}
+		conflicts = map[string]struct{}{}
+	)
 
 	for i := 0; tag != ""; {
 		// skip spaces
@@ -48,22 +54,115 @@ func ParseStructTag(tag reflect.StructTag) map[string]string {
 			break // not a quoted string
 		}
 		quoted := string(tag[:i+1])
-		value, err := strconv.Unquote(quoted)
-		must.NoErrorWrap(err, "invalid quoted value")
+		value, _ := strconv.Unquote(quoted)
+		if _, ok := flags[name]; ok {
+			fmt.Printf("[WARN] tag `%s` conflict in [ %s ]\n", name, full)
+			conflicts[name] = struct{}{}
+			continue
+		}
 		flags[name] = value
 		tag = tag[i+1:]
 	}
-	return flags
+
+	for name := range conflicts {
+		delete(flags, name)
+	}
+
+	results := Flags{}
+
+	for key, value := range flags {
+		f := Flag{Tag: key}
+		runes := []rune(value)
+		stage := 0
+		option := [2]string{}
+		quoted := false
+		prev := 0
+		for curr := 0; curr < len(runes); curr++ {
+			switch runes[curr] {
+			case ',':
+				if quoted {
+					continue
+				}
+				goto FinishStage
+			case '\\':
+				curr++
+				continue
+			case '\'':
+				quoted = !quoted
+				if quoted {
+					continue
+				}
+				curr++
+				goto FinishStage
+			case '=':
+				if quoted {
+					continue
+				}
+				goto FinishStage
+			}
+
+			if curr == len(runes)-1 {
+				curr++
+				goto FinishStage
+			}
+			continue
+
+		FinishStage:
+			{
+				switch stage {
+				case 0: // finish Flag.Value
+					f.Value = strings.TrimSpace(string(runes[prev:curr]))
+					stage = 1
+				case 1: // finish option[0]
+					option[0] = strings.TrimSpace(string(runes[prev:curr]))
+					if runes[curr] == '=' && curr != len(runes)-1 {
+						stage = 2
+					} else {
+						if option[0] != "" {
+							option[0] = strings.TrimSpace(string(runes[prev:curr]))
+							option[0] = strings.TrimPrefix(option[0], "'")
+							option[0] = strings.TrimSuffix(option[0], "'")
+							f.Options = append(f.Options, option)
+							option = [2]string{}
+							stage = 1
+						}
+					}
+				default: // finish option[1]
+					if option[0] != "" {
+						option[1] = strings.TrimSpace(string(runes[prev:curr]))
+						option[1] = strings.TrimPrefix(option[1], "'")
+						option[1] = strings.TrimSuffix(option[1], "'")
+						f.Options = append(f.Options, option)
+						option = [2]string{}
+						stage = 1
+					}
+				}
+				prev = curr + 1
+			}
+		}
+		results[f.Tag] = &f
+	}
+
+	for name := range results {
+		sort.Slice(results[name].Options, func(i, j int) bool {
+			return results[name].Options[i][0] < results[name].Options[j][0]
+		})
+	}
+
+	return results
 }
 
-// ParseTagValue parse tag value to name and flags
-// eg: "tagName,tagFlag1,tagFlag2=v" will be parsed to
-// name: tagName, flags: map[string]{"tagFlag1", "tagFlag2=v"}
-func ParseTagValue(tagValue string) (string, map[string]struct{}) {
-	values := strings.Split(tagValue, ",")
-	flags := make(map[string]struct{})
-	for _, flag := range values[1:] {
-		flags[flag] = struct{}{}
+type Flag struct {
+	Tag     string
+	Value   string
+	Options [][2]string
+}
+
+type Flags map[string]*Flag
+
+func (fs Flags) Get(key string) *Flag {
+	if f, ok := fs[key]; ok {
+		return f
 	}
-	return values[0], flags
+	return nil
 }
