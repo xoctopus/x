@@ -42,13 +42,14 @@ func MarshalURL(v any) (url.Values, error) {
 		if !ast.IsExported(sf.Name) {
 			continue
 		}
-		if tag, ok := sf.Tag.Lookup("name"); ok {
-			key, _ := reflectx.ParseTagValue(tag)
-			if key == "-" {
+
+		flags := reflectx.ParseFlags(sf.Tag)
+		if tag := flags.Get("name"); tag != nil {
+			if tag.Name == "-" {
 				continue
 			}
-			if key != "" {
-				name = key
+			if tag.Name != "" {
+				name = tag.Name
 			}
 		}
 
@@ -110,13 +111,14 @@ func UnmarshalURL(u url.Values, v any) error {
 		if !ast.IsExported(sf.Name) {
 			continue
 		}
-		if tag, ok := sf.Tag.Lookup("name"); ok {
-			key, _ := reflectx.ParseTagValue(tag)
-			if key == "-" {
+
+		flags := reflectx.ParseFlags(sf.Tag)
+		if tag := flags.Get("name"); tag != nil {
+			if tag.Name == "-" {
 				continue
 			}
-			if key != "" {
-				name = key
+			if tag.Name != "" {
+				name = tag.Name
 			}
 		}
 

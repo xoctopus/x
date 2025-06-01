@@ -70,8 +70,8 @@ func ParseFlags(tag reflect.StructTag) Flags {
 
 	results := Flags{}
 
-	for key, value := range flags {
-		f := Flag{Tag: key}
+	for name, value := range flags {
+		f := Flag{}
 		runes := []rune(value)
 		stage := 0
 		option := [2]string{}
@@ -111,7 +111,7 @@ func ParseFlags(tag reflect.StructTag) Flags {
 			{
 				switch stage {
 				case 0: // finish Flag.Value
-					f.Value = strings.TrimSpace(string(runes[prev:curr]))
+					f.Name = strings.TrimSpace(string(runes[prev:curr]))
 					stage = 1
 				case 1: // finish option[0]
 					option[0] = strings.TrimSpace(string(runes[prev:curr]))
@@ -140,7 +140,7 @@ func ParseFlags(tag reflect.StructTag) Flags {
 				prev = curr + 1
 			}
 		}
-		results[f.Tag] = &f
+		results[name] = &f
 	}
 
 	for name := range results {
@@ -152,10 +152,27 @@ func ParseFlags(tag reflect.StructTag) Flags {
 	return results
 }
 
+// Flag represents a single tag value with optional key-value options.
+// For example, the tag `name:"field,opt1,opt2=v2"` will be parsed into:
+// {Name: "field", Options: [][2]string{{"opt1": ""}, {"opt2": "v2"}}}
 type Flag struct {
-	Tag     string
-	Value   string
+	Name    string
 	Options [][2]string
+}
+
+func (f Flag) TagValue() string {
+	if len(f.Options) == 0 {
+		return f.Name
+	}
+	options := make([]string, len(f.Options))
+	for i, opt := range f.Options {
+		if opt[1] == "" {
+			options[i] = opt[0]
+		} else {
+			options[i] = opt[0] + "='" + opt[1] + "'"
+		}
+	}
+	return f.Name + "," + strings.Join(options, ",")
 }
 
 type Flags map[string]*Flag

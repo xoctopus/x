@@ -50,7 +50,7 @@ func TestMarshalURL(t *testing.T) {
 		NewWithT(t).Expect(err).To(BeNil())
 		NewWithT(t).Expect(u).To(Equal(url.Values{}))
 
-		u, err = MarshalURL(1)
+		_, err = MarshalURL(1)
 		NewWithT(t).Expect(errors.As(err, &AsErrMarshalURLInvalidInput)).To(BeTrue())
 	})
 
@@ -88,11 +88,11 @@ func TestUnmarshalURL(t *testing.T) {
 		NewWithT(t).Expect(*v1).To(Equal(DefaultValue))
 
 		v2 := (*Value)(nil)
-		err = UnmarshalURL(url.Values{}, &v2)
+		_ = UnmarshalURL(url.Values{}, &v2)
 		NewWithT(t).Expect(*v2).To(Equal(DefaultValue))
 
 		v3 := (**Value)(nil)
-		err = UnmarshalURL(url.Values{}, &v3)
+		_ = UnmarshalURL(url.Values{}, &v3)
 		NewWithT(t).Expect(**v3).To(Equal(DefaultValue))
 	})
 

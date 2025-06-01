@@ -11,63 +11,50 @@ import (
 
 func TestParseFlags(t *testing.T) {
 	for name, c := range map[string]struct {
-		tag   reflect.StructTag
-		flags Flags
+		tag          reflect.StructTag
+		flags        Flags
+		nameTagValue string
 	}{
-		"InvalidTag/Empty":     {`   `, Flags{}},
-		"InvalidTag/NoTagName": {` : `, Flags{}},
-		"InvalidTag/Unquoted":  {`tag:"key`, Flags{}},
-		"InvalidTag/Conflict":  {`tag:"1" tag:"2"`, Flags{}},
+		"InvalidTag/Empty":     {`   `, Flags{}, ""},
+		"InvalidTag/NoTagName": {` : `, Flags{}, ""},
+		"InvalidTag/Unquoted":  {`tag:"key`, Flags{}, ""},
+		"InvalidTag/Conflict":  {`tag:"1" tag:"2"`, Flags{}, ""},
 		"ContainsEscapesInOption": {
 			`name:"b ,             default='\"\\?#=%,;{}[]\" ' "`,
-			Flags{
-				"name": {
-					Tag:     "name",
-					Value:   "b",
-					Options: [][2]string{{"default", `"\?#=%,;{}[]" `}},
-				},
-			},
+			Flags{"name": {Name: "b", Options: [][2]string{{"default", `"\?#=%,;{}[]" `}}}},
+			`b,default='"\?#=%,;{}[]" '`,
 		},
 		"MultiOptions": {
 			`name:"c , omitempty , default='15.0,10.0'"`,
-			Flags{
-				"name": {
-					Tag:   "name",
-					Value: "c",
-					Options: [][2]string{
-						{"default", "15.0,10.0"},
-						{"omitempty", ""},
-					},
-				},
-			},
+			Flags{"name": {Name: "c", Options: [][2]string{{"default", "15.0,10.0"}, {"omitempty", ""}}}},
+			`c,default='15.0,10.0',omitempty`,
 		},
 		"EmptyOptions": {
 			`name:"  ,, default='abc'"`,
-			Flags{
-				"name": {
-					Tag:   "name",
-					Value: "",
-					Options: [][2]string{
-						{"default", "abc"},
-					},
-				},
-			},
+			Flags{"name": {Name: "", Options: [][2]string{{"default", "abc"}}}},
+			`,default='abc'`,
 		},
 		"NoOptions": {
 			`name:"e"`,
-			Flags{"name": {Tag: "name", Value: "e"}},
+			Flags{"name": {Name: "e"}},
+			`e`,
 		},
 		"NoOptionKey": {
 			`name:"f , = no_name_skipped_option"`,
-			Flags{"name": {Tag: "name", Value: "f"}},
+			Flags{"name": {Name: "f"}},
+			`f`,
 		},
 		"NoOptionValue": {
-			`name:" g , option_key="`,
-			Flags{"name": {Tag: "name", Value: "g", Options: [][2]string{{"option_key", ""}}}},
+			`name:" g , default="`,
+			Flags{"name": {Name: "g", Options: [][2]string{{"default", ""}}}},
+			`g,default`,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			NewWithT(t).Expect(ParseFlags(c.tag)).To(Equal(c.flags))
+			if flag := c.flags.Get("name"); flag != nil {
+				NewWithT(t).Expect(flag.TagValue()).To(Equal(c.nameTagValue))
+			}
 		})
 	}
 
