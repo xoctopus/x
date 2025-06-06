@@ -1,6 +1,6 @@
 module github.com/xoctopus/x
 
-go 1.23.0
+go 1.24
 
 require (
 	github.com/onsi/gomega v1.37.0
