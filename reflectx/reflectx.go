@@ -16,7 +16,19 @@ type ZeroChecker interface {
 
 var TypeZeroChecker = reflect.TypeFor[ZeroChecker]()
 
-// Indirect deref all level pointer references
+// Indirect recursively dereferences a value until it reaches a concrete value
+// that is either not a pointer or interface, or is a named type.
+//
+// It accepts either a `reflect.Value` or any Go value. If the input is invalid
+// (e.g., nil), it returns reflectx.InvalidValue.
+//
+// This function differs from reflect.Indirect in that it recursively dereferences
+// anonymous (unnamed) pointer and interface types until a named type or base
+// value is encountered. This is useful when working with nested values such as
+// interface{} holding a pointer to a pointer, etc.
+//
+// It safely handles nil pointers and interfaces by returning InvalidValue
+// instead of panicking.
 func Indirect(v any) reflect.Value {
 	rv, ok := v.(reflect.Value)
 	if !ok {
@@ -27,8 +39,7 @@ func Indirect(v any) reflect.Value {
 		return InvalidValue
 	}
 
-	if (rv.Kind() == reflect.Interface || rv.Kind() == reflect.Pointer) &&
-		rv.Type().Name() == "" {
+	if (rv.Kind() == reflect.Interface || rv.Kind() == reflect.Pointer) && rv.Type().Name() == "" && !rv.IsNil() {
 		return Indirect(rv.Elem())
 	}
 
@@ -184,6 +195,8 @@ func IsFloat(v any) bool {
 	return k == reflect.Float64 || k == reflect.Float32
 }
 
+// IsNumeric reports whether the value v is of a numeric type.
+// This includes all integer, unsigned integer, float, and complex number types.
 func IsNumeric(v any) bool {
 	k := typeof(v).Kind()
 	return k >= reflect.Int && k <= reflect.Complex128
@@ -200,7 +213,50 @@ func typeof(v any) reflect.Type {
 	}
 }
 
-func CanElem(k reflect.Kind) bool {
-	return k == reflect.Chan || k == reflect.Pointer || k == reflect.Map ||
-		k == reflect.Slice || k == reflect.Array
+// KindOf returns the kind of the given value.
+//
+// It accepts inputs of type reflect.Value, reflect.Type, or any Go value,
+// and returns the underlying kind accordingly.
+func KindOf(v any) reflect.Kind {
+	switch x := v.(type) {
+	case reflect.Value:
+		return x.Kind()
+	case reflect.Type:
+		return x.Kind()
+	default:
+		return reflect.ValueOf(v).Kind()
+	}
+}
+
+// CanElemType reports whether the given value's kind supports calling .Elem().
+//
+// It accepts a value of any type, including `reflect.Kind`, `reflect.Type`,
+// reflect.Value, or other Go values.
+// It returns true if the underlying kind is one of: Array, Chan, Interface, Map,
+// Pointer, or Slice. Otherwise, it returns false.
+// Check if v CanElemType before use reflect.Type.Elem() is recommended to avoid
+// panic
+func CanElemType(v any) bool {
+	switch kind := KindOf(v); kind {
+	case reflect.Array, reflect.Chan, reflect.Interface, reflect.Map,
+		reflect.Pointer, reflect.Slice:
+		return true
+	default:
+		return false
+	}
+}
+
+// CanNilValue reports whether the given value can be nil.
+//
+// It returns true for kinds that can have nil values, such as channels, functions,
+// interfaces, maps, pointers, slices, and unsafe pointers. Otherwise, it returns
+// false. If the input has no valid type information, it returns false.
+func CanNilValue(v any) bool {
+	switch kind := KindOf(v); kind {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map,
+		reflect.Pointer, reflect.Slice, reflect.UnsafePointer:
+		return true
+	default:
+		return false
+	}
 }

@@ -1,4 +1,4 @@
-package reflectx_test
+package exp_test
 
 import (
 	"reflect"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/xoctopus/x/ptrx"
-	. "github.com/xoctopus/x/reflectx"
+	. "github.com/xoctopus/x/reflectx/exp"
 	"github.com/xoctopus/x/testx"
 )
 
@@ -27,8 +27,6 @@ type Struct struct {
 		str string
 	}
 }
-
-type String string
 
 func TestDeepCopy(t *testing.T) {
 	t.Run("InvalidDstValue", func(t *testing.T) {
@@ -112,7 +110,6 @@ func TestDeepCopy(t *testing.T) {
 		nil,
 		map[int]int{1: 1},
 	}
-	// src = append(src, src)
 	dst := Clone(src)
 	NewWithT(t).Expect(reflect.DeepEqual(src, dst)).To(BeTrue())
 }
