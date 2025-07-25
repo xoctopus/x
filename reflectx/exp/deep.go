@@ -1,6 +1,7 @@
-package reflectx
+package exp
 
 import (
+	"github.com/xoctopus/x/reflectx"
 	"reflect"
 	"unsafe"
 
@@ -16,8 +17,14 @@ func Clone[T any](src T) (dst T) {
 	return d.Interface().(T)
 }
 
-func DeepCopy(v, x reflect.Value) {
-	deepCopy(v, x, make(map[uintptr]reflect.Value))
+// DeepCopy performs a deep copy from the source reflect.Value `src` to the
+// destination reflect.Value `dst`.
+//
+// It recursively copies all fields, including unexported ones, and supports
+// structs, slices, maps, pointers, arrays, and interfaces. It does not support
+// functions or channels.
+func DeepCopy(dst, src reflect.Value) {
+	deepCopy(dst, src, make(map[uintptr]reflect.Value))
 }
 
 func deepCopy(dst, src reflect.Value, visited map[uintptr]reflect.Value) {
@@ -25,7 +32,14 @@ func deepCopy(dst, src reflect.Value, visited map[uintptr]reflect.Value) {
 	must.BeTrueWrap(src.IsValid(), "invalid src value")
 	must.BeTrueWrap(src.CanInterface(), "invalid src cannot read value")
 
+	// same value
 	if dst.CanAddr() && src.CanAddr() && dst.Addr() == src.Addr() {
+		return
+	}
+
+	// nil value
+	if reflectx.CanNilValue(src) && src.IsNil() {
+		dst.Set(reflect.Zero(src.Type()))
 		return
 	}
 
@@ -36,6 +50,13 @@ func deepCopy(dst, src reflect.Value, visited map[uintptr]reflect.Value) {
 		dst.Set(reflect.Zero(src.Type()))
 		return
 	}
+
+	ptr := src.UnsafeAddr()
+	if val, ok := visited[ptr]; ok {
+		dst.Set(val)
+		return
+	}
+	visited[ptr] = dst
 
 	// reflect.DeepEqual does not compare Chan type, and if Func type is not nil
 	// it returns false anyway
@@ -71,13 +92,12 @@ func deepCopy(dst, src reflect.Value, visited map[uintptr]reflect.Value) {
 			dst.Index(i).Set(val)
 		}
 	case reflect.Struct:
-		typ := src.Type()
 		for i := range src.NumField() {
-			if !typ.Field(i).IsExported() {
+			if !tsrc.Field(i).IsExported() {
 				must.BeTrueWrap(
 					dst.Field(i).CanAddr() && src.Field(i).CanAddr(),
 					"struct `%s` unexported field `%s` cannot be copied",
-					typ.String(), typ.Field(i).Name,
+					tsrc.String(), tsrc.Field(i).Name,
 				)
 				deepCopy(HackField(dst, i), HackField(src, i), visited)
 				continue
@@ -89,13 +109,27 @@ func deepCopy(dst, src reflect.Value, visited map[uintptr]reflect.Value) {
 	}
 }
 
+// HackFieldByName returns an addressable `reflect.Value` for the specified field
+// name of a struct, even if the field is unexported (private).
+//
+// This function uses unsafe.Pointer to bypass Go's visibility restrictions,
+// allowing direct access to unexported struct fields. It should be used with
+// caution, as it breaks encapsulation and may not be compatible with future
+// versions of Go.
+//
+// Example:
+//
+//	type Foo struct { bar int }
+//	f := Foo{bar: 42}
+//	v := HackFieldByName(f, "bar")
+//	v.SetInt(100)  // Successfully modifies the unexported field
 func HackFieldByName(v any, name string) reflect.Value {
 	rv, ok := v.(reflect.Value)
 	if !ok {
 		rv = reflect.ValueOf(v)
 	}
 
-	rv = Indirect(rv)
+	rv = reflectx.Indirect(rv)
 	must.BeTrueWrap(rv.Kind() == reflect.Struct, "not a struct value")
 
 	rv = rv.FieldByName(name)
@@ -105,13 +139,19 @@ func HackFieldByName(v any, name string) reflect.Value {
 	return reflect.NewAt(rv.Type(), unsafe.Pointer(rv.UnsafeAddr())).Elem()
 }
 
+// HackField returns an addressable reflect.Value for the struct field at the
+// given index, even if the field is unexported (private).
+//
+// Like HackFieldByName, this function uses unsafe.Pointer to bypass Go's
+// visibility restrictions. It should be used with caution, as it breaks
+// encapsulation and may be incompatible with future Go versions.
 func HackField(v any, i int) reflect.Value {
 	rv, ok := v.(reflect.Value)
 	if !ok {
 		rv = reflect.ValueOf(v)
 	}
 
-	rv = Indirect(rv)
+	rv = reflectx.Indirect(rv)
 	must.BeTrueWrap(rv.Kind() == reflect.Struct, "not a struct value")
 
 	rv = rv.Field(i)

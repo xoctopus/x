@@ -1,4 +1,4 @@
-package reflectx_test
+package exp_test
 
 import (
 	"reflect"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/xoctopus/x/ptrx"
-	. "github.com/xoctopus/x/reflectx"
+	. "github.com/xoctopus/x/reflectx/exp"
 	"github.com/xoctopus/x/testx"
 )
 

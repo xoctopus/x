@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"reflect"
 	"testing"
+	"unsafe"
 
 	. "github.com/onsi/gomega"
 
@@ -280,15 +281,53 @@ func TestIsNumeric(t *testing.T) {
 	}
 }
 
-func TestCanElem(t *testing.T) {
-	for _, v := range []any{
-		make(chan int),
-		[3]string{},
-		[]int{},
-		map[string]int{},
-		new(int),
-	} {
-		kind := reflect.TypeOf(v).Kind()
-		NewWithT(t).Expect(CanElem(kind)).To(BeTrue())
+func TestCanElemType(t *testing.T) {
+	cases := []struct {
+		value  any
+		expect bool
+	}{
+		{reflect.TypeOf([]int{}), true},
+		{reflect.TypeOf(map[string]int{}), true},
+		{reflect.TypeOf(1), false},
+		{reflect.TypeOf(new(int)), true},
+		{reflect.TypeOf(make(chan int)), true},
+		{reflect.ValueOf([]int{}), true},
+		{reflect.ValueOf(1), false},
+		{reflect.Slice, true},
+		{reflect.Int, false},
+		{[]int{}, true},
+		{100, false},
 	}
+
+	for _, c := range cases {
+		NewWithT(t).Expect(CanElemType(c.value)).To(Equal(c.expect))
+	}
+}
+
+func TestCanNilValue(t *testing.T) {
+	cases := []struct {
+		value  any
+		expect bool
+	}{
+		{nil, false},
+		{reflect.TypeOf(nil), false},
+		{reflect.Value{}, false},
+		{make(chan int), true},
+		{(func())(nil), true},
+		{interface{}(nil), false}, // type nil trap
+		{map[string]int{}, true},
+		{[]int{}, true},
+		{new(int), true},
+		{unsafe.Pointer(nil), true},
+		{100, false},
+		{struct{}{}, false},
+	}
+
+	for _, c := range cases {
+		NewWithT(t).Expect(CanNilValue(c.value)).To(Equal(c.expect))
+	}
+
+	// type nil trap
+	var v interface{} = []int(nil)
+	NewWithT(t).Expect(CanNilValue(v)).To(Equal(true))
 }

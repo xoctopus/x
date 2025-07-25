@@ -146,6 +146,7 @@ func IsZero(v any) bool {
 }
 
 // Typename returns the full type name of rt
+// TODO consider generic type?
 func Typename(rt reflect.Type) string {
 	buf := bytes.NewBuffer(nil)
 	for rt.Kind() == reflect.Ptr {
@@ -184,6 +185,8 @@ func IsFloat(v any) bool {
 	return k == reflect.Float64 || k == reflect.Float32
 }
 
+// IsNumeric reports whether the value v is of a numeric type.
+// This includes all integer, unsigned integer, float, and complex number types.
 func IsNumeric(v any) bool {
 	k := typeof(v).Kind()
 	return k >= reflect.Int && k <= reflect.Complex128
@@ -200,7 +203,50 @@ func typeof(v any) reflect.Type {
 	}
 }
 
-func CanElem(k reflect.Kind) bool {
-	return k == reflect.Chan || k == reflect.Pointer || k == reflect.Map ||
-		k == reflect.Slice || k == reflect.Array
+// KindOf returns the kind of the given value.
+//
+// It accepts inputs of type reflect.Value, reflect.Type, or any Go value,
+// and returns the underlying kind accordingly.
+func KindOf(v any) reflect.Kind {
+	switch x := v.(type) {
+	case reflect.Value:
+		return x.Kind()
+	case reflect.Type:
+		return x.Kind()
+	default:
+		return reflect.ValueOf(v).Kind()
+	}
+}
+
+// CanElemType reports whether the given value's kind supports calling .Elem().
+//
+// It accepts a value of any type, including `reflect.Kind`, `reflect.Type`,
+// reflect.Value, or other Go values.
+// It returns true if the underlying kind is one of: Array, Chan, Interface, Map,
+// Pointer, or Slice. Otherwise, it returns false.
+// Check if v CanElemType before use reflect.Type.Elem() is recommended to avoid
+// panic
+func CanElemType(v any) bool {
+	switch kind := KindOf(v); kind {
+	case reflect.Array, reflect.Chan, reflect.Interface, reflect.Map,
+		reflect.Pointer, reflect.Slice:
+		return true
+	default:
+		return false
+	}
+}
+
+// CanNilValue reports whether the given value can be nil.
+//
+// It returns true for kinds that can have nil values, such as channels, functions,
+// interfaces, maps, pointers, slices, and unsafe pointers. Otherwise, it returns
+// false. If the input has no valid type information, it returns false.
+func CanNilValue(v any) bool {
+	switch kind := KindOf(v); kind {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map,
+		reflect.Pointer, reflect.Slice, reflect.UnsafePointer:
+		return true
+	default:
+		return false
+	}
 }
