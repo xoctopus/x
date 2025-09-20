@@ -16,7 +16,19 @@ type ZeroChecker interface {
 
 var TypeZeroChecker = reflect.TypeFor[ZeroChecker]()
 
-// Indirect deref all level pointer references
+// Indirect recursively dereferences a value until it reaches a concrete value
+// that is either not a pointer or interface, or is a named type.
+//
+// It accepts either a `reflect.Value` or any Go value. If the input is invalid
+// (e.g., nil), it returns reflectx.InvalidValue.
+//
+// This function differs from reflect.Indirect in that it recursively dereferences
+// anonymous (unnamed) pointer and interface types until a named type or base
+// value is encountered. This is useful when working with nested values such as
+// interface{} holding a pointer to a pointer, etc.
+//
+// It safely handles nil pointers and interfaces by returning InvalidValue
+// instead of panicking.
 func Indirect(v any) reflect.Value {
 	rv, ok := v.(reflect.Value)
 	if !ok {
@@ -27,8 +39,7 @@ func Indirect(v any) reflect.Value {
 		return InvalidValue
 	}
 
-	if (rv.Kind() == reflect.Interface || rv.Kind() == reflect.Pointer) &&
-		rv.Type().Name() == "" {
+	if (rv.Kind() == reflect.Interface || rv.Kind() == reflect.Pointer) && rv.Type().Name() == "" && !rv.IsNil() {
 		return Indirect(rv.Elem())
 	}
 
@@ -146,7 +157,6 @@ func IsZero(v any) bool {
 }
 
 // Typename returns the full type name of rt
-// TODO consider generic type?
 func Typename(rt reflect.Type) string {
 	buf := bytes.NewBuffer(nil)
 	for rt.Kind() == reflect.Ptr {

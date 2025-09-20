@@ -1,25 +1,20 @@
 package reflectx
 
 import (
-	"fmt"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	"golang.org/x/exp/maps"
 )
 
-// ParseFlags parses struct tag annotations into a structured Flags map.
-// It supports tag formats like: `key:"value,opt1,opt2=v2"`.
-// Each key-value pair in the tag is processed into a Flag with Value and Options.
-// Conflicting tags (i.e., duplicate keys) will be detected and removed.
-// The function also handles quoted values and options with or without values.
-func ParseFlags(tag reflect.StructTag) Flags {
-	var (
-		_tag   = tag
-		_flags = map[string]string{}
-	)
+// ParseTag parses a struct tag into a map of flag keys and values.
+// It scans the tag string for key-value pairs in the format `key:"value"`
+// and parse the value to flag name and options
+func ParseTag(tag reflect.StructTag) Tag {
+	flags := make(Tag)
 
 	for i := 0; tag != ""; {
 		// skip spaces
@@ -40,7 +35,11 @@ func ParseFlags(tag reflect.StructTag) Flags {
 		if i == 0 || i+1 >= len(tag) || tag[i] != ':' || tag[i+1] != '"' {
 			break
 		}
-		name := string(tag[:i])
+		key := string(tag[:i])
+		if !validate(key) {
+			panic(ErrInvalidFlagKey)
+		}
+
 		tag = tag[i+1:]
 
 		// meet flag value and unquote it
@@ -52,199 +51,247 @@ func ParseFlags(tag reflect.StructTag) Flags {
 			i++
 		}
 		if i >= len(tag) {
-			break // not a quoted string
+			panic(ErrInvalidFlagRaw)
 		}
 		quoted := string(tag[:i+1])
-		value, _ := strconv.Unquote(quoted)
-		if _, ok := _flags[name]; ok {
-			fmt.Printf("[WARN] tag `%s` conflict in [ %s ]\n", name, _tag)
-			return nil
+		raw, _ := strconv.Unquote(quoted)
+		if _, ok := flags[key]; !ok {
+			flags[key] = &Flag{key: key, raw: raw}
+			tag = tag[i+1:]
 		}
-		_flags[name] = value
-		tag = tag[i+1:]
 	}
 
-	flags := Flags{}
-
-	for name, value := range _flags {
-		f := (*Flag)(nil)
-		runes := []rune(value)
-		stage := 0
-		option := [2]string{}
-		quoted := false
-		prev := 0
-		for curr := 0; curr < len(runes); curr++ {
-			switch runes[curr] {
-			case ',':
-				if quoted {
-					continue
-				}
-				goto FinishStage
-			case '\\':
-				curr++
-				continue
-			case '\'':
-				quoted = !quoted
-				if quoted {
-					continue
-				}
-				curr++
-				goto FinishStage
-			case '=':
-				if quoted {
-					continue
-				}
-				goto FinishStage
-			}
-
-			if curr == len(runes)-1 {
-				curr++
-				goto FinishStage
-			}
-			continue
-
-		FinishStage:
-			{
-				switch stage {
-				case 0: // finish Flag.Value
-					f = NewFlag(strings.TrimSpace(string(runes[prev:curr])))
-					stage = 1
-				case 1: // finish option[0](option name)
-					option[0] = strings.TrimSpace(string(runes[prev:curr]))
-					if len(option[0]) > 0 && option[0][0] == '\'' {
-						if option[0][len(option[0])-1] != '\'' {
-							fmt.Printf("[WARN] option key %s unquoted\n", option[0])
-							return Flags{}
-						}
-						option[0] = option[0][1 : len(option[0])-1]
-					}
-					if curr < len(runes) {
-						if runes[curr] == '=' {
-							stage = 2
-						} else {
-							stage = 1
-						}
-					}
-					if curr == len(runes)-1 || runes[curr] == ',' {
-						f.AddOption(option[0], option[1])
-						option = [2]string{}
-					}
-				default: // finish option[1] (option value)
-					option[1] = strings.TrimSpace(string(runes[prev:curr]))
-					if option[1][0] == '\'' {
-						if option[1][len(option[1])-1] != '\'' {
-							fmt.Printf("[WARN] option value %s unquoted\n", option[0])
-							return Flags{}
-						}
-						option[1] = option[1][1 : len(option[1])-1]
-					}
-					f.AddOption(option[0], option[1])
-					option = [2]string{}
-					stage = 1
-				}
-				prev = curr + 1
-			}
-		}
-		flags.Add(name, f)
+	for k := range flags {
+		flags[k].parse()
 	}
 
 	return flags
 }
 
-func NewFlag(name string) *Flag {
-	return &Flag{
-		name:      name,
-		options:   make(map[string]string),
-		conflicts: make(map[string]struct{}),
-	}
-}
+type Tag map[string]*Flag
 
-// Flag represents a single tag value with optional key-value options.
-// For example, the tag `name:"field,opt1,opt2=v2"` will be parsed into:
-// {name: "field", options: [][2]string{{"opt1": ""}, {"opt2": "v2"}}}
-type Flag struct {
-	name      string
-	options   map[string]string
-	conflicts map[string]struct{}
-}
-
-func (f *Flag) Name() string { return f.name }
-
-func (f *Flag) Option(key string) string { return f.options[key] }
-
-func (f *Flag) AddOption(k, v string) {
-	if k == "" {
-		return
-	}
-	if _, ok := f.conflicts[k]; ok {
-		goto RemoveConflict
-	}
-	if _, ok := f.options[k]; ok {
-		goto RemoveConflict
-	}
-	f.options[k] = v
-	return
-RemoveConflict:
-	fmt.Printf("[WARN] option `%s` conflicts", k)
-	f.conflicts[k] = struct{}{}
-	delete(f.options, k)
-	return
-}
-
-func (f *Flag) String() string {
-	if len(f.options) == 0 {
-		return f.name
-	}
-
-	keys := maps.Keys(f.options)
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i] < keys[j]
-	})
-	options := make([]string, len(keys))
-	for i, key := range keys {
-		val := f.options[key]
-		if val == "" {
-			options[i] = key
-		} else {
-			options[i] = key + "='" + strings.Trim(strconv.Quote(val), "\"") + "'"
-		}
-	}
-	return f.name + "," + strings.Join(options, ",")
-}
-
-type Flags map[string]*Flag
-
-func (fs Flags) Get(key string) *Flag {
-	if f, ok := fs[key]; ok {
+func (t Tag) Get(key string) *Flag {
+	if f, ok := t[key]; ok {
 		return f
 	}
 	return nil
 }
 
-func (fs Flags) Add(name string, f *Flag) (conflicted bool) {
-	_, conflicted = fs[name]
-	fs[name] = f
-	return conflicted
+// Flag parsed tag element
+// eg: `db:"f_column,default='0',width=10,precision=4,primary"`
+// the result is
+//
+//	{
+//	  key:     "db",
+//	  value:   "f_column,default='0',width=12,precision=4,primary",
+//	  name:    "f_column"
+//	  options: {
+//	    "default":   '0',
+//	    "width":     12,
+//	    "precision": 4,
+//	    "primary":   nil,
+//	  }
+//	}
+type Flag struct {
+	key     string
+	name    string
+	options map[string]*Option
+	raw     string
+	pretty  string
 }
 
-func (fs Flags) Delete(name string) {
-	delete(fs, name)
+func (f *Flag) parse() {
+	val := strings.TrimSpace(f.raw)
+
+	// scan value to parted by ','
+	quoted := false
+	parted := make([]string, 0)
+	idx := 0
+	for i, c := range []rune(val) {
+		switch c {
+		case '\'':
+			quoted = !quoted
+		case '\\':
+			if quoted {
+				i++
+				continue
+			}
+		case ',':
+			if !quoted {
+				goto FinishPart
+			}
+		}
+		if i == len(val)-1 {
+			if quoted {
+				panic(ErrInvalidOptionUnquoted)
+			}
+			i++
+			goto FinishPart
+		}
+		continue
+	FinishPart:
+		parted = append(parted, string([]rune(val)[idx:i]))
+		idx = i + 1
+	}
+
+	if len(parted) == 0 {
+		f.raw = ""
+		f.name = ""
+		f.options = make(map[string]*Option)
+		return
+	}
+
+	f.name = strings.TrimSpace(parted[0])
+	if !validate(f.name) {
+		panic(ErrInvalidFlagName)
+	}
+
+	// parse option part to Option
+	quoted = false
+	for index, part := range parted[1:] {
+		part = strings.TrimSpace(part)
+		eq := false
+		for i, c := range []rune(part) {
+			switch c {
+			case '\'':
+				quoted = !quoted
+			case '\\':
+				if quoted {
+					i++
+					continue
+				}
+			case '=':
+				if !quoted {
+					eq = true
+					goto FinishOption
+				}
+			}
+			if i == len(part)-1 {
+				goto FinishOption
+			}
+			continue
+		FinishOption:
+			opt := &Option{index: index}
+			if eq {
+				opt.key = strings.TrimSpace(string([]rune(part)[:i]))
+				opt.val = strings.TrimSpace(string([]rune(part)[i+1:]))
+			} else {
+				opt.key = part
+			}
+			if !validate(opt.key) {
+				panic(ErrInvalidOptionKey)
+			}
+
+			opt.key = unquote(opt.key)
+			opt.val = quote(opt.val)
+
+			if !opt.IsZero() {
+				if _, exists := f.options[opt.key]; !exists {
+					f.options[opt.key] = opt
+				}
+			}
+		}
+	}
 }
 
-func (fs Flags) String() string {
-	names := maps.Keys(fs)
-	sort.Slice(names, func(i, j int) bool {
-		return names[i] < names[j]
+func (f *Flag) Key() string { return f.key }
+
+func (f *Flag) Name() string { return f.name }
+
+func (f *Flag) WithRaw(raw string) *Flag {
+	f2 := &Flag{
+		key:     f.key,
+		raw:     raw,
+		options: make(map[string]*Option),
+	}
+	f2.parse()
+	return f2
+}
+
+func (f *Flag) Option(key string) *Option {
+	return f.options[key]
+}
+
+func (f *Flag) OptionLen() int { return len(f.options) }
+
+func (f *Flag) Raw() string { return f.raw }
+
+func (f *Flag) Value() string {
+	if f.pretty != "" {
+		return f.pretty
+	}
+
+	options := maps.Values(f.options)
+	sort.Slice(options, func(i, j int) bool {
+		return options[i].index < options[j].index
 	})
 
-	s := ""
-	for i, name := range names {
-		s += name + `:"`
-		s += fs[name].String()
-		s += `"`
-		if i != len(names)-1 {
-			s += " "
-		}
+	parts := []string{f.name}
+	for _, opt := range options {
+		parts = append(parts, opt.String())
+	}
+
+	f.pretty = strings.Join(parts, ",")
+	return f.pretty
+}
+
+func (f *Flag) String() string {
+	return f.key + ":" + strconv.Quote(f.Value())
+}
+
+func NewOption(key string, val string, offset int) *Option {
+	return &Option{key: key, val: val, index: offset}
+}
+
+type Option struct {
+	key   string
+	val   string
+	index int
+}
+
+func (o *Option) IsZero() bool { return o.key == "" }
+
+func (o *Option) String() string {
+	if o.IsZero() {
+		return ""
+	}
+	return o.key + "='" + o.val + "'"
+}
+
+func (o *Option) Key() string { return o.key }
+
+func (o *Option) Value() string { return o.val }
+
+func unquote(s string) string {
+	if len(s) > 2 && s[0] == '\'' && s[len(s)-1] == '\'' {
+		return s[1 : len(s)-1]
 	}
 	return s
 }
+
+func quote(s string) string {
+	if len(s) > 2 && s[0] != '\'' && s[len(s)-1] != '\'' {
+		return `'` + s + `'`
+	}
+	return s
+}
+
+func validate(key string) bool {
+	for _, c := range key {
+		if !(c >= 'a' && c < 'z' ||
+			c > 'A' && c < 'Z' ||
+			c > '0' && c < '9' ||
+			c == '_') {
+			return false
+		}
+	}
+	return true
+}
+
+var (
+	ErrInvalidFlagRaw        = errors.New("")
+	ErrInvalidFlagKey        = errors.New("")
+	ErrInvalidFlagName       = errors.New("")
+	ErrInvalidOptionKey      = errors.New("")
+	ErrInvalidOptionUnquoted = errors.New("")
+)

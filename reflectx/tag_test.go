@@ -2,113 +2,149 @@ package reflectx_test
 
 import (
 	"reflect"
+	"strconv"
+	"strings"
 	"testing"
 
 	. "github.com/onsi/gomega"
+
 	. "github.com/xoctopus/x/reflectx"
 )
 
 func TestParseFlags(t *testing.T) {
 	t.Run("InvalidTag", func(t *testing.T) {
-		for name, tag := range map[string]reflect.StructTag{
-			"Empty":               `   `,
-			"NoTagName":           ` : `,
-			"Unquoted":            `tag:"key`,
-			"Conflict":            `tag:"1" tag:"2"`,
-			"OptionKeyUnquoted":   `tag:",'a=b"`,
-			"OptionValueUnquoted": `tag:",a='b"`,
-		} {
-			t.Run(name, func(t *testing.T) {
-				NewWithT(t).Expect(len(ParseFlags(tag))).To(Equal(0))
+		v := reflect.TypeOf(struct {
+			EmptyTag          any `   `
+			NoFlagKey         any `:`
+			UnquotedFlagValue any `unquoted:"key`
+			EscapeFlagKey     any `escape_js\non:""`
+		}{})
+
+		for i := range v.NumField() {
+			f := v.Field(i)
+			t.Run(f.Name, func(t *testing.T) {
+				if strings.HasPrefix(string(f.Tag), "unquoted") {
+					defer func() {
+						e := recover()
+						NewWithT(t).Expect(e).To(Equal(ErrInvalidFlagRaw))
+					}()
+				}
+				if strings.HasPrefix(string(f.Tag), "escape") {
+					defer func() {
+						e := recover()
+						NewWithT(t).Expect(e).To(Equal(ErrInvalidFlagKey))
+					}()
+				}
+				tag := ParseTag(f.Tag)
+				NewWithT(t).Expect(tag).To(HaveLen(0))
+			})
+		}
+	})
+	t.Run("FlagDuplicated", func(t *testing.T) {
+		tag := ParseTag(`json:"conflict" json:"ignored"`)
+		NewWithT(t).Expect(tag).To(HaveLen(1))
+		NewWithT(t).Expect(tag.Get("json").Value()).To(Equal("conflict"))
+	})
+
+	t.Run("InvalidOption", func(t *testing.T) {
+		v := reflect.TypeOf(struct {
+			UnquotedOption   any `unquoted:",a='b"`
+			InvalidOptionKey any `invalid:"key,'x\n\r'='any'"`
+		}{})
+		for i := range v.NumField() {
+			f := v.Field(i)
+			t.Run(f.Name, func(t *testing.T) {
+				if strings.HasPrefix(string(f.Tag), "unquoted") {
+					defer func() {
+						e := recover()
+						NewWithT(t).Expect(e).To(Equal(ErrInvalidOptionUnquoted))
+					}()
+				}
+				if strings.HasPrefix(string(f.Tag), "invalid") {
+					defer func() {
+						e := recover()
+						NewWithT(t).Expect(e).To(Equal(ErrInvalidOptionKey))
+					}()
+				}
+				NewWithT(t).Expect(ParseTag(f.Tag)).To(HaveLen(0))
 			})
 		}
 	})
 
-	build := func(name, value string, options ...[2]string) Flags {
-		fs := make(Flags)
-		f := NewFlag(value)
-		for _, opt := range options {
-			f.AddOption(opt[0], opt[1])
+	t.Run("Success", func(t *testing.T) {
+		cases := []struct {
+			tag     string
+			name    string
+			options map[string]*Option
+			pretty  string
+		}{
+			{
+				tag:    `tag:" a, x = '\"\\?#=%,;{}[] ' "`,
+				pretty: `tag:"a,x='\"\\?#=%,;{}[] '"`,
+				name:   "a",
+				options: map[string]*Option{
+					"x": NewOption("x", `'\"\\?#=%,;{}[] '`, 0),
+				},
+			},
+			{
+				tag:    `tag:"b , x , y = '15.0,10.0' "`,
+				pretty: `tag:"b,x,y='15.0,10.0'"`,
+				name:   "b",
+				options: map[string]*Option{
+					"y": NewOption("y", `'15.0,10.0'`, 0),
+				},
+			},
+			{
+				tag:    `tag:" c , "`,
+				pretty: `tag:"c"`,
+				name:   "c",
+			},
+			{
+				tag:    `tag:"d"`,
+				pretty: `tag:"d"`,
+				name:   "d",
+			},
+			{
+				tag:    `tag:", , y = 'abc' x = 1.1 "`,
+				pretty: `tag:",y='abc',x='1.1'"`,
+				options: map[string]*Option{
+					"y": NewOption("y", `'abc'`, 0),
+					"x": NewOption("x", `'1.1'`, 1),
+				},
+			},
+			{
+				tag:    `tag:", 'xyz' = 'abc'"`,
+				pretty: `tag:""`,
+			},
+			{
+				tag:    `tag:", = "`,
+				pretty: `tag:""`,
+			},
+			{
+				tag:    `tag:", y ='', , x"`,
+				pretty: `tag:",y='',x"`,
+				options: map[string]*Option{
+					"x": NewOption("x", ``, 1),
+					"y": NewOption("y", `''`, 0),
+				},
+			},
 		}
-		fs.Add(name, f)
-		return fs
-	}
 
-	for name, c := range map[string]struct {
-		tag   reflect.StructTag
-		flags Flags
-		str   string
-	}{
-		"ContainsEscape": {
-			tag:   `name:" b , default = '\"\\?#=%,;{}[] ' "`,
-			flags: build("name", "b", [2]string{"default", `"\?#=%,;{}[] `}),
-			str:   `name:"b,default='\"\\?#=%,;{}[] '"`,
-		},
-		"ContainsMultiFlags": {
-			tag:   `name:" c , omitempty, default = '15.0,10.0' "`,
-			flags: build("name", "c", [2]string{"default", "15.0,10.0"}, [2]string{"omitempty"}),
-			str:   `name:"c,default='15.0,10.0',omitempty"`,
-		},
-		"NoFlagName": {
-			tag:   `name:"  ,  , default='abc'"`,
-			flags: build("name", "", [2]string{"default", "abc"}),
-			str:   `name:",default='abc'"`,
-		},
-		"NoOptions": {
-			tag:   `name:" x ,"`,
-			flags: build("name", "x"),
-			str:   `name:"x"`,
-		},
-		"NoOptionKey": {
-			tag:   `name:", = 'abc'"`,
-			flags: build("name", "", [2]string{"", "abc"}),
-			str:   `name:""`,
-		},
-		"NoOptionValue": {
-			tag:   `name:",default="`,
-			flags: build("name", "", [2]string{"default"}),
-			str:   `name:",default"`,
-		},
-	} {
-		t.Run(name, func(t *testing.T) {
-			flags := ParseFlags(c.tag)
-			NewWithT(t).Expect(flags).To(Equal(c.flags))
-			NewWithT(t).Expect(flags.String()).To(Equal(c.str))
-		})
-	}
+		for _, c := range cases {
+			flag := ParseTag(reflect.StructTag(c.tag)).Get("tag")
 
-	// 	// "EmptyOptions": {
-	// 	// 	`name:"  ,, default='abc'"`,
-	// 	// 	Flags{"name": {Name: "", Options: [][2]string{{"default", "abc"}}}},
-	// 	// 	`,default='abc'`,
-	// 	// },
-	// 	// "NoOptions": {
-	// 	// 	`name:"e"`,
-	// 	// 	Flags{"name": {Name: "e"}},
-	// 	// 	`e`,
-	// 	// },
-	// 	// "NoOptionKey": {
-	// 	// 	`name:"f , = no_name_skipped_option"`,
-	// 	// 	Flags{"name": {Name: "f"}},
-	// 	// 	`f`,
-	// 	// },
-	// 	// "NoOptionValue": {
-	// 	// 	`name:" g , default="`,
-	// 	// 	Flags{"name": {Name: "g", Options: [][2]string{{"default", ""}}}},
-	// 	// 	`g,default`,
-	// 	// },
-	// 	// "NoNameHasOption": {
-	// 	// 	`name:",required"`,
-	// 	// 	Flags{"name": {Name: "", Options: [][2]string{{"required", ""}}}},
-	// 	// 	`,required`,
-	// 	// },
-	// } {
-	// 	t.Run(name, func(t *testing.T) {
-	// 		NewWithT(t).Expect(ParseFlags(c.tag)).To(Equal(c.flags))
-	// 		if flag := c.flags.Get("name"); flag != nil {
-	// 			NewWithT(t).Expect(flag.TagValue()).To(Equal(c.nameTagValue))
-	// 		}
-	// 	})
-	// }
-
+			NewWithT(t).Expect(flag.Key()).To(Equal("tag"))
+			NewWithT(t).Expect(flag.Name()).To(Equal(c.name))
+			NewWithT(t).Expect(flag.OptionLen()).To(Equal(len(c.options)))
+			for k, v := range c.options {
+				o := flag.Option(k)
+				NewWithT(t).Expect(o.Value()).To(Equal(v))
+			}
+			raw, _ := strconv.Unquote(strings.TrimPrefix(c.tag, "tag:"))
+			NewWithT(t).Expect(flag.Raw()).To(Equal(raw))
+			pretty := strings.TrimPrefix(c.pretty, "tag:")
+			NewWithT(t).Expect(flag.Value()).To(Equal(pretty))
+			NewWithT(t).Expect(flag.String()).To(Equal(c.pretty))
+		}
+	})
 }

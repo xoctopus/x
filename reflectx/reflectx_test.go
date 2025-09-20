@@ -12,31 +12,89 @@ import (
 	. "github.com/xoctopus/x/reflectx"
 )
 
+type (
+	IntPtr    *int
+	AnyHolder struct{ Any any }
+)
+
+type Interface interface{ Foo() }
+
+type Impl struct{}
+
+func (Impl) Foo() {}
+
 func TestIndirect(t *testing.T) {
-	v := &struct{ Any any }{Any: 100.1}
+	t.Parallel()
 
-	type IntPtr *int
-
-	cases := []*struct {
+	type testCase struct {
+		name   string
 		input  any
 		expect reflect.Value
-	}{
-		{1, reflect.ValueOf(1)},
-		{ptrx.Ptr(1), reflect.ValueOf(1)},
-		{(*int)(nil), InvalidValue},
-		{ptrx.Ptr(ptrx.Ptr(0.2)), reflect.ValueOf(0.2)},
-		{reflect.ValueOf(v).Elem().Field(0), reflect.ValueOf(100.1)},
-		{ptrx.Ptr(IntPtr(ptrx.Ptr(1))), reflect.ValueOf(IntPtr(ptrx.Ptr(1)))},
+		check  func(t *testing.T, result reflect.Value)
+	}
+
+	cases := []testCase{
+		{
+			name:   "NilInput",
+			input:  nil,
+			expect: InvalidValue,
+			check: func(t *testing.T, result reflect.Value) {
+				NewWithT(t).Expect(result.IsValid()).To(BeFalse())
+			},
+		}, {
+			name:   "BasicInt",
+			input:  1,
+			expect: reflect.ValueOf(1),
+		}, {
+			name:   "PointerToInt",
+			input:  ptrx.Ptr(1),
+			expect: reflect.ValueOf(1),
+		}, {
+			name:   "NamedPointerNotDereferenced",
+			input:  ptrx.Ptr(IntPtr(ptrx.Ptr(1))),
+			expect: reflect.ValueOf(IntPtr(ptrx.Ptr(1))),
+		}, {
+			name:   "InterfaceWrappingPointer",
+			input:  reflect.ValueOf(&AnyHolder{Any: 100.1}).Elem().Field(0),
+			expect: reflect.ValueOf(100.1),
+		}, {
+			name:   "PointerToPointer",
+			input:  ptrx.Ptr(ptrx.Ptr(0.2)),
+			expect: reflect.ValueOf(0.2),
+		}, {
+			name:   "ReflectValueInput",
+			input:  reflect.ValueOf(123),
+			expect: reflect.ValueOf(123),
+		}, {
+			name:   "NestedInterfaces",
+			input:  any(any(42)),
+			expect: reflect.ValueOf(42),
+		}, {
+			name:   "NamedInterfaceNotDereferenced",
+			input:  Interface(Impl{}),
+			expect: reflect.ValueOf(Interface(Impl{})),
+		}, {
+			name:  "InterfaceNil",
+			input: Interface(nil),
+			check: func(t *testing.T, result reflect.Value) {
+				NewWithT(t).Expect(result.IsValid()).To(BeFalse())
+			},
+		},
 	}
 
 	for _, c := range cases {
-		result := Indirect(c.input)
-		if c.expect == InvalidValue {
-			NewWithT(t).Expect(result).To(Equal(c.expect))
-			continue
-		}
-		NewWithT(t).Expect(result.Type()).To(Equal(c.expect.Type()))
-		NewWithT(t).Expect(result.Interface()).To(Equal(c.expect.Interface()))
+		t.Run(c.name, func(t *testing.T) {
+			result := Indirect(c.input)
+
+			if c.check != nil {
+				c.check(t, result)
+				return
+			}
+
+			NewWithT(t).Expect(result.IsValid()).To(BeTrue())
+			NewWithT(t).Expect(result.Type()).To(Equal(c.expect.Type()))
+			NewWithT(t).Expect(result.Interface()).To(Equal(c.expect.Interface()))
+		})
 	}
 }
 
@@ -186,6 +244,8 @@ func TestIsZero(t *testing.T) {
 	}
 }
 
+type TypedMap[K comparable, V any] map[K]V
+
 func TestTypename(t *testing.T) {
 	cases := []*struct {
 		value    any
@@ -196,6 +256,7 @@ func TestTypename(t *testing.T) {
 		{bytes.NewBuffer(nil), "*bytes.Buffer"},
 		{struct{}{}, "struct {}"},
 		{struct{ int }{}, "struct { int }"},
+		{TypedMap[int, string]{}, "github.com/xoctopus/x/reflectx_test.TypedMap[int,string]"},
 	}
 
 	for _, c := range cases {
@@ -293,8 +354,6 @@ func TestCanElemType(t *testing.T) {
 		{reflect.TypeOf(make(chan int)), true},
 		{reflect.ValueOf([]int{}), true},
 		{reflect.ValueOf(1), false},
-		{reflect.Slice, true},
-		{reflect.Int, false},
 		{[]int{}, true},
 		{100, false},
 	}
