@@ -20,12 +20,12 @@ var (
 )
 
 type Value struct {
-	Active     int               `name:"activeTasks" default:"5"`
-	IdleTasks  int               `                   default:"3"`
-	DB         string            `                   default:"10"`
-	Timeout    testdata.Duration `                   default:"100"`
-	Ignored    any               `name:"-"           default:"100"`
-	NoTag      float32           `                   default:"1.1"`
+	Active     int               `url:"activeTasks,default=5"`
+	IdleTasks  int               `url:",default=3"`
+	DB         string            `url:",default=10"`
+	Timeout    testdata.Duration `url:",default=100"`
+	Ignored    any               `url:"-,default=100"`
+	NoTag      float32           `url:",default='1.1'"`
 	Codes      []string
 	unexported any
 }
@@ -136,10 +136,10 @@ func TestUnmarshalURL(t *testing.T) {
 
 func ExampleMarshalURL() {
 	u, err := MarshalURL(struct {
-		Name    string `name:"id"`
+		Name    string `url:"id"`
 		Age     int
 		Gender  int8
-		Country string `name:"country" default:"cn"`
+		Country string `url:"country,default='cn'"`
 		Codes   []string
 	}{
 		Name:  "Alex",

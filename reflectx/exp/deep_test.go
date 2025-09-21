@@ -28,8 +28,6 @@ type Struct struct {
 	}
 }
 
-type String string
-
 func TestDeepCopy(t *testing.T) {
 	t.Run("InvalidDstValue", func(t *testing.T) {
 		defer func() {
@@ -112,7 +110,6 @@ func TestDeepCopy(t *testing.T) {
 		nil,
 		map[int]int{1: 1},
 	}
-	// src = append(src, src)
 	dst := Clone(src)
 	NewWithT(t).Expect(reflect.DeepEqual(src, dst)).To(BeTrue())
 }

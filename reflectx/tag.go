@@ -8,11 +8,15 @@ import (
 
 	"github.com/pkg/errors"
 	"golang.org/x/exp/maps"
+
+	"github.com/xoctopus/x/misc/must"
 )
 
 // ParseTag parses a struct tag into a map of flag keys and values.
-// It scans the tag string for key-value pairs in the format `key:"value"`
-// and parse the value to flag name and options
+// Each value is further parsed into a flag name and its options.
+// Control characters are allowed only in option values.
+// Flag keys, flag names, and option names may contain only letters, digits, and underscores.
+// Other characters in option values must be wrapped in single quotes.
 func ParseTag(tag reflect.StructTag) Tag {
 	flags := make(Tag)
 
@@ -27,7 +31,7 @@ func ParseTag(tag reflect.StructTag) Tag {
 			break
 		}
 
-		// meet flag name
+		// meet flag key
 		i = 0
 		for i < len(tag) && tag[i] > ' ' && tag[i] != ':' && tag[i] != '"' && tag[i] != 0x7f {
 			i++
@@ -42,7 +46,7 @@ func ParseTag(tag reflect.StructTag) Tag {
 
 		tag = tag[i+1:]
 
-		// meet flag value and unquote it
+		// meet flag value
 		i = 1
 		for i < len(tag) && tag[i] != '"' {
 			if tag[i] == '\\' {
@@ -51,12 +55,16 @@ func ParseTag(tag reflect.StructTag) Tag {
 			i++
 		}
 		if i >= len(tag) {
-			panic(ErrInvalidFlagRaw)
+			panic(ErrInvalidFlagValue)
 		}
 		quoted := string(tag[:i+1])
-		raw, _ := strconv.Unquote(quoted)
 		if _, ok := flags[key]; !ok {
-			flags[key] = &Flag{key: key, raw: raw}
+			flags[key] = &Flag{
+				key:      key,
+				quoted:   quoted,
+				unquoted: must.NoErrorV(strconv.Unquote(quoted)),
+				options:  make(map[string]*Option),
+			}
 			tag = tag[i+1:]
 		}
 	}
@@ -93,29 +101,27 @@ func (t Tag) Get(key string) *Flag {
 //	  }
 //	}
 type Flag struct {
-	key     string
-	name    string
-	options map[string]*Option
-	raw     string
-	pretty  string
+	key      string
+	name     string
+	options  map[string]*Option
+	quoted   string
+	unquoted string
+	value    string
+	prettied string
 }
 
 func (f *Flag) parse() {
-	val := strings.TrimSpace(f.raw)
+	val := strings.TrimSpace(f.unquoted)
 
 	// scan value to parted by ','
 	quoted := false
 	parted := make([]string, 0)
 	idx := 0
 	for i, c := range []rune(val) {
+		_ = val[i : i+1]
 		switch c {
 		case '\'':
 			quoted = !quoted
-		case '\\':
-			if quoted {
-				i++
-				continue
-			}
 		case ',':
 			if !quoted {
 				goto FinishPart
@@ -130,36 +136,31 @@ func (f *Flag) parse() {
 		}
 		continue
 	FinishPart:
-		parted = append(parted, string([]rune(val)[idx:i]))
+		part := strings.TrimSpace(string([]rune(val)[idx:i]))
+		parted = append(parted, part)
 		idx = i + 1
-	}
-
-	if len(parted) == 0 {
-		f.raw = ""
-		f.name = ""
-		f.options = make(map[string]*Option)
-		return
-	}
-
-	f.name = strings.TrimSpace(parted[0])
-	if !validate(f.name) {
-		panic(ErrInvalidFlagName)
 	}
 
 	// parse option part to Option
 	quoted = false
-	for index, part := range parted[1:] {
+	for index, part := range parted {
 		part = strings.TrimSpace(part)
+		if index == 0 {
+			f.name = part
+			if !validate(f.name) {
+				panic(ErrInvalidFlagName)
+			}
+			continue
+		}
+		if part == "" {
+			continue
+		}
 		eq := false
 		for i, c := range []rune(part) {
+			_ = part[i : i+1]
 			switch c {
 			case '\'':
 				quoted = !quoted
-			case '\\':
-				if quoted {
-					i++
-					continue
-				}
 			case '=':
 				if !quoted {
 					eq = true
@@ -167,6 +168,7 @@ func (f *Flag) parse() {
 				}
 			}
 			if i == len(part)-1 {
+				i++
 				goto FinishOption
 			}
 			continue
@@ -178,47 +180,53 @@ func (f *Flag) parse() {
 			} else {
 				opt.key = part
 			}
+			opt.key = unquote(opt.key)
 			if !validate(opt.key) {
 				panic(ErrInvalidOptionKey)
 			}
-
-			opt.key = unquote(opt.key)
+			if len(opt.val) > 2 && opt.val[0] != '\'' && opt.val[len(opt.val)-1] != '\'' {
+				if !validate(opt.val) {
+					panic(ErrInvalidOptionValue)
+				}
+			}
 			opt.val = quote(opt.val)
-
 			if !opt.IsZero() {
 				if _, exists := f.options[opt.key]; !exists {
 					f.options[opt.key] = opt
 				}
 			}
+			break
 		}
 	}
 }
 
-func (f *Flag) Key() string { return f.key }
+func (f *Flag) Key() string {
+	return f.key
+}
 
-func (f *Flag) Name() string { return f.name }
-
-func (f *Flag) WithRaw(raw string) *Flag {
-	f2 := &Flag{
-		key:     f.key,
-		raw:     raw,
-		options: make(map[string]*Option),
-	}
-	f2.parse()
-	return f2
+func (f *Flag) Name() string {
+	return f.name
 }
 
 func (f *Flag) Option(key string) *Option {
 	return f.options[key]
 }
 
-func (f *Flag) OptionLen() int { return len(f.options) }
+func (f *Flag) OptionLen() int {
+	return len(f.options)
+}
 
-func (f *Flag) Raw() string { return f.raw }
+func (f *Flag) QuotedValue() string {
+	return f.quoted
+}
+
+func (f *Flag) UnquotedValue() string {
+	return f.unquoted
+}
 
 func (f *Flag) Value() string {
-	if f.pretty != "" {
-		return f.pretty
+	if f.value != "" {
+		return f.value
 	}
 
 	options := maps.Values(f.options)
@@ -231,12 +239,16 @@ func (f *Flag) Value() string {
 		parts = append(parts, opt.String())
 	}
 
-	f.pretty = strings.Join(parts, ",")
-	return f.pretty
+	f.value = strings.Join(parts, ",")
+	f.value = strconv.Quote(f.value)
+	return f.value
 }
 
 func (f *Flag) String() string {
-	return f.key + ":" + strconv.Quote(f.Value())
+	if f.prettied == "" {
+		f.prettied = f.key + ":" + f.Value()
+	}
+	return f.prettied
 }
 
 func NewOption(key string, val string, offset int) *Option {
@@ -255,12 +267,28 @@ func (o *Option) String() string {
 	if o.IsZero() {
 		return ""
 	}
-	return o.key + "='" + o.val + "'"
+	if len(o.val) > 0 {
+		return o.key + "=" + o.val
+	}
+	return o.key
 }
 
 func (o *Option) Key() string { return o.key }
 
-func (o *Option) Value() string { return o.val }
+func (o *Option) Value() string {
+	if o.IsZero() {
+		return ""
+	}
+	return o.val
+}
+
+func (o *Option) RawValue() []byte {
+	v := o.Value()
+	if v != "" {
+		v = unquote(v)
+	}
+	return []byte(v)
+}
 
 func unquote(s string) string {
 	if len(s) > 2 && s[0] == '\'' && s[len(s)-1] == '\'' {
@@ -278,10 +306,10 @@ func quote(s string) string {
 
 func validate(key string) bool {
 	for _, c := range key {
-		if !(c >= 'a' && c < 'z' ||
-			c > 'A' && c < 'Z' ||
-			c > '0' && c < '9' ||
-			c == '_') {
+		if !(c >= 'a' && c <= 'z' ||
+			c >= 'A' && c <= 'Z' ||
+			c >= '0' && c <= '9' ||
+			c == '_' || c == '-') {
 			return false
 		}
 	}
@@ -289,9 +317,10 @@ func validate(key string) bool {
 }
 
 var (
-	ErrInvalidFlagRaw        = errors.New("")
-	ErrInvalidFlagKey        = errors.New("")
-	ErrInvalidFlagName       = errors.New("")
-	ErrInvalidOptionKey      = errors.New("")
-	ErrInvalidOptionUnquoted = errors.New("")
+	ErrInvalidFlagKey        = errors.New("invalid flag key")
+	ErrInvalidFlagValue      = errors.New("invalid flag value")
+	ErrInvalidFlagName       = errors.New("invalid flag name")
+	ErrInvalidOptionKey      = errors.New("invalid option key")
+	ErrInvalidOptionValue    = errors.New("invalid option value")
+	ErrInvalidOptionUnquoted = errors.New("invalid option unquoted")
 )

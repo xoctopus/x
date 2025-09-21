@@ -10,6 +10,9 @@ import (
 	"github.com/xoctopus/x/stringsx"
 )
 
+// URLTag describes url parameter in struct tag
+const URLTag = "url"
+
 // MarshalURL encodes a struct value into url.Values.
 // It supports struct tags `name:"customName" as the URL parameter name; It will
 // skip unexported fields and fields with name tag "-". By default, the URL
@@ -43,20 +46,25 @@ func MarshalURL(v any) (url.Values, error) {
 			continue
 		}
 
-		flags := reflectx.ParseFlags(sf.Tag)
-		if tag := flags.Get("name"); tag != nil {
-			if tag.Name == "-" {
+		flag := reflectx.ParseTag(sf.Tag).Get(URLTag)
+
+		if flag != nil {
+			if flag.Name() == "-" {
 				continue
 			}
-			if tag.Name != "" {
-				name = tag.Name
+			if flag.Name() != "" {
+				name = flag.Name()
 			}
 		}
 
 		fi := rv.Field(i)
 		if fi.IsZero() {
-			if text := sf.Tag.Get("default"); len(text) > 0 {
-				u[name] = append(u[name], text)
+			if flag != nil {
+				if opt := flag.Option("default"); opt != nil {
+					if text := opt.RawValue(); len(text) > 0 {
+						u[name] = append(u[name], string(text))
+					}
+				}
 			}
 			continue
 		}
@@ -112,13 +120,13 @@ func UnmarshalURL(u url.Values, v any) error {
 			continue
 		}
 
-		flags := reflectx.ParseFlags(sf.Tag)
-		if tag := flags.Get("name"); tag != nil {
-			if tag.Name == "-" {
+		flag := reflectx.ParseTag(sf.Tag).Get(URLTag)
+		if flag != nil {
+			if flag.Name() == "-" {
 				continue
 			}
-			if tag.Name != "" {
-				name = tag.Name
+			if flag.Name() != "" {
+				name = flag.Name()
 			}
 		}
 
@@ -141,11 +149,15 @@ func UnmarshalURL(u url.Values, v any) error {
 		}
 
 		text := u.Get(name)
-		if text == "" {
-			text = sf.Tag.Get("default")
+		if text == "" && flag != nil {
+			if opt := flag.Option("default"); opt != nil {
+				text = string(opt.RawValue())
+			}
 		}
-		if err := Unmarshal([]byte(text), rv.Field(i)); err != nil {
-			return NewErrUnmarshalURLFailed(v, sf.Name, text, err)
+		if len(text) > 0 {
+			if err := Unmarshal([]byte(text), rv.Field(i)); err != nil {
+				return NewErrUnmarshalURLFailed(v, sf.Name, text, err)
+			}
 		}
 	}
 	return nil

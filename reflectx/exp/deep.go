@@ -38,7 +38,7 @@ func deepCopy(dst, src reflect.Value, visited map[uintptr]reflect.Value) {
 	}
 
 	// nil value
-	if reflectx.CanNilValue(src) && src.IsNil() {
+	if reflectx.CanNilValue(src) && reflectx.CanNilValue(dst) && src.IsNil() {
 		dst.Set(reflect.Zero(src.Type()))
 		return
 	}
@@ -51,12 +51,13 @@ func deepCopy(dst, src reflect.Value, visited map[uintptr]reflect.Value) {
 		return
 	}
 
-	ptr := src.UnsafeAddr()
-	if val, ok := visited[ptr]; ok {
-		dst.Set(val)
-		return
-	}
-	visited[ptr] = dst
+	// TODO try skip circle reference
+	// ptr := src.UnsafeAddr()
+	// if val, ok := visited[ptr]; ok {
+	// 	dst.Set(val)
+	// 	return
+	// }
+	// visited[ptr] = dst
 
 	// reflect.DeepEqual does not compare Chan type, and if Func type is not nil
 	// it returns false anyway

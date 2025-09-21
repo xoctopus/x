@@ -1,8 +1,8 @@
 package reflectx_test
 
 import (
+	"bytes"
 	"reflect"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -26,7 +26,7 @@ func TestParseFlags(t *testing.T) {
 				if strings.HasPrefix(string(f.Tag), "unquoted") {
 					defer func() {
 						e := recover()
-						NewWithT(t).Expect(e).To(Equal(ErrInvalidFlagRaw))
+						NewWithT(t).Expect(e).To(Equal(ErrInvalidFlagValue))
 					}()
 				}
 				if strings.HasPrefix(string(f.Tag), "escape") {
@@ -43,70 +43,60 @@ func TestParseFlags(t *testing.T) {
 	t.Run("FlagDuplicated", func(t *testing.T) {
 		tag := ParseTag(`json:"conflict" json:"ignored"`)
 		NewWithT(t).Expect(tag).To(HaveLen(1))
-		NewWithT(t).Expect(tag.Get("json").Value()).To(Equal("conflict"))
+		NewWithT(t).Expect(tag.Get("json").Value()).To(Equal(`"conflict"`))
+	})
+	t.Run("InvalidFlagName", func(t *testing.T) {
+		defer func() {
+			e := recover()
+			NewWithT(t).Expect(e).To(Equal(ErrInvalidFlagName))
+		}()
+		_ = ParseTag(`json:"x y"`)
 	})
 
 	t.Run("InvalidOption", func(t *testing.T) {
 		v := reflect.TypeOf(struct {
-			UnquotedOption   any `unquoted:",a='b"`
-			InvalidOptionKey any `invalid:"key,'x\n\r'='any'"`
+			UnquotedOption     any `panic_unquoted:",a='b"`
+			InvalidOptionKey   any `panic_invalid_key:"key,'x\n\r'='any'"`
+			InvalidOptionValue any `panic_invalid_value:",x=a b c"`
 		}{})
 		for i := range v.NumField() {
 			f := v.Field(i)
 			t.Run(f.Name, func(t *testing.T) {
-				if strings.HasPrefix(string(f.Tag), "unquoted") {
-					defer func() {
-						e := recover()
-						NewWithT(t).Expect(e).To(Equal(ErrInvalidOptionUnquoted))
-					}()
-				}
-				if strings.HasPrefix(string(f.Tag), "invalid") {
-					defer func() {
-						e := recover()
-						NewWithT(t).Expect(e).To(Equal(ErrInvalidOptionKey))
-					}()
-				}
+				defer func() {
+					maybe := strings.TrimPrefix(string(f.Tag), "panic_")
+					var expect error
+					if strings.HasPrefix(maybe, "unquoted:") {
+						expect = ErrInvalidOptionUnquoted
+					} else if strings.HasPrefix(maybe, "invalid_key:") {
+						expect = ErrInvalidOptionKey
+					} else if strings.HasPrefix(maybe, "invalid_value:") {
+						expect = ErrInvalidOptionValue
+					}
+					err := recover().(error)
+					NewWithT(t).Expect(err.Error()).To(Equal(expect.Error()))
+				}()
 				NewWithT(t).Expect(ParseTag(f.Tag)).To(HaveLen(0))
 			})
 		}
 	})
-
-	t.Run("Success", func(t *testing.T) {
-		cases := []struct {
-			tag     string
-			name    string
-			options map[string]*Option
-			pretty  string
-		}{
-			{
-				tag:    `tag:" a, x = '\"\\?#=%,;{}[] ' "`,
-				pretty: `tag:"a,x='\"\\?#=%,;{}[] '"`,
-				name:   "a",
-				options: map[string]*Option{
-					"x": NewOption("x", `'\"\\?#=%,;{}[] '`, 0),
-				},
-			},
-			{
-				tag:    `tag:"b , x , y = '15.0,10.0' "`,
-				pretty: `tag:"b,x,y='15.0,10.0'"`,
-				name:   "b",
-				options: map[string]*Option{
-					"y": NewOption("y", `'15.0,10.0'`, 0),
-				},
-			},
+	/**
+	 *
 			{
 				tag:    `tag:" c , "`,
-				pretty: `tag:"c"`,
+				raw:    ` c , `,
+				pretty: `c`,
 				name:   "c",
 			},
 			{
 				tag:    `tag:"d"`,
-				pretty: `tag:"d"`,
-				name:   "d",
+				raw:    `d`,
+				pretty: `d`,
+				name:   `d`,
 			},
 			{
 				tag:    `tag:", , y = 'abc' x = 1.1 "`,
-				pretty: `tag:",y='abc',x='1.1'"`,
+				raw:    `, , y = 'abc' x = 1.1 `,
+				pretty: `,y='abc',x='1.1'`,
 				options: map[string]*Option{
 					"y": NewOption("y", `'abc'`, 0),
 					"x": NewOption("x", `'1.1'`, 1),
@@ -114,37 +104,114 @@ func TestParseFlags(t *testing.T) {
 			},
 			{
 				tag:    `tag:", 'xyz' = 'abc'"`,
-				pretty: `tag:""`,
+				raw:    `, 'xyz' = 'abc'`,
+				pretty: `xyz='abc'`,
 			},
 			{
-				tag:    `tag:", = "`,
-				pretty: `tag:""`,
+				tag: `tag:", = "`,
 			},
 			{
 				tag:    `tag:", y ='', , x"`,
-				pretty: `tag:",y='',x"`,
+				pretty: `,y='',x`,
 				options: map[string]*Option{
 					"x": NewOption("x", ``, 1),
 					"y": NewOption("y", `''`, 0),
 				},
 			},
+	*/
+
+	t.Run("Success", func(t *testing.T) {
+		cases := map[string]struct {
+			tag      string
+			key      string
+			name     string
+			quoted   string
+			unquoted string
+			value    string
+			prettied string
+			options  map[string]*Option
+		}{
+			"OptionValueContainsSpecialChar": {
+				tag:      `tag:" a, x = '\"\\?#=%,;{}[] ' "`,
+				key:      "tag",
+				name:     "a",
+				quoted:   `" a, x = '\"\\?#=%,;{}[] ' "`,
+				unquoted: ` a, x = '"\?#=%,;{}[] ' `,
+				value:    `"a,x='\"\\?#=%,;{}[] '"`,
+				prettied: `tag:"a,x='\"\\?#=%,;{}[] '"`,
+				options: map[string]*Option{
+					"x": NewOption("x", `'"\?#=%,;{}[] '`, 0),
+				},
+			},
+			"MultiOptions": {
+				tag:      `tag:"b , x , y = '15.0,10.0' "`,
+				key:      "tag",
+				name:     "b",
+				quoted:   `"b , x , y = '15.0,10.0' "`,
+				unquoted: `b , x , y = '15.0,10.0' `,
+				value:    `"b,x,y='15.0,10.0'"`,
+				prettied: `tag:"b,x,y='15.0,10.0'"`,
+				options: map[string]*Option{
+					"x": NewOption("x", "", 0),
+					"y": NewOption("y", "'15.0,10.0'", 1),
+				},
+			},
+			"EmptyFlagValue": {
+				tag:      `tag:"  , ,   "`,
+				key:      "tag",
+				name:     "",
+				quoted:   `"  , ,   "`,
+				unquoted: `  , ,   `,
+				value:    `""`,
+				prettied: `tag:""`,
+				options:  map[string]*Option{},
+			},
+			"NeedHandleOptionKeyValueQuotes": {
+				tag:      `tag:",'opt'=xyz"`,
+				key:      "tag",
+				name:     "",
+				quoted:   `",'opt'=xyz"`,
+				unquoted: `,'opt'=xyz`,
+				value:    `",opt='xyz'"`,
+				prettied: `tag:",opt='xyz'"`,
+				options: map[string]*Option{
+					"opt": NewOption("opt", "'xyz'", 0),
+				},
+			},
 		}
 
-		for _, c := range cases {
-			flag := ParseTag(reflect.StructTag(c.tag)).Get("tag")
+		for name, c := range cases {
+			t.Run(name, func(t *testing.T) {
+				tag := ParseTag(reflect.StructTag(c.tag))
+				NewWithT(t).Expect(tag.Get("x")).To(BeNil())
 
-			NewWithT(t).Expect(flag.Key()).To(Equal("tag"))
-			NewWithT(t).Expect(flag.Name()).To(Equal(c.name))
-			NewWithT(t).Expect(flag.OptionLen()).To(Equal(len(c.options)))
-			for k, v := range c.options {
-				o := flag.Option(k)
-				NewWithT(t).Expect(o.Value()).To(Equal(v))
-			}
-			raw, _ := strconv.Unquote(strings.TrimPrefix(c.tag, "tag:"))
-			NewWithT(t).Expect(flag.Raw()).To(Equal(raw))
-			pretty := strings.TrimPrefix(c.pretty, "tag:")
-			NewWithT(t).Expect(flag.Value()).To(Equal(pretty))
-			NewWithT(t).Expect(flag.String()).To(Equal(c.pretty))
+				f := tag.Get("tag")
+				NewWithT(t).Expect(f.Key()).To(Equal("tag"))
+				NewWithT(t).Expect(f.Name()).To(Equal(c.name))
+				NewWithT(t).Expect(f.QuotedValue()).To(Equal(c.quoted))
+				NewWithT(t).Expect(f.UnquotedValue()).To(Equal(c.unquoted))
+				NewWithT(t).Expect(f.Value()).To(Equal(c.value))
+				NewWithT(t).Expect(f.String()).To(Equal(c.prettied))
+				NewWithT(t).Expect(f.OptionLen()).To(Equal(len(c.options)))
+				for k, v := range c.options {
+					o := f.Option(k)
+					NewWithT(t).Expect(o.Value()).To(Equal(v.Value()))
+					NewWithT(t).Expect(bytes.Equal(o.RawValue(), v.RawValue())).To(BeTrue())
+				}
+			})
+		}
+	})
+
+	t.Run("EmptyOption", func(t *testing.T) {
+		options := []*Option{
+			NewOption("", "", 0),
+			NewOption("", "has", 0),
+		}
+		for _, option := range options {
+			NewWithT(t).Expect(option.Key()).To(Equal(""))
+			NewWithT(t).Expect(option.Value()).To(Equal(""))
+			NewWithT(t).Expect(option.IsZero()).To(BeTrue())
+			NewWithT(t).Expect(option.String()).To(Equal(""))
 		}
 	})
 }
