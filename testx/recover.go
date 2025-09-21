@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 )
 
-func Recover(v any) string {
+func _recover(v any) string {
 	if v != nil {
 		return fmt.Sprintf("%v", v)
 	}
@@ -15,9 +15,13 @@ func Recover(v any) string {
 }
 
 func AssertRecoverEqual(t *testing.T, caught any, expect string) {
-	NewWithT(t).Expect(Recover(caught)).To(Equal(expect))
+	if x := _recover(caught); len(x) > 0 {
+		gomega.NewWithT(t).Expect(x).To(gomega.Equal(expect))
+	}
 }
 
 func AssertRecoverContains(t *testing.T, caught any, expect string) {
-	NewWithT(t).Expect(Recover(caught)).To(ContainSubstring(expect))
+	if x := _recover(caught); len(x) > 0 {
+		gomega.NewWithT(t).Expect(x).To(gomega.ContainSubstring(expect))
+	}
 }

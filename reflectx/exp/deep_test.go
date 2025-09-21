@@ -94,7 +94,7 @@ func TestDeepCopy(t *testing.T) {
 		})
 		t.Run("Failed", func(t *testing.T) {
 			defer func() {
-				NewWithT(t).Expect(testx.Recover(recover())).To(ContainSubstring("cannot be copied"))
+				testx.AssertRecoverContains(t, recover(), "cannot be copied")
 			}()
 			v1 := &Struct{Any: struct{ str string }{str: "Any"}}
 			v2 := Clone(v1)
