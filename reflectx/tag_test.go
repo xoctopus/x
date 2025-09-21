@@ -3,7 +3,6 @@ package reflectx_test
 import (
 	"bytes"
 	"reflect"
-	"strings"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -13,112 +12,69 @@ import (
 
 func TestParseFlags(t *testing.T) {
 	t.Run("InvalidTag", func(t *testing.T) {
-		v := reflect.TypeOf(struct {
-			EmptyTag          any `   `
-			NoFlagKey         any `:`
-			UnquotedFlagValue any `unquoted:"key`
-			EscapeFlagKey     any `escape_js\non:""`
-		}{})
-
-		for i := range v.NumField() {
-			f := v.Field(i)
-			t.Run(f.Name, func(t *testing.T) {
-				if strings.HasPrefix(string(f.Tag), "unquoted") {
+		cases := []struct {
+			name string
+			tag  reflect.StructTag
+			err  error
+		}{
+			{
+				name: "EmptyTag",
+				tag:  reflect.StructTag("   "),
+			},
+			{
+				name: "NoFlagKey",
+				tag:  reflect.StructTag(`:`),
+			},
+			{
+				name: "UnquotedFlagValue",
+				tag:  reflect.StructTag(`any:"x`),
+				err:  ErrInvalidFlagValue,
+			},
+			{
+				name: "InvalidFlagName",
+				tag:  reflect.StructTag(`json:"x y"`),
+				err:  ErrInvalidFlagName,
+			},
+			{
+				name: "EscapeFlagValue",
+				tag:  reflect.StructTag(`escape_js\non:""`),
+				err:  ErrInvalidFlagKey,
+			},
+			{
+				name: "UnquotedOption",
+				tag:  reflect.StructTag(`panic_unquoted:",a='b"`),
+				err:  ErrInvalidOptionUnquoted,
+			},
+			{
+				name: "InvalidOptionKey",
+				tag:  reflect.StructTag(`panic_invalid_key:"key,'x\n\r'='any'"`),
+				err:  ErrInvalidOptionKey,
+			},
+			{
+				name: "InvalidOptionValue",
+				tag:  reflect.StructTag(`panic_invalid_value:",x=a b c"`),
+				err:  ErrInvalidOptionValue,
+			},
+		}
+		for _, c := range cases {
+			t.Run(c.name, func(t *testing.T) {
+				if c.err != nil {
 					defer func() {
-						e := recover()
-						NewWithT(t).Expect(e).To(Equal(ErrInvalidFlagValue))
+						err := recover()
+						NewWithT(t).Expect(err).To(Equal(c.err))
 					}()
 				}
-				if strings.HasPrefix(string(f.Tag), "escape") {
-					defer func() {
-						e := recover()
-						NewWithT(t).Expect(e).To(Equal(ErrInvalidFlagKey))
-					}()
-				}
-				tag := ParseTag(f.Tag)
+				tag := ParseTag(c.tag)
 				NewWithT(t).Expect(tag).To(HaveLen(0))
 			})
 		}
 	})
+
 	t.Run("FlagDuplicated", func(t *testing.T) {
 		tag := ParseTag(`json:"conflict" json:"ignored"`)
 		NewWithT(t).Expect(tag).To(HaveLen(1))
 		NewWithT(t).Expect(tag.Get("json").Value()).To(Equal(`"conflict"`))
 	})
-	t.Run("InvalidFlagName", func(t *testing.T) {
-		defer func() {
-			e := recover()
-			NewWithT(t).Expect(e).To(Equal(ErrInvalidFlagName))
-		}()
-		_ = ParseTag(`json:"x y"`)
-	})
-
-	t.Run("InvalidOption", func(t *testing.T) {
-		v := reflect.TypeOf(struct {
-			UnquotedOption     any `panic_unquoted:",a='b"`
-			InvalidOptionKey   any `panic_invalid_key:"key,'x\n\r'='any'"`
-			InvalidOptionValue any `panic_invalid_value:",x=a b c"`
-		}{})
-		for i := range v.NumField() {
-			f := v.Field(i)
-			t.Run(f.Name, func(t *testing.T) {
-				defer func() {
-					maybe := strings.TrimPrefix(string(f.Tag), "panic_")
-					var expect error
-					if strings.HasPrefix(maybe, "unquoted:") {
-						expect = ErrInvalidOptionUnquoted
-					} else if strings.HasPrefix(maybe, "invalid_key:") {
-						expect = ErrInvalidOptionKey
-					} else if strings.HasPrefix(maybe, "invalid_value:") {
-						expect = ErrInvalidOptionValue
-					}
-					err := recover().(error)
-					NewWithT(t).Expect(err.Error()).To(Equal(expect.Error()))
-				}()
-				NewWithT(t).Expect(ParseTag(f.Tag)).To(HaveLen(0))
-			})
-		}
-	})
-	/**
-	 *
-			{
-				tag:    `tag:" c , "`,
-				raw:    ` c , `,
-				pretty: `c`,
-				name:   "c",
-			},
-			{
-				tag:    `tag:"d"`,
-				raw:    `d`,
-				pretty: `d`,
-				name:   `d`,
-			},
-			{
-				tag:    `tag:", , y = 'abc' x = 1.1 "`,
-				raw:    `, , y = 'abc' x = 1.1 `,
-				pretty: `,y='abc',x='1.1'`,
-				options: map[string]*Option{
-					"y": NewOption("y", `'abc'`, 0),
-					"x": NewOption("x", `'1.1'`, 1),
-				},
-			},
-			{
-				tag:    `tag:", 'xyz' = 'abc'"`,
-				raw:    `, 'xyz' = 'abc'`,
-				pretty: `xyz='abc'`,
-			},
-			{
-				tag: `tag:", = "`,
-			},
-			{
-				tag:    `tag:", y ='', , x"`,
-				pretty: `,y='',x`,
-				options: map[string]*Option{
-					"x": NewOption("x", ``, 1),
-					"y": NewOption("y", `''`, 0),
-				},
-			},
-	*/
 
 	t.Run("Success", func(t *testing.T) {
 		cases := map[string]struct {
