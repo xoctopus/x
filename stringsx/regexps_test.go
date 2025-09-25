@@ -16,14 +16,14 @@ func TestRegexps(t *testing.T) {
 			"Xyz_1",
 			"_123_abc_",
 		} {
-			NewWithT(t).Expect(RegexpValidIdentifier.MatchString(v)).To(BeTrue())
+			NewWithT(t).Expect(ValidIdentifier(v)).To(BeTrue())
 		}
 		for _, v := range []string{
 			"1var",
 			"foo-bar",
 			"",
 		} {
-			NewWithT(t).Expect(RegexpValidIdentifier.MatchString(v)).To(BeFalse())
+			NewWithT(t).Expect(ValidIdentifier(v)).To(BeFalse())
 		}
 	})
 
@@ -35,7 +35,7 @@ func TestRegexps(t *testing.T) {
 			"env",
 			"cmd",
 		} {
-			NewWithT(t).Expect(RegexpValidFlagKey.MatchString(v)).To(BeTrue())
+			NewWithT(t).Expect(ValidFlagKey(v)).To(BeTrue())
 		}
 
 		for _, v := range []string{
@@ -45,7 +45,7 @@ func TestRegexps(t *testing.T) {
 			"\t",
 			"ABC",
 		} {
-			NewWithT(t).Expect(RegexpValidFlagKey.MatchString(v)).To(BeFalse())
+			NewWithT(t).Expect(ValidFlagKey(v)).To(BeFalse())
 		}
 	})
 	t.Run("FlagName", func(t *testing.T) {
@@ -60,14 +60,14 @@ func TestRegexps(t *testing.T) {
 			"lower-dash",
 			"lower-dash-1",
 		} {
-			NewWithT(t).Expect(RegexpValidFlagName.MatchString(v)).To(BeTrue())
+			NewWithT(t).Expect(ValidFlagName(v)).To(BeTrue())
 		}
 		for _, v := range []string{
 			" x",
 			"1x",
 			"\tx7f",
 		} {
-			NewWithT(t).Expect(RegexpValidFlagName.MatchString(v)).To(BeFalse())
+			NewWithT(t).Expect(ValidFlagName(v)).To(BeFalse())
 		}
 	})
 	t.Run("FlagOptionKey", func(t *testing.T) {
@@ -76,7 +76,7 @@ func TestRegexps(t *testing.T) {
 			"option_x",
 			"_",
 		} {
-			NewWithT(t).Expect(RegexpValidFlagOptionKey.MatchString(v)).To(BeTrue())
+			NewWithT(t).Expect(ValidFlagOptionKey(v)).To(BeTrue())
 		}
 		for _, v := range []string{
 			"1",
@@ -84,7 +84,7 @@ func TestRegexps(t *testing.T) {
 			"A",
 			"-",
 		} {
-			NewWithT(t).Expect(RegexpValidFlagOptionKey.MatchString(v)).To(BeFalse())
+			NewWithT(t).Expect(ValidFlagOptionKey(v)).To(BeFalse())
 		}
 	})
 }
