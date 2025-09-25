@@ -54,11 +54,11 @@ type MustFailedArshaler struct {
 }
 
 func (MustFailedArshaler) MarshalText() ([]byte, error) {
-	return nil, errors.New("")
+	return nil, errors.New("MUST FAILED MARSHALER")
 }
 
 func (*MustFailedArshaler) UnmarshalText([]byte) error {
-	return errors.New("")
+	return errors.New("MUST FAILED UNMARSHALER")
 }
 
 type (
