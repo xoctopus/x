@@ -59,6 +59,7 @@ func TestRegexps(t *testing.T) {
 			"UPPER-DASH",
 			"lower-dash",
 			"lower-dash-1",
+			"b",
 		} {
 			NewWithT(t).Expect(ValidFlagName(v)).To(BeTrue())
 		}
