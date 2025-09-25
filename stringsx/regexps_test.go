@@ -15,6 +15,7 @@ func TestRegexps(t *testing.T) {
 			"_var1",
 			"Xyz_1",
 			"_123_abc_",
+			"x",
 		} {
 			NewWithT(t).Expect(ValidIdentifier(v)).To(BeTrue())
 		}
@@ -34,6 +35,7 @@ func TestRegexps(t *testing.T) {
 			"db",
 			"env",
 			"cmd",
+			"x",
 		} {
 			NewWithT(t).Expect(ValidFlagKey(v)).To(BeTrue())
 		}
@@ -76,6 +78,7 @@ func TestRegexps(t *testing.T) {
 			"option",
 			"option_x",
 			"_",
+			"x",
 		} {
 			NewWithT(t).Expect(ValidFlagOptionKey(v)).To(BeTrue())
 		}
