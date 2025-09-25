@@ -295,6 +295,7 @@ func TestIsInteger(t *testing.T) {
 		{Int(0), true},
 		{any(100), true},
 		{reflect.TypeOf(1), true},
+		{reflect.Int, true},
 	}
 
 	for _, c := range cases {

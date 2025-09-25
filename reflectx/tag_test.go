@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+	"github.com/pkg/errors"
 
 	. "github.com/xoctopus/x/reflectx"
 )
@@ -28,40 +29,42 @@ func TestParseFlags(t *testing.T) {
 			{
 				name: "UnquotedFlagValue",
 				tag:  reflect.StructTag(`any:"x`),
-				err:  ErrInvalidFlagValue,
+				err:  NewError(E_INVALID_FLAG_VALUE, ""),
 			},
 			{
 				name: "InvalidFlagName",
 				tag:  reflect.StructTag(`json:"x y"`),
-				err:  ErrInvalidFlagName,
+				err:  NewError(E_INVALID_FLAG_NAME, ""),
 			},
 			{
 				name: "EscapeFlagValue",
 				tag:  reflect.StructTag(`escape_js\non:""`),
-				err:  ErrInvalidFlagKey,
+				err:  NewError(E_INVALID_FLAG_KEY, ""),
 			},
 			{
 				name: "UnquotedOption",
 				tag:  reflect.StructTag(`panic_unquoted:",a='b"`),
-				err:  ErrInvalidOptionUnquoted,
+				err:  NewError(E_INVALID_OPTION_UNQUOTED, ""),
 			},
 			{
 				name: "InvalidOptionKey",
 				tag:  reflect.StructTag(`panic_invalid_key:"key,'x\n\r'='any'"`),
-				err:  ErrInvalidOptionKey,
+				err:  NewError(E_INVALID_OPTION_KEY, ""),
 			},
 			{
 				name: "InvalidOptionValue",
 				tag:  reflect.StructTag(`panic_invalid_value:",x=a b c"`),
-				err:  ErrInvalidOptionValue,
+				err:  NewError(E_INVALID_OPTION_VALUE, ""),
 			},
 		}
 		for _, c := range cases {
 			t.Run(c.name, func(t *testing.T) {
 				if c.err != nil {
 					defer func() {
-						err := recover()
-						NewWithT(t).Expect(err).To(Equal(c.err))
+						err := recover().(error)
+						NewWithT(t).Expect(errors.Is(c.err, err)).To(BeTrue())
+						_ = err.Error()
+						_ = c.err.Error()
 					}()
 				}
 				tag := ParseTag(c.tag)
@@ -149,10 +152,11 @@ func TestParseFlags(t *testing.T) {
 				NewWithT(t).Expect(f.Value()).To(Equal(c.value))
 				NewWithT(t).Expect(f.String()).To(Equal(c.prettied))
 				NewWithT(t).Expect(f.OptionLen()).To(Equal(len(c.options)))
-				for k, v := range c.options {
-					o := f.Option(k)
-					NewWithT(t).Expect(o.Value()).To(Equal(v.Value()))
-					NewWithT(t).Expect(bytes.Equal(o.RawValue(), v.RawValue())).To(BeTrue())
+				for o := range f.Options() {
+					NewWithT(t).Expect(f.HasOption(o.Key())).To(BeTrue())
+					NewWithT(t).Expect(f.Option(o.Key())).To(Equal(o))
+					NewWithT(t).Expect(o.Value()).To(Equal(c.options[o.Key()].Value()))
+					NewWithT(t).Expect(bytes.Equal(o.RawValue(), c.options[o.Key()].RawValue())).To(BeTrue())
 				}
 			})
 		}

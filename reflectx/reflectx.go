@@ -181,28 +181,30 @@ func IsBytes(v any) bool {
 	if _, ok := v.([]byte); ok {
 		return true
 	}
-	t := typeof(v)
-	return t.Kind() == reflect.Slice && t.Elem().Kind() == reflect.Uint8 && t.Elem().PkgPath() == ""
+	t := TypeOf(v)
+	return t.Kind() == reflect.Slice &&
+		t.Elem().Kind() == reflect.Uint8 &&
+		t.Elem().PkgPath() == ""
 }
 
 func IsInteger(v any) bool {
-	k := typeof(v).Kind()
+	k := KindOf(v)
 	return k >= reflect.Int && k <= reflect.Uint64
 }
 
 func IsFloat(v any) bool {
-	k := typeof(v).Kind()
+	k := KindOf(v)
 	return k == reflect.Float64 || k == reflect.Float32
 }
 
 // IsNumeric reports whether the value v is of a numeric type.
 // This includes all integer, unsigned integer, float, and complex number types.
 func IsNumeric(v any) bool {
-	k := typeof(v).Kind()
+	k := KindOf(v)
 	return k >= reflect.Int && k <= reflect.Complex128
 }
 
-func typeof(v any) reflect.Type {
+func TypeOf(v any) reflect.Type {
 	switch x := v.(type) {
 	case reflect.Type:
 		return x
@@ -223,6 +225,8 @@ func KindOf(v any) reflect.Kind {
 		return x.Kind()
 	case reflect.Type:
 		return x.Kind()
+	case reflect.Kind:
+		return x
 	default:
 		return reflect.ValueOf(v).Kind()
 	}

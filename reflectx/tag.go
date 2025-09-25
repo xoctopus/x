@@ -1,15 +1,16 @@
 package reflectx
 
 import (
+	"iter"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
 	"golang.org/x/exp/maps"
 
 	"github.com/xoctopus/x/misc/must"
+	"github.com/xoctopus/x/stringsx"
 )
 
 // ParseTag parses a struct tag into a map of flag keys and values.
@@ -40,8 +41,8 @@ func ParseTag(tag reflect.StructTag) Tag {
 			break
 		}
 		key := string(tag[:i])
-		if !validate(key) {
-			panic(ErrInvalidFlagKey)
+		if !stringsx.ValidFlagName(key) {
+			panic(NewError(E_INVALID_FLAG_NAME, key))
 		}
 
 		tag = tag[i+1:]
@@ -55,7 +56,7 @@ func ParseTag(tag reflect.StructTag) Tag {
 			i++
 		}
 		if i >= len(tag) {
-			panic(ErrInvalidFlagValue)
+			panic(NewError(E_INVALID_FLAG_VALUE, string(tag)))
 		}
 		quoted := string(tag[:i+1])
 		if _, ok := flags[key]; !ok {
@@ -129,7 +130,7 @@ func (f *Flag) parse() {
 		}
 		if i == len(val)-1 {
 			if quoted {
-				panic(ErrInvalidOptionUnquoted)
+				panic(NewError(E_INVALID_OPTION_UNQUOTED, val))
 			}
 			i++
 			goto FinishPart
@@ -147,8 +148,8 @@ func (f *Flag) parse() {
 		part = strings.TrimSpace(part)
 		if index == 0 {
 			f.name = part
-			if !validate(f.name) {
-				panic(ErrInvalidFlagName)
+			if !stringsx.ValidFlagName(f.name) {
+				panic(NewError(E_INVALID_FLAG_NAME, f.name))
 			}
 			continue
 		}
@@ -181,12 +182,12 @@ func (f *Flag) parse() {
 				opt.key = part
 			}
 			opt.key = unquote(opt.key)
-			if !validate(opt.key) {
-				panic(ErrInvalidOptionKey)
+			if !stringsx.ValidFlagOptionKey(opt.key) {
+				panic(NewError(E_INVALID_OPTION_KEY, opt.key))
 			}
 			if len(opt.val) > 2 && opt.val[0] != '\'' && opt.val[len(opt.val)-1] != '\'' {
-				if !validate(opt.val) {
-					panic(ErrInvalidOptionValue)
+				if !stringsx.ValidIdentifier(opt.val) {
+					panic(NewError(E_INVALID_OPTION_VALUE, opt.val))
 				}
 			}
 			opt.val = quote(opt.val)
@@ -208,12 +209,25 @@ func (f *Flag) Name() string {
 	return f.name
 }
 
+func (f *Flag) HasOption(key string) bool {
+	_, ok := f.options[key]
+	return ok
+}
+
 func (f *Flag) Option(key string) *Option {
 	return f.options[key]
 }
 
 func (f *Flag) OptionLen() int {
 	return len(f.options)
+}
+
+func (f *Flag) Options() iter.Seq[*Option] {
+	return func(yield func(*Option) bool) {
+		for _, opt := range f.options {
+			yield(opt)
+		}
+	}
 }
 
 func (f *Flag) QuotedValue() string {
@@ -303,24 +317,3 @@ func quote(s string) string {
 	}
 	return s
 }
-
-func validate(key string) bool {
-	for _, c := range key {
-		if !(c >= 'a' && c <= 'z' ||
-			c >= 'A' && c <= 'Z' ||
-			c >= '0' && c <= '9' ||
-			c == '_' || c == '-') {
-			return false
-		}
-	}
-	return true
-}
-
-var (
-	ErrInvalidFlagKey        = errors.New("invalid flag key")
-	ErrInvalidFlagValue      = errors.New("invalid flag value")
-	ErrInvalidFlagName       = errors.New("invalid flag name")
-	ErrInvalidOptionKey      = errors.New("invalid option key")
-	ErrInvalidOptionValue    = errors.New("invalid option value")
-	ErrInvalidOptionUnquoted = errors.New("invalid option unquoted")
-)
