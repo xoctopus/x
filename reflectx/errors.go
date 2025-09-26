@@ -34,10 +34,11 @@ type Error struct {
 }
 
 func (e *Error) Error() string {
-	if len(e.info) == 0 {
-		return errMessages[e.code]
+	detail := ""
+	if len(e.info) > 0 {
+		detail = ": `" + e.info + "`"
 	}
-	return errMessages[e.code] + ": `" + e.info + "`"
+	return errMessages[e.code] + detail
 }
 
 func (e *Error) Is(err error) bool {

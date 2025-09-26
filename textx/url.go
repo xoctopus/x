@@ -61,8 +61,8 @@ func MarshalURL(v any) (url.Values, error) {
 		if fi.IsZero() {
 			if flag != nil {
 				if opt := flag.Option("default"); opt != nil {
-					if text := opt.RawValue(); len(text) > 0 {
-						u[name] = append(u[name], string(text))
+					if text := opt.Unquoted(); len(text) > 0 {
+						u[name] = append(u[name], text)
 					}
 				}
 			}
@@ -151,7 +151,7 @@ func UnmarshalURL(u url.Values, v any) error {
 		text := u.Get(name)
 		if text == "" && flag != nil {
 			if opt := flag.Option("default"); opt != nil {
-				text = string(opt.RawValue())
+				text = opt.Unquoted()
 			}
 		}
 		if len(text) > 0 {

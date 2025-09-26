@@ -91,4 +91,24 @@ func TestRegexps(t *testing.T) {
 			NewWithT(t).Expect(ValidFlagOptionKey(v)).To(BeFalse())
 		}
 	})
+	t.Run("UnquotedOptionValue", func(t *testing.T) {
+		for _, v := range []string{
+			"abc",
+			"100",
+			"XyZ_0123",
+			"",
+		} {
+			NewWithT(t).Expect(ValidUnquotedOptionValue(v)).To(BeTrue())
+		}
+		for _, v := range []string{
+			"1 2 3",
+			"1,2,3",
+			"\t",
+			"\n",
+			"\r",
+			",",
+		} {
+			NewWithT(t).Expect(ValidUnquotedOptionValue(v)).To(BeFalse())
+		}
+	})
 }

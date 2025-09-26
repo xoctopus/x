@@ -3,10 +3,11 @@ package stringsx
 import "regexp"
 
 var (
-	regexValidIdentifier    = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
-	regexValidFlagKey       = regexp.MustCompile(`^[a-z]+$`)
-	regexValidFlagName      = regexp.MustCompile(`^(?:-|[A-Za-z](?:[A-Za-z0-9_-]*[A-Za-z0-9])?)?$`)
-	regexValidFlagOptionKey = regexp.MustCompile(`^[a-z_]+$`)
+	regexValidIdentifier          = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+	regexValidFlagKey             = regexp.MustCompile(`^[a-z]+$`)
+	regexValidFlagName            = regexp.MustCompile(`^(?:-|[A-Za-z](?:[A-Za-z0-9_-]*[A-Za-z0-9])?)?$`)
+	regexValidFlagOptionKey       = regexp.MustCompile(`^[a-z_]+$`)
+	regexValidUnquotedOptionValue = regexp.MustCompile(`^[A-Za-z0-9_]*$`)
 )
 
 func ValidIdentifier(s string) bool {
@@ -23,4 +24,8 @@ func ValidFlagName(s string) bool {
 
 func ValidFlagOptionKey(s string) bool {
 	return regexValidFlagOptionKey.MatchString(s)
+}
+
+func ValidUnquotedOptionValue(s string) bool {
+	return regexValidUnquotedOptionValue.MatchString(s)
 }

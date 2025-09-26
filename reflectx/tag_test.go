@@ -1,7 +1,7 @@
 package reflectx_test
 
 import (
-	"bytes"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -63,8 +63,8 @@ func TestParseFlags(t *testing.T) {
 					defer func() {
 						err := recover().(error)
 						NewWithT(t).Expect(errors.Is(c.err, err)).To(BeTrue())
-						_ = err.Error()
-						_ = c.err.Error()
+						fmt.Println(err)
+						// _ = c.err.Error()
 					}()
 				}
 				tag := ParseTag(c.tag)
@@ -84,8 +84,6 @@ func TestParseFlags(t *testing.T) {
 			tag      string
 			key      string
 			name     string
-			quoted   string
-			unquoted string
 			value    string
 			prettied string
 			options  map[string]*Option
@@ -94,8 +92,6 @@ func TestParseFlags(t *testing.T) {
 				tag:      `tag:" a, x = '\"\\?#=%,;{}[] ' "`,
 				key:      "tag",
 				name:     "a",
-				quoted:   `" a, x = '\"\\?#=%,;{}[] ' "`,
-				unquoted: ` a, x = '"\?#=%,;{}[] ' `,
 				value:    `"a,x='\"\\?#=%,;{}[] '"`,
 				prettied: `tag:"a,x='\"\\?#=%,;{}[] '"`,
 				options: map[string]*Option{
@@ -106,8 +102,6 @@ func TestParseFlags(t *testing.T) {
 				tag:      `tag:"b , x , y = '15.0,10.0' "`,
 				key:      "tag",
 				name:     "b",
-				quoted:   `"b , x , y = '15.0,10.0' "`,
-				unquoted: `b , x , y = '15.0,10.0' `,
 				value:    `"b,x,y='15.0,10.0'"`,
 				prettied: `tag:"b,x,y='15.0,10.0'"`,
 				options: map[string]*Option{
@@ -119,8 +113,6 @@ func TestParseFlags(t *testing.T) {
 				tag:      `tag:"  , ,   "`,
 				key:      "tag",
 				name:     "",
-				quoted:   `"  , ,   "`,
-				unquoted: `  , ,   `,
 				value:    `""`,
 				prettied: `tag:""`,
 				options:  map[string]*Option{},
@@ -129,12 +121,10 @@ func TestParseFlags(t *testing.T) {
 				tag:      `tag:",'opt'=xyz"`,
 				key:      "tag",
 				name:     "",
-				quoted:   `",'opt'=xyz"`,
-				unquoted: `,'opt'=xyz`,
-				value:    `",opt='xyz'"`,
-				prettied: `tag:",opt='xyz'"`,
+				value:    `",opt=xyz"`,
+				prettied: `tag:",opt=xyz"`,
 				options: map[string]*Option{
-					"opt": NewOption("opt", "'xyz'", 0),
+					"opt": NewOption("opt", "xyz", 0),
 				},
 			},
 		}
@@ -147,16 +137,16 @@ func TestParseFlags(t *testing.T) {
 				f := tag.Get("tag")
 				NewWithT(t).Expect(f.Key()).To(Equal("tag"))
 				NewWithT(t).Expect(f.Name()).To(Equal(c.name))
-				NewWithT(t).Expect(f.QuotedValue()).To(Equal(c.quoted))
-				NewWithT(t).Expect(f.UnquotedValue()).To(Equal(c.unquoted))
 				NewWithT(t).Expect(f.Value()).To(Equal(c.value))
 				NewWithT(t).Expect(f.String()).To(Equal(c.prettied))
 				NewWithT(t).Expect(f.OptionLen()).To(Equal(len(c.options)))
 				for o := range f.Options() {
-					NewWithT(t).Expect(f.HasOption(o.Key())).To(BeTrue())
-					NewWithT(t).Expect(f.Option(o.Key())).To(Equal(o))
-					NewWithT(t).Expect(o.Value()).To(Equal(c.options[o.Key()].Value()))
-					NewWithT(t).Expect(bytes.Equal(o.RawValue(), c.options[o.Key()].RawValue())).To(BeTrue())
+					k := o.Key()
+					NewWithT(t).Expect(f.HasOption(k)).To(BeTrue())
+					NewWithT(t).Expect(f.Option(k)).To(Equal(o))
+					NewWithT(t).Expect(o.Value()).To(Equal(c.options[k].Value()))
+					NewWithT(t).Expect(o.Quoted()).To(Equal(c.options[k].Quoted()))
+					NewWithT(t).Expect(o.Unquoted()).To(Equal(c.options[k].Unquoted()))
 				}
 			})
 		}
@@ -168,9 +158,11 @@ func TestParseFlags(t *testing.T) {
 			NewOption("", "has", 0),
 		}
 		for _, option := range options {
+			NewWithT(t).Expect(option.IsZero()).To(BeTrue())
 			NewWithT(t).Expect(option.Key()).To(Equal(""))
 			NewWithT(t).Expect(option.Value()).To(Equal(""))
-			NewWithT(t).Expect(option.IsZero()).To(BeTrue())
+			NewWithT(t).Expect(option.Quoted()).To(Equal(""))
+			NewWithT(t).Expect(option.Unquoted()).To(Equal(""))
 			NewWithT(t).Expect(option.String()).To(Equal(""))
 		}
 	})

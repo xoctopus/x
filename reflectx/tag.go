@@ -61,10 +61,9 @@ func ParseTag(tag reflect.StructTag) Tag {
 		quoted := string(tag[:i+1])
 		if _, ok := flags[key]; !ok {
 			flags[key] = &Flag{
-				key:      key,
-				quoted:   quoted,
-				unquoted: must.NoErrorV(strconv.Unquote(quoted)),
-				options:  make(map[string]*Option),
+				key:     key,
+				raw:     must.NoErrorV(strconv.Unquote(quoted)),
+				options: make(map[string]*Option),
 			}
 			tag = tag[i+1:]
 		}
@@ -105,21 +104,19 @@ type Flag struct {
 	key      string
 	name     string
 	options  map[string]*Option
-	quoted   string
-	unquoted string
+	raw      string
 	value    string
 	prettied string
 }
 
 func (f *Flag) parse() {
-	val := strings.TrimSpace(f.unquoted)
+	val := strings.TrimSpace(f.raw)
 
 	// scan value to parted by ','
 	quoted := false
 	parted := make([]string, 0)
 	idx := 0
 	for i, c := range []rune(val) {
-		_ = val[i : i+1]
 		switch c {
 		case '\'':
 			quoted = !quoted
@@ -158,7 +155,6 @@ func (f *Flag) parse() {
 		}
 		eq := false
 		for i, c := range []rune(part) {
-			_ = part[i : i+1]
 			switch c {
 			case '\'':
 				quoted = !quoted
@@ -174,24 +170,25 @@ func (f *Flag) parse() {
 			}
 			continue
 		FinishOption:
-			opt := &Option{index: index}
+			k, v := "", ""
 			if eq {
-				opt.key = strings.TrimSpace(string([]rune(part)[:i]))
-				opt.val = strings.TrimSpace(string([]rune(part)[i+1:]))
+				k = strings.TrimSpace(string([]rune(part)[:i]))
+				v = strings.TrimSpace(string([]rune(part)[i+1:]))
 			} else {
-				opt.key = part
+				k = part
 			}
-			opt.key = unquote(opt.key)
-			if !stringsx.ValidFlagOptionKey(opt.key) {
-				panic(NewError(E_INVALID_OPTION_KEY, opt.key))
+			k = unquote(k)
+			if !stringsx.ValidFlagOptionKey(k) {
+				panic(NewError(E_INVALID_OPTION_KEY, k))
 			}
-			if len(opt.val) > 2 && opt.val[0] != '\'' && opt.val[len(opt.val)-1] != '\'' {
-				if !stringsx.ValidIdentifier(opt.val) {
-					panic(NewError(E_INVALID_OPTION_VALUE, opt.val))
+			if !strings.HasPrefix(v, "'") && !strings.HasSuffix(v, "'") {
+				// if option value contains control characters or spaces,
+				// it MUST be quoted with `'`.
+				if !stringsx.ValidUnquotedOptionValue(v) {
+					panic(NewError(E_INVALID_OPTION_VALUE, v))
 				}
 			}
-			opt.val = quote(opt.val)
-			if !opt.IsZero() {
+			if opt := NewOption(k, v, index); !opt.IsZero() {
 				if _, exists := f.options[opt.key]; !exists {
 					f.options[opt.key] = opt
 				}
@@ -230,14 +227,6 @@ func (f *Flag) Options() iter.Seq[*Option] {
 	}
 }
 
-func (f *Flag) QuotedValue() string {
-	return f.quoted
-}
-
-func (f *Flag) UnquotedValue() string {
-	return f.unquoted
-}
-
 func (f *Flag) Value() string {
 	if f.value != "" {
 		return f.value
@@ -266,13 +255,21 @@ func (f *Flag) String() string {
 }
 
 func NewOption(key string, val string, offset int) *Option {
-	return &Option{key: key, val: val, index: offset}
+	return &Option{
+		key:      key,
+		val:      val,
+		quoted:   quote(val),
+		unquoted: unquote(val),
+		index:    offset,
+	}
 }
 
 type Option struct {
-	key   string
-	val   string
-	index int
+	key      string
+	val      string
+	quoted   string
+	unquoted string
+	index    int
 }
 
 func (o *Option) IsZero() bool { return o.key == "" }
@@ -287,33 +284,47 @@ func (o *Option) String() string {
 	return o.key
 }
 
-func (o *Option) Key() string { return o.key }
-
-func (o *Option) Value() string {
-	if o.IsZero() {
-		return ""
-	}
-	return o.val
+func (o *Option) Key() string {
+	return o.key
 }
 
-func (o *Option) RawValue() []byte {
-	v := o.Value()
-	if v != "" {
-		v = unquote(v)
+func (o *Option) Value() string {
+	if !o.IsZero() {
+		return o.val
 	}
-	return []byte(v)
+	return ""
+}
+
+func (o *Option) Quoted() string {
+	if !o.IsZero() {
+		return o.quoted
+	}
+	return ""
+}
+
+func (o *Option) Unquoted() string {
+	if !o.IsZero() {
+		return o.unquoted
+	}
+	return ""
 }
 
 func unquote(s string) string {
-	if len(s) > 2 && s[0] == '\'' && s[len(s)-1] == '\'' {
-		return s[1 : len(s)-1]
+	if strings.HasPrefix(s, "'") {
+		s = strings.TrimPrefix(s, "'")
+	}
+	if strings.HasSuffix(s, "'") {
+		s = strings.TrimSuffix(s, "'")
 	}
 	return s
 }
 
 func quote(s string) string {
-	if len(s) > 2 && s[0] != '\'' && s[len(s)-1] != '\'' {
-		return `'` + s + `'`
+	if !strings.HasPrefix(s, "'") {
+		s = "'" + s
+	}
+	if !strings.HasSuffix(s, "'") {
+		s = s + "'"
 	}
 	return s
 }
