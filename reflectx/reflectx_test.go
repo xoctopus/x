@@ -345,7 +345,7 @@ func TestIsNumeric(t *testing.T) {
 
 func TestCanElemType(t *testing.T) {
 	cases := []struct {
-		value  any
+		typ    reflect.Type
 		expect bool
 	}{
 		{reflect.TypeOf([]int{}), true},
@@ -353,14 +353,13 @@ func TestCanElemType(t *testing.T) {
 		{reflect.TypeOf(1), false},
 		{reflect.TypeOf(new(int)), true},
 		{reflect.TypeOf(make(chan int)), true},
-		{reflect.ValueOf([]int{}), true},
-		{reflect.ValueOf(1), false},
-		{[]int{}, true},
-		{100, false},
+		{reflect.ValueOf([]int{}).Type(), true},
+		{reflect.ValueOf(1).Type(), false},
+		{reflect.TypeOf(nil), false},
 	}
 
 	for _, c := range cases {
-		NewWithT(t).Expect(CanElemType(c.value)).To(Equal(c.expect))
+		NewWithT(t).Expect(CanElem(c.typ)).To(Equal(c.expect))
 	}
 }
 

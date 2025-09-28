@@ -232,18 +232,16 @@ func KindOf(v any) reflect.Kind {
 	}
 }
 
-// CanElemType reports whether the given value's kind supports calling .Elem().
+// CanElem reports whether the given value's kind supports calling .Elem().
 //
-// It accepts a value of any type, including `reflect.Kind`, `reflect.Type`,
-// reflect.Value, or other Go values.
-// It returns true if the underlying kind is one of: Array, Chan, Interface, Map,
-// Pointer, or Slice. Otherwise, it returns false.
-// Check if v CanElemType before use reflect.Type.Elem() is recommended to avoid
-// panic
-func CanElemType(v any) bool {
-	switch kind := KindOf(v); kind {
-	case reflect.Array, reflect.Chan, reflect.Interface, reflect.Map,
-		reflect.Pointer, reflect.Slice:
+// It returns true if the underlying kind is one of: Array, Chan, Map, Pointer,
+// or Slice. Otherwise, it returns false.
+func CanElem(t reflect.Type) bool {
+	if t == InvalidType {
+		return false
+	}
+	switch t.Kind() {
+	case reflect.Array, reflect.Chan, reflect.Map, reflect.Pointer, reflect.Slice:
 		return true
 	default:
 		return false
