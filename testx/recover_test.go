@@ -27,4 +27,7 @@ func TestRecover(t *testing.T) {
 		}()
 		panic(1)
 	})
+	t.Run("CatchNothing", func(t *testing.T) {
+		testx.AssertRecoverContains(t, recover(), "")
+	})
 }
