@@ -30,33 +30,39 @@ type Struct struct {
 
 func TestDeepCopy(t *testing.T) {
 	t.Run("InvalidDstValue", func(t *testing.T) {
-		defer func() {
-			testx.AssertRecoverContains(t, recover(), "invalid dst value cannot set")
-		}()
 		dst := reflect.ValueOf(1)
-		NewWithT(t).Expect(dst.CanSet()).To(BeFalse())
-		DeepCopy(reflect.ValueOf(1), reflect.ValueOf(10))
+		testx.Expect(t, dst.CanSet(), testx.BeFalse())
+
+		testx.ExpectPanic(
+			t,
+			func() { DeepCopy(reflect.ValueOf(1), reflect.ValueOf(10)) },
+			testx.ErrorContains("invalid dst value cannot set"),
+		)
 	})
 	t.Run("InvalidSrcValue", func(t *testing.T) {
-		defer func() {
-			testx.AssertRecoverContains(t, recover(), "invalid src value")
-		}()
 		var i any
 		src := reflect.ValueOf(i)
-		NewWithT(t).Expect(src.IsValid()).To(BeFalse())
-		DeepCopy(reflect.ValueOf(&Struct{}).Elem().Field(1), reflect.ValueOf(i))
+
+		testx.Expect(t, src.IsValid(), testx.BeFalse())
+		testx.ExpectPanic(
+			t,
+			func() { DeepCopy(reflect.ValueOf(&Struct{}).Elem().Field(1), reflect.ValueOf(i)) },
+			testx.ErrorContains("invalid src value"),
+		)
+
 	})
 	t.Run("SameValues", func(t *testing.T) {
 		v := reflect.ValueOf(&Struct{}).Elem().Field(1)
 		DeepCopy(v, v)
 	})
 	t.Run("CannotAssignableTo", func(t *testing.T) {
-		defer func() {
-			testx.AssertRecoverContains(t, recover(), "src type cannot assign to dst")
-		}()
 		v1 := reflect.ValueOf(&Struct{}).Elem().FieldByName("Array")
 		v2 := reflect.ValueOf(&Struct{}).Elem().FieldByName("Slice")
-		DeepCopy(v1, v2)
+		testx.ExpectPanic(
+			t,
+			func() { DeepCopy(v1, v2) },
+			testx.ErrorContains("src type cannot assign to dst"),
+		)
 	})
 	t.Run("SetZeroValue", func(t *testing.T) {
 		v1 := reflect.ValueOf(&Struct{}).Elem().FieldByName("Slice")
@@ -65,20 +71,22 @@ func TestDeepCopy(t *testing.T) {
 		NewWithT(t).Expect(v1.IsZero()).To(BeTrue())
 	})
 	t.Run("UnsupportedTypeChan", func(t *testing.T) {
-		defer func() {
-			testx.AssertRecoverContains(t, recover(), "chan type cannot be copied")
-		}()
 		v1 := reflect.ValueOf(&Struct{}).Elem().FieldByName("Any")
 		v2 := reflect.ValueOf(&Struct{Chan: make(chan int)}).Elem().FieldByName("Chan")
-		DeepCopy(v1, v2)
+		testx.ExpectPanic(
+			t,
+			func() { DeepCopy(v1, v2) },
+			testx.ErrorContains("chan type cannot be copied"),
+		)
 	})
 	t.Run("UnsupportedTypeFunc", func(t *testing.T) {
-		defer func() {
-			testx.AssertRecoverContains(t, recover(), "func type cannot be copied")
-		}()
 		v1 := reflect.ValueOf(&Struct{}).Elem().FieldByName("Any")
 		v2 := reflect.ValueOf(&Struct{Func: func() {}}).Elem().FieldByName("Func")
-		DeepCopy(v1, v2)
+		testx.ExpectPanic(
+			t,
+			func() { DeepCopy(v1, v2) },
+			testx.ErrorContains("func type cannot be copied"),
+		)
 	})
 	t.Run("Hack", func(t *testing.T) {
 		t.Run("Success", func(t *testing.T) {
@@ -93,12 +101,13 @@ func TestDeepCopy(t *testing.T) {
 			NewWithT(t).Expect(reflect.DeepEqual(v1, v2))
 		})
 		t.Run("Failed", func(t *testing.T) {
-			defer func() {
-				testx.AssertRecoverContains(t, recover(), "cannot be copied")
-			}()
 			v1 := &Struct{Any: struct{ str string }{str: "Any"}}
-			v2 := Clone(v1)
-			NewWithT(t).Expect(reflect.DeepEqual(v1, v2))
+			testx.ExpectPanic(
+				t,
+				func() { _ = Clone(v1) },
+				testx.ErrorContains("unexported"),
+				testx.ErrorContains("cannot be copied"),
+			)
 		})
 	})
 
@@ -142,22 +151,26 @@ func TestHackFieldByName(t *testing.T) {
 	NewWithT(t).Expect(v.b.b0).To(Equal("def"))
 
 	t.Run("NotStructValue", func(t *testing.T) {
-		defer func() {
-			testx.AssertRecoverContains(t, recover(), "not a struct value")
-		}()
-		HackFieldByName(1, "any")
+		testx.ExpectPanic(
+			t,
+			func() { HackFieldByName(1, "any") },
+			testx.ErrorContains("not a struct value"),
+		)
+
 	})
 
 	t.Run("FieldNotFound", func(t *testing.T) {
-		defer func() {
-			testx.AssertRecoverContains(t, recover(), "not found")
-		}()
-		HackFieldByName(v, "any")
+		testx.ExpectPanic(
+			t,
+			func() { HackFieldByName(v, "any") },
+			testx.ErrorContains("not found"),
+		)
 	})
 	t.Run("CannotAddr", func(t *testing.T) {
-		defer func() {
-			testx.AssertRecoverContains(t, recover(), "cannot addr")
-		}()
-		HackFieldByName(*v, "a")
+		testx.ExpectPanic(
+			t,
+			func() { HackFieldByName(*v, "a") },
+			testx.ErrorContains("cannot addr"),
+		)
 	})
 }

@@ -12,10 +12,11 @@ import (
 func TestAssertType(t *testing.T) {
 	NewWithT(t).Expect(reflectx.MustType[int](100)).To(Equal(100))
 	t.Run("Panic", func(t *testing.T) {
-		defer func() {
-			testx.AssertRecoverContains(t, recover(), "must type")
-		}()
-		reflectx.MustType[int](100.0)
+		testx.ExpectPanic(
+			t,
+			func() { reflectx.MustType[int](100.0) },
+			testx.ErrorContains("must type"),
+		)
 	})
 	NewWithT(t).Expect(reflectx.CanCast[int](1)).To(BeTrue())
 }
