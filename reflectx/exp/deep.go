@@ -28,9 +28,9 @@ func DeepCopy(dst, src reflect.Value) {
 }
 
 func deepCopy(dst, src reflect.Value, visited map[uintptr]reflect.Value) {
-	must.BeTrueWrap(dst.CanSet(), "invalid dst value cannot set")
-	must.BeTrueWrap(src.IsValid(), "invalid src value")
-	must.BeTrueWrap(src.CanInterface(), "invalid src cannot read value")
+	must.BeTrueF(dst.CanSet(), "invalid dst value cannot set")
+	must.BeTrueF(src.IsValid(), "invalid src value")
+	must.BeTrueF(src.CanInterface(), "invalid src cannot read value")
 
 	// same value
 	if dst.CanAddr() && src.CanAddr() && dst.Addr() == src.Addr() {
@@ -44,7 +44,7 @@ func deepCopy(dst, src reflect.Value, visited map[uintptr]reflect.Value) {
 	}
 
 	tdst, tsrc := dst.Type(), src.Type()
-	must.BeTrueWrap(tsrc.AssignableTo(tdst), "src type cannot assign to dst")
+	must.BeTrueF(tsrc.AssignableTo(tdst), "src type cannot assign to dst")
 
 	if src.IsZero() {
 		dst.Set(reflect.Zero(src.Type()))
@@ -61,8 +61,8 @@ func deepCopy(dst, src reflect.Value, visited map[uintptr]reflect.Value) {
 
 	// reflect.DeepEqual does not compare Chan type, and if Func type is not nil
 	// it returns false anyway
-	must.BeTrueWrap(src.Kind() != reflect.Func, "func type cannot be copied")
-	must.BeTrueWrap(src.Kind() != reflect.Chan, "chan type cannot be copied")
+	must.BeTrueF(src.Kind() != reflect.Func, "func type cannot be copied")
+	must.BeTrueF(src.Kind() != reflect.Chan, "chan type cannot be copied")
 
 	switch src.Kind() {
 	case reflect.Array:
@@ -95,7 +95,7 @@ func deepCopy(dst, src reflect.Value, visited map[uintptr]reflect.Value) {
 	case reflect.Struct:
 		for i := range src.NumField() {
 			if !tsrc.Field(i).IsExported() {
-				must.BeTrueWrap(
+				must.BeTrueF(
 					dst.Field(i).CanAddr() && src.Field(i).CanAddr(),
 					"struct `%s` unexported field `%s` cannot be copied",
 					tsrc.String(), tsrc.Field(i).Name,
@@ -131,11 +131,11 @@ func HackFieldByName(v any, name string) reflect.Value {
 	}
 
 	rv = reflectx.Indirect(rv)
-	must.BeTrueWrap(rv.Kind() == reflect.Struct, "not a struct value")
+	must.BeTrueF(rv.Kind() == reflect.Struct, "not a struct value")
 
 	rv = rv.FieldByName(name)
-	must.BeTrueWrap(rv.IsValid(), "field `%s` not found", name)
-	must.BeTrueWrap(rv.CanAddr(), "field `%s` cannot addr", name)
+	must.BeTrueF(rv.IsValid(), "field `%s` not found", name)
+	must.BeTrueF(rv.CanAddr(), "field `%s` cannot addr", name)
 
 	return reflect.NewAt(rv.Type(), unsafe.Pointer(rv.UnsafeAddr())).Elem()
 }
@@ -153,10 +153,10 @@ func HackField(v any, i int) reflect.Value {
 	}
 
 	rv = reflectx.Indirect(rv)
-	must.BeTrueWrap(rv.Kind() == reflect.Struct, "not a struct value")
+	must.BeTrueF(rv.Kind() == reflect.Struct, "not a struct value")
 
 	rv = rv.Field(i)
-	must.BeTrueWrap(rv.CanAddr(), "field `%d` cannot addr", i)
+	must.BeTrueF(rv.CanAddr(), "field `%d` cannot addr", i)
 
 	return reflect.NewAt(rv.Type(), unsafe.Pointer(rv.UnsafeAddr())).Elem()
 }

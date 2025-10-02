@@ -1,6 +1,7 @@
 package must
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -12,7 +13,7 @@ func NoError(err error) {
 	}
 }
 
-func NoErrorWrap(err error, msg string, args ...any) {
+func NoErrorF(err error, msg string, args ...any) {
 	if err != nil {
 		panic(errors.Wrapf(err, msg, args...))
 	}
@@ -31,10 +32,18 @@ func BeTrue(ok bool) {
 	}
 }
 
-func BeTrueWrap(ok bool, msg string, args ...any) {
-	if !ok {
+func BeTrueF(b bool, msg string, args ...any) {
+	if !b {
 		panic(errors.Errorf("must be true: "+msg, args...))
 	}
+}
+
+func BeTrueWrap(b bool, w error) {
+	BeTrueF(b, "[err: %v]", w)
+}
+
+func BeTrueWrapF(b bool, w error, msg string, args ...any) {
+	BeTrueF(b, msg+fmt.Sprintf(" [err: %v]", w), args...)
 }
 
 func BeTrueV[V any](v V, ok bool) V {
@@ -45,23 +54,23 @@ func BeTrueV[V any](v V, ok bool) V {
 }
 
 func NotNilV[V any](v V) V {
-	NotNilWrap(any(v), "")
+	NotNilF(any(v), "")
 	return v
 }
 
-func NotNilWrap(v any, msg string, args ...any) {
+func NotNilF(v any, msg string, args ...any) {
 	format := ""
 	rv := reflect.ValueOf(v)
 	switch kind := rv.Kind(); kind {
 	default:
 		return
 	case reflect.Invalid:
-		format = "must not nil, but got invalid value"
+		format = "must not nil, but got invalid value."
 		goto Panic
 	case reflect.Chan, reflect.Func, reflect.Pointer, reflect.UnsafePointer,
 		reflect.Slice, reflect.Map:
 		if rv.IsNil() {
-			format = "must not nil for type `%s`"
+			format = "must not nil for type `%s`."
 			args = append([]any{rv.Type()}, args...)
 			goto Panic
 		}
@@ -71,7 +80,16 @@ Panic:
 	if msg != "" {
 		format = format + " " + msg
 	}
-	panic(errors.Errorf(format, args...))
+	err := errors.Errorf(format, args...)
+	panic(err)
+}
+
+func NotNilWrap(v any, w error) {
+	NotNilF(v, "[err: %v]", w)
+}
+
+func NotNilWrapF(v any, w error, msg string, args ...any) {
+	NotNilF(v, msg+fmt.Sprintf(" [err: %v]", w), args...)
 }
 
 func IdenticalTypes(t1, t2 any) bool {

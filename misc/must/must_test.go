@@ -12,110 +12,88 @@ import (
 	"github.com/xoctopus/x/misc/must"
 )
 
-func ReturnError() error {
-	return errors.New("some error")
-}
-
-func ReturnNoError() error {
-	return nil
-}
-
-func ReturnIntError() (int, error) {
-	return 100, errors.New("some error")
-}
-
-func ReturnIntNoError() (int, error) {
-	return 100, nil
-}
-
-func ReturnTrue() bool {
-	return true
-}
-
-func ReturnFalse() bool {
-	return false
-}
-
-func ReturnIntTrue() (int, bool) {
-	return 100, true
-}
-
-func ReturnIntFalse() (int, bool) {
-	return 100, false
-}
-
 func ExampleNoError() {
-	must.NoError(ReturnNoError())
-
-	defer func() {
-		fmt.Println(recover())
+	must.NoError(nil)
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		must.NoError(errors.New("NoError: some error"))
 	}()
-	must.NoError(ReturnError())
+
+	fmt.Println(must.NoErrorV(100, nil))
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		must.NoErrorV(100, errors.New("NoErrorV: some error"))
+	}()
+
+	must.NoErrorF(nil, "any")
+
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		must.NoErrorF(errors.New("some error"), "NoErrorF: some message: %d", 10)
+	}()
 
 	// Output:
-	// some error
-}
-
-func ExampleNoErrorV() {
-	fmt.Println(must.NoErrorV(ReturnIntNoError()))
-
-	defer func() {
-		fmt.Println(recover())
-	}()
-	must.NoErrorV(ReturnIntError())
-
-	// Output:
+	// NoError: some error
 	// 100
-	// some error
-}
-
-func ExampleNoErrorWrap() {
-	must.NoErrorWrap(ReturnNoError(), "any")
-
-	defer func() {
-		fmt.Println(recover())
-	}()
-	must.NoErrorWrap(ReturnError(), "some message: %d", 10)
-
-	// Output:
-	// some message: 10: some error
+	// NoErrorV: some error
+	// NoErrorF: some message: 10: some error
 }
 
 func ExampleBeTrue() {
-	must.BeTrue(ReturnTrue())
-
-	defer func() {
-		fmt.Println(recover())
+	must.BeTrue(true)
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		must.BeTrue(false)
 	}()
-	must.BeTrue(ReturnFalse())
+
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		must.BeTrueWrap(false, errors.New("BeTrueWrap: some error"))
+	}()
+
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		must.BeTrueWrapF(false, errors.New("some error"), "BeTrueWrapF: message and args: %d", 100)
+	}()
+
+	f1 := func() (int, bool) { return 100, true }
+	f2 := func() (int, bool) { return 100, false }
+
+	fmt.Println(must.BeTrueV(f1()))
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		_ = must.BeTrueV(f2())
+	}()
+
+	must.BeTrueF(true, "any")
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		must.BeTrueF(false, "BeTrueF: required exists")
+	}()
 
 	// Output:
 	// must be true
-}
-
-func ExampleBeTrueV() {
-	fmt.Println(must.BeTrueV(ReturnIntTrue()))
-
-	defer func() {
-		fmt.Println(recover())
-	}()
-	_ = must.BeTrueV(ReturnIntFalse())
-
-	// Output:
+	// must be true: [err: BeTrueWrap: some error]
+	// must be true: BeTrueWrapF: message and args: 100 [err: some error]
 	// 100
 	// must be true
-}
-
-func ExampleBeTrueWrap() {
-	must.BeTrueWrap(ReturnTrue(), "any")
-
-	defer func() {
-		fmt.Println(recover())
-	}()
-	must.BeTrueWrap(ReturnFalse(), "required exists")
-
-	// Output:
-	// must be true: required exists
+	// must be true: BeTrueF: required exists
 }
 
 func ExampleNotNilV() {
@@ -133,36 +111,74 @@ func ExampleNotNilV() {
 	for i := range rv.NumField() {
 		func(v any) {
 			defer func() {
-				if err := recover(); err != nil {
-					fmt.Println(err)
-				}
+				fmt.Println(recover())
 			}()
 			must.NotNilV(v)
+		}(rv.Field(i).Interface())
+
+		func(v any) {
+			defer func() {
+				fmt.Println(recover())
+			}()
+			must.NotNilF(v, "business message: %v", 100)
+		}(rv.Field(i).Interface())
+
+		func(v any) {
+			defer func() {
+				fmt.Println(recover())
+			}()
+			must.NotNilWrap(v, errors.Errorf("business message: %v", 101))
+		}(rv.Field(i).Interface())
+
+		func(v any) {
+			defer func() {
+				fmt.Println(recover())
+			}()
+			must.NotNilWrapF(v, errors.Errorf("business message: %v", 101), "more custom message and args: %d", 102)
 		}(rv.Field(i).Interface())
 	}
 	fmt.Println(must.NotNilV(1))
 	fmt.Println(*must.NotNilV(new(int)))
 
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err)
-		}
-	}()
-	must.NotNilWrap((*int)(nil), "business message %v", 100)
-
 	// Output:
-	// must not nil, but got invalid value
-	// must not nil, but got invalid value
-	// must not nil, but got invalid value
-	// must not nil for type `chan error`
-	// must not nil for type `func()`
-	// must not nil for type `*int`
-	// must not nil for type `unsafe.Pointer`
-	// must not nil for type `[]int`
-	// must not nil for type `map[string]int`
+	// must not nil, but got invalid value.
+	// must not nil, but got invalid value. business message: 100
+	// must not nil, but got invalid value. [err: business message: 101]
+	// must not nil, but got invalid value. more custom message and args: 102 [err: business message: 101]
+	// must not nil, but got invalid value.
+	// must not nil, but got invalid value. business message: 100
+	// must not nil, but got invalid value. [err: business message: 101]
+	// must not nil, but got invalid value. more custom message and args: 102 [err: business message: 101]
+	// must not nil, but got invalid value.
+	// must not nil, but got invalid value. business message: 100
+	// must not nil, but got invalid value. [err: business message: 101]
+	// must not nil, but got invalid value. more custom message and args: 102 [err: business message: 101]
+	// must not nil for type `chan error`.
+	// must not nil for type `chan error`. business message: 100
+	// must not nil for type `chan error`. [err: business message: 101]
+	// must not nil for type `chan error`. more custom message and args: 102 [err: business message: 101]
+	// must not nil for type `func()`.
+	// must not nil for type `func()`. business message: 100
+	// must not nil for type `func()`. [err: business message: 101]
+	// must not nil for type `func()`. more custom message and args: 102 [err: business message: 101]
+	// must not nil for type `*int`.
+	// must not nil for type `*int`. business message: 100
+	// must not nil for type `*int`. [err: business message: 101]
+	// must not nil for type `*int`. more custom message and args: 102 [err: business message: 101]
+	// must not nil for type `unsafe.Pointer`.
+	// must not nil for type `unsafe.Pointer`. business message: 100
+	// must not nil for type `unsafe.Pointer`. [err: business message: 101]
+	// must not nil for type `unsafe.Pointer`. more custom message and args: 102 [err: business message: 101]
+	// must not nil for type `[]int`.
+	// must not nil for type `[]int`. business message: 100
+	// must not nil for type `[]int`. [err: business message: 101]
+	// must not nil for type `[]int`. more custom message and args: 102 [err: business message: 101]
+	// must not nil for type `map[string]int`.
+	// must not nil for type `map[string]int`. business message: 100
+	// must not nil for type `map[string]int`. [err: business message: 101]
+	// must not nil for type `map[string]int`. more custom message and args: 102 [err: business message: 101]
 	// 1
 	// 0
-	// must not nil for type `*int` business message 100
 }
 
 func TestIdenticalTypes(t *testing.T) {
