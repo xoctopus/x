@@ -34,6 +34,10 @@ func Marshal(v any) ([]byte, error) {
 		output, err := rv.Interface().(encoding.TextMarshaler).MarshalText()
 		return output, NewErrMarshalFailed(v, err)
 	}
+	if reflect.PointerTo(rt).Implements(TextUnmarshaler) && rv.CanAddr() {
+		output, err := rv.Addr().Interface().(encoding.TextMarshaler).MarshalText()
+		return output, NewErrMarshalFailed(v, err)
+	}
 
 	output := make([]byte, 0, 8)
 
@@ -76,7 +80,7 @@ func Unmarshal(data []byte, v any) error {
 	}
 
 	rt := rv.Type()
-	if reflect.PointerTo(rt).Implements(TextUnmarshaler) {
+	if reflect.PointerTo(rt).Implements(TextUnmarshaler) && rv.CanAddr() {
 		err := rv.Addr().Interface().(encoding.TextUnmarshaler).UnmarshalText(data)
 		return NewErrUnmarshalFailed(data, v, err)
 	}

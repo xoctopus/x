@@ -3,6 +3,8 @@ package textx_test
 import (
 	"bytes"
 	"errors"
+	"math/big"
+	"reflect"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -44,6 +46,10 @@ func TestMarshalText(t *testing.T) {
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
 				0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			},
+		},
+		"Arshaler3": {
+			reflect.ValueOf(&struct{ *big.Float }{big.NewFloat(100.001)}).Elem().Field(0),
+			[]byte("100.001"),
 		},
 		"UnsupportedType":   {[]int{1, 2, 3}, AsErrMarshalUnsupportedType},
 		"MarshalTextFailed": {testdata.MustFailedArshaler{}, AsErrMarshalFailed},
