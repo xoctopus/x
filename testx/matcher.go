@@ -182,3 +182,11 @@ func ErrorContains(sub string) Matcher[error] {
 		},
 	)(sub)
 }
+
+func Succeed() Matcher[error] {
+	return NewMatcher("Succeed", func(e error) bool { return e == nil })
+}
+
+func Failed() Matcher[error] {
+	return Not(Succeed())
+}
