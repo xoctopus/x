@@ -85,5 +85,7 @@ func TestExpect(t *testing.T) {
 		Expect[any](t, String("1"), Not(BeType[string]()))
 		Expect[any](t, String("1"), Not(BeAssignableTo[string]()))
 		Expect[any](t, String("1"), BeConvertibleTo[string]())
+
+		Expect(t, errors.New("any"), Failed())
 	})
 }
