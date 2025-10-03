@@ -32,7 +32,17 @@ func Not[A any](matcher Matcher[A]) Matcher[A] {
 
 func BeNil[A any]() Matcher[A] {
 	return NewMatcher[A]("BeNil", func(a A) bool {
-		return any(a) == nil
+		v := reflect.ValueOf(a)
+		if !v.IsValid() {
+			return true
+		}
+		switch v.Kind() {
+		case reflect.Chan, reflect.Func, reflect.Interface,
+			reflect.Map, reflect.Pointer, reflect.Slice:
+			return v.IsNil()
+		default:
+			return false
+		}
 	})
 }
 
@@ -181,4 +191,12 @@ func ErrorContains(sub string) Matcher[error] {
 			return strings.Contains(actual.Error(), sub)
 		},
 	)(sub)
+}
+
+func Succeed() Matcher[error] {
+	return NewMatcher("Succeed", func(e error) bool { return e == nil })
+}
+
+func Failed() Matcher[error] {
+	return Not(Succeed())
 }
