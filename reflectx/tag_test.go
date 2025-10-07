@@ -5,10 +5,10 @@ import (
 	"reflect"
 	"testing"
 
-	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 
 	. "github.com/xoctopus/x/reflectx"
+	. "github.com/xoctopus/x/testx"
 )
 
 func TestParseFlags(t *testing.T) {
@@ -62,21 +62,21 @@ func TestParseFlags(t *testing.T) {
 				if c.err != nil {
 					defer func() {
 						err := recover().(error)
-						NewWithT(t).Expect(errors.Is(c.err, err)).To(BeTrue())
+						Expect(t, errors.Is(c.err, err), BeTrue())
 						fmt.Println(err)
 						// _ = c.err.Error()
 					}()
 				}
 				tag := ParseTag(c.tag)
-				NewWithT(t).Expect(tag).To(HaveLen(0))
+				Expect(t, tag, HaveLen[Tag](0))
 			})
 		}
 	})
 
 	t.Run("FlagDuplicated", func(t *testing.T) {
 		tag := ParseTag(`json:"conflict" json:"ignored"`)
-		NewWithT(t).Expect(tag).To(HaveLen(1))
-		NewWithT(t).Expect(tag.Get("json").Value()).To(Equal(`"conflict"`))
+		Expect(t, tag, HaveLen[Tag](1))
+		Expect(t, tag.Get("json").Value(), Equal(`"conflict"`))
 	})
 
 	t.Run("Success", func(t *testing.T) {
@@ -132,21 +132,21 @@ func TestParseFlags(t *testing.T) {
 		for name, c := range cases {
 			t.Run(name, func(t *testing.T) {
 				tag := ParseTag(reflect.StructTag(c.tag))
-				NewWithT(t).Expect(tag.Get("x")).To(BeNil())
+				Expect(t, tag.Get("x"), BeNil[*Flag]())
 
 				f := tag.Get("tag")
-				NewWithT(t).Expect(f.Key()).To(Equal("tag"))
-				NewWithT(t).Expect(f.Name()).To(Equal(c.name))
-				NewWithT(t).Expect(f.Value()).To(Equal(c.value))
-				NewWithT(t).Expect(f.String()).To(Equal(c.prettied))
-				NewWithT(t).Expect(f.OptionLen()).To(Equal(len(c.options)))
+				Expect(t, f.Key(), Equal("tag"))
+				Expect(t, f.Name(), Equal(c.name))
+				Expect(t, f.Value(), Equal(c.value))
+				Expect(t, f.String(), Equal(c.prettied))
+				Expect(t, f.OptionLen(), Equal(len(c.options)))
 				for o := range f.Options() {
 					k := o.Key()
-					NewWithT(t).Expect(f.HasOption(k)).To(BeTrue())
-					NewWithT(t).Expect(f.Option(k)).To(Equal(o))
-					NewWithT(t).Expect(o.Value()).To(Equal(c.options[k].Value()))
-					NewWithT(t).Expect(o.Quoted()).To(Equal(c.options[k].Quoted()))
-					NewWithT(t).Expect(o.Unquoted()).To(Equal(c.options[k].Unquoted()))
+					Expect(t, f.HasOption(k), BeTrue())
+					Expect(t, f.Option(k), Equal(o))
+					Expect(t, o.Value(), Equal(c.options[k].Value()))
+					Expect(t, o.Quoted(), Equal(c.options[k].Quoted()))
+					Expect(t, o.Unquoted(), Equal(c.options[k].Unquoted()))
 				}
 			})
 		}
@@ -158,12 +158,12 @@ func TestParseFlags(t *testing.T) {
 			NewOption("", "has", 0),
 		}
 		for _, option := range options {
-			NewWithT(t).Expect(option.IsZero()).To(BeTrue())
-			NewWithT(t).Expect(option.Key()).To(Equal(""))
-			NewWithT(t).Expect(option.Value()).To(Equal(""))
-			NewWithT(t).Expect(option.Quoted()).To(Equal(""))
-			NewWithT(t).Expect(option.Unquoted()).To(Equal(""))
-			NewWithT(t).Expect(option.String()).To(Equal(""))
+			Expect(t, option.IsZero(), BeTrue())
+			Expect(t, option.Key(), Equal(""))
+			Expect(t, option.Value(), Equal(""))
+			Expect(t, option.Quoted(), Equal(""))
+			Expect(t, option.Unquoted(), Equal(""))
+			Expect(t, option.String(), Equal(""))
 		}
 	})
 }

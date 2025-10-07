@@ -6,10 +6,9 @@ import (
 	"testing"
 	"unsafe"
 
-	. "github.com/onsi/gomega"
-
 	"github.com/xoctopus/x/ptrx"
 	. "github.com/xoctopus/x/reflectx"
+	. "github.com/xoctopus/x/testx"
 )
 
 type (
@@ -39,7 +38,7 @@ func TestIndirect(t *testing.T) {
 			input:  nil,
 			expect: InvalidValue,
 			check: func(t *testing.T, result reflect.Value) {
-				NewWithT(t).Expect(result.IsValid()).To(BeFalse())
+				Expect(t, result.IsValid(), BeFalse())
 			},
 		}, {
 			name:   "BasicInt",
@@ -77,7 +76,7 @@ func TestIndirect(t *testing.T) {
 			name:  "InterfaceNil",
 			input: Interface(nil),
 			check: func(t *testing.T, result reflect.Value) {
-				NewWithT(t).Expect(result.IsValid()).To(BeFalse())
+				Expect(t, result.IsValid(), BeFalse())
 			},
 		},
 	}
@@ -91,9 +90,9 @@ func TestIndirect(t *testing.T) {
 				return
 			}
 
-			NewWithT(t).Expect(result.IsValid()).To(BeTrue())
-			NewWithT(t).Expect(result.Type()).To(Equal(c.expect.Type()))
-			NewWithT(t).Expect(result.Interface()).To(Equal(c.expect.Interface()))
+			Expect(t, result.IsValid(), BeTrue())
+			Expect(t, result.Type(), Equal(c.expect.Type()))
+			Expect(t, result.Interface(), Equal(c.expect.Interface()))
 		})
 	}
 }
@@ -120,16 +119,16 @@ func TestIndirectNew(t *testing.T) {
 	for _, c := range cases {
 		result := IndirectNew(c.Input)
 		if c.expect == InvalidValue {
-			NewWithT(t).Expect(result).To(Equal(c.expect))
+			Expect(t, result, Equal(c.expect))
 			continue
 		}
-		NewWithT(t).Expect(result.Type()).To(Equal(c.expect.Type()))
-		NewWithT(t).Expect(result.Interface()).To(Equal(c.expect.Interface()))
+		Expect(t, result.Type(), Equal(c.expect.Type()))
+		Expect(t, result.Interface(), Equal(c.expect.Interface()))
 	}
 
 	v2f0rv := IndirectNew(reflect.ValueOf(v2).Elem().Field(0))
 	v2f0rv.Set(reflect.ValueOf(100))
-	NewWithT(t).Expect(***v2.Int).To(Equal(100))
+	Expect(t, ***v2.Int, Equal(100))
 }
 
 func TestDeref(t *testing.T) {
@@ -148,9 +147,9 @@ func TestDeref(t *testing.T) {
 	for _, c := range cases {
 		result := Deref(reflect.TypeOf(c.input))
 		if c.expect == InvalidType {
-			NewWithT(t).Expect(result).To(BeNil())
+			Expect(t, result, BeNil[reflect.Type]())
 		} else {
-			NewWithT(t).Expect(result).To(Equal(c.expect))
+			Expect(t, result, Equal(c.expect))
 		}
 	}
 }
@@ -173,8 +172,8 @@ func TestNew(t *testing.T) {
 		rv := New(rt)
 		rve := NewElem(rt)
 
-		NewWithT(t).Expect(rv.Type()).To(Equal(c.orig))
-		NewWithT(t).Expect(rve.Type()).To(Equal(c.elem))
+		Expect(t, rv.Type(), Equal(c.orig))
+		Expect(t, rve.Type(), Equal(c.elem))
 	}
 }
 
@@ -240,7 +239,7 @@ func TestIsZero(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		NewWithT(t).Expect(IsZero(c.value)).To(Equal(c.zero))
+		Expect(t, IsZero(c.value), Equal(c.zero))
 	}
 }
 
@@ -261,7 +260,7 @@ func TestTypename(t *testing.T) {
 
 	for _, c := range cases {
 		typename := Typename(reflect.TypeOf(c.value))
-		NewWithT(t).Expect(typename).To(Equal(c.typename))
+		Expect(t, typename, Equal(c.typename))
 	}
 }
 
@@ -280,7 +279,7 @@ func TestIsBytes(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		NewWithT(t).Expect(IsBytes(c.value)).To(Equal(c.expect))
+		Expect(t, IsBytes(c.value), Equal(c.expect))
 	}
 }
 
@@ -299,7 +298,7 @@ func TestIsInteger(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		NewWithT(t).Expect(IsInteger(c.value)).To(Equal(c.expect))
+		Expect(t, IsInteger(c.value), Equal(c.expect))
 	}
 }
 
@@ -318,7 +317,7 @@ func TestIsFloat(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		NewWithT(t).Expect(IsFloat(c.value)).To(Equal(c.expect))
+		Expect(t, IsFloat(c.value), Equal(c.expect))
 	}
 }
 
@@ -339,7 +338,7 @@ func TestIsNumeric(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		NewWithT(t).Expect(IsNumeric(c.value)).To(Equal(c.expect))
+		Expect(t, IsNumeric(c.value), Equal(c.expect))
 	}
 }
 
@@ -359,7 +358,7 @@ func TestCanElemType(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		NewWithT(t).Expect(CanElem(c.typ)).To(Equal(c.expect))
+		Expect(t, CanElem(c.typ), Equal(c.expect))
 	}
 }
 
@@ -383,10 +382,10 @@ func TestCanNilValue(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		NewWithT(t).Expect(CanNilValue(c.value)).To(Equal(c.expect))
+		Expect(t, CanNilValue(c.value), Equal(c.expect))
 	}
 
 	// type nil trap
 	var v interface{} = []int(nil)
-	NewWithT(t).Expect(CanNilValue(v)).To(Equal(true))
+	Expect(t, CanNilValue(v), BeTrue())
 }
