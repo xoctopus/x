@@ -6,7 +6,7 @@ import (
 	"reflect"
 )
 
-// WithValue like context.WithValue but faster
+// WithValue like context.WithValue but faster🤏
 func WithValue(parent context.Context, k, v any) context.Context {
 	if parent == nil {
 		panic("parent is nil")
@@ -17,6 +17,42 @@ func WithValue(parent context.Context, k, v any) context.Context {
 	return &kv{parent, k, v}
 }
 
+/*
+kv vs context.Context: when finding key
+
+context.Context
++----------------+
+| ctx.Value(key) |
++----------------+
+
+	|
+	v
+
++---------------------+
+| Value method of kv? |  (kv from WithValue)
++---------------------+
+
+	  |
+	  |-- key matches? --> return v
+	  |-- key not match? --> ctx.parent.Value(key)
+	  v
+	traverse recursively up to root context.Background()
+
+kv
++-------------------+
+| c.Value(key)      |
++-------------------+
+
+	|
+	v
+
++-------------------+
+| if c.k == key     |
++-------------------+
+
+	|-- match --> return c.v
+	|-- no match --> c.Context.Value(key) // to traverse std.Context
+*/
 type kv struct {
 	context.Context
 	k, v any

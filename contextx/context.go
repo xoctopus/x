@@ -56,7 +56,8 @@ func (c *ctx[T]) From(ctx context.Context) (T, bool) {
 	if c.defaulter != nil {
 		return c.defaulter(), true
 	}
-	return *new(T), false
+	var zero T
+	return zero, false
 }
 
 func (c *ctx[T]) MustFrom(ctx context.Context) T {

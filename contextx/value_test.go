@@ -17,16 +17,33 @@ type key struct{}
 func BenchmarkWithValue(b *testing.B) {
 	parent := context.Background()
 
-	b.Run("std.Context", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			_ = context.WithValue(parent, key{}, nil)
-		}
+	b.Run("WithValue", func(b *testing.B) {
+		b.Run("std.Context", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				_ = context.WithValue(parent, key{}, "value")
+			}
+		})
+		b.Run("x.Contextx", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				_ = contextx.WithValue(parent, key{}, "value")
+			}
+		})
 	})
-	b.Run("x.Contextx", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			_ = contextx.WithValue(parent, key{}, nil)
-		}
+
+	b.Run("Value", func(b *testing.B) {
+		b.Run("std.Context", func(b *testing.B) {
+			for b.Loop() {
+				_ = parent.Value(key{})
+			}
+		})
+		b.Run("x.Contextx", func(b *testing.B) {
+			c := contextx.NewT[key]()
+			for b.Loop() {
+				_, _ = c.From(parent)
+			}
+		})
 	})
+
 }
 
 func TestWithValue(t *testing.T) {
