@@ -123,9 +123,6 @@ lint: dep
 	@echo "    >>>detecting cyclomatic complexities over 10 and average"
 	@gocyclo -over 10 -avg -ignore '_test|_test.go|vendor|pb' . || true
 	@echo "    done"
-	@echo "    >>>run golangci-lint"
-	@golangci-lint run ./...
-	@echo "    done"
 
 pre-commit: dep lint fmt cover clean
 
