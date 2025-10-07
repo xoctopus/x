@@ -181,6 +181,33 @@ func ExampleNotNilV() {
 	// 0
 }
 
+func ExampleSuccess() {
+	x := must.Success(func() (int, error) { return 100, nil })
+	fmt.Println(x)
+
+	x = must.OK(func() (int, bool) { return 100, true })
+	fmt.Println(x)
+
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		_ = must.Success(func() (int, error) { return 0, errors.New("some error") })
+	}()
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		_ = must.OK(func() (int, bool) { return 0, false })
+	}()
+
+	// Output:
+	// 100
+	// 100
+	// some error
+	// must be true
+}
+
 func TestIdenticalTypes(t *testing.T) {
 	NewWithT(t).Expect(must.IdenticalTypes(1, 1)).To(BeTrue())
 }

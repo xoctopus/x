@@ -103,3 +103,15 @@ func IdenticalTypes(t1, t2 any) bool {
 	}
 	return rt1 == rt2
 }
+
+func Success[T any](f func() (T, error)) T {
+	v, err := f()
+	NoError(err)
+	return v
+}
+
+func OK[T any](f func() (T, bool)) T {
+	v, ok := f()
+	BeTrue(ok)
+	return v
+}
