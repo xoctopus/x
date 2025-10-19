@@ -1,22 +1,13 @@
 package textx_test
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"testing"
 
-	. "github.com/onsi/gomega"
-
+	. "github.com/xoctopus/x/testx"
 	. "github.com/xoctopus/x/textx"
 	"github.com/xoctopus/x/textx/testdata"
-)
-
-var (
-	AsErrUnmarshalURLInvalidInput *ErrUnmarshalURLInvalidInput
-	AsErrMarshalURLInvalidInput   *ErrMarshalURLInvalidInput
-	AsErrMarshalURLFailed         *ErrMarshalURLFailed
-	AsErrUnmarshalURLFailed       *ErrUnmarshalURLFailed
 )
 
 type Value struct {
@@ -43,28 +34,28 @@ var DefaultValue = Value{
 func TestMarshalURL(t *testing.T) {
 	t.Run("InvalidInput", func(t *testing.T) {
 		u, err := MarshalURL(nil)
-		NewWithT(t).Expect(err).To(BeNil())
-		NewWithT(t).Expect(u).To(Equal(url.Values{}))
+		Expect(t, err, BeNil[error]())
+		Expect(t, u, Equal(url.Values{}))
 
 		u, err = MarshalURL((*struct{})(nil))
-		NewWithT(t).Expect(err).To(BeNil())
-		NewWithT(t).Expect(u).To(Equal(url.Values{}))
+		Expect(t, err, BeNil[error]())
+		Expect(t, u, Equal(url.Values{}))
 
 		_, err = MarshalURL(1)
-		NewWithT(t).Expect(errors.As(err, &AsErrMarshalURLInvalidInput)).To(BeTrue())
+		Expect(t, err, IsError(NewEcodeError(ECODE__MARSHAL_URL_INVALID_INPUT)))
 	})
 
-	t.Run("FailedMarshalTest", func(t *testing.T) {
+	t.Run("FailedMarshal", func(t *testing.T) {
 		_, err := MarshalURL(struct{ testdata.MustFailedArshaler }{testdata.MustFailedArshaler{V: 1}})
-		NewWithT(t).Expect(errors.As(err, &AsErrMarshalURLFailed)).To(BeTrue())
+		Expect(t, err, IsError(NewEcodeError(ECODE__MARSHAL_URL_FAILED)))
 
 		_, err = MarshalURL(struct{ V []testdata.MustFailedArshaler }{V: []testdata.MustFailedArshaler{{}}})
-		NewWithT(t).Expect(errors.As(err, &AsErrMarshalURLFailed)).To(BeTrue())
+		Expect(t, err, IsError(NewEcodeError(ECODE__MARSHAL_URL_FAILED)))
 	})
 
 	u, err := MarshalURL(DefaultValue)
-	NewWithT(t).Expect(err).To(BeNil())
-	NewWithT(t).Expect(u).To(Equal(url.Values{
+	Expect(t, err, BeNil[error]())
+	Expect(t, u, Equal(url.Values{
 		"activeTasks": {"5"},
 		"idleTasks":   {"3"},
 		"db":          {"10"},
@@ -77,23 +68,23 @@ func TestUnmarshalURL(t *testing.T) {
 	t.Run("InvalidInput", func(t *testing.T) {
 		for _, v := range []any{nil, new(int)} {
 			err := UnmarshalURL(url.Values{}, v)
-			NewWithT(t).Expect(errors.As(err, &AsErrUnmarshalURLInvalidInput)).To(BeTrue())
+			Expect(t, err, IsError(NewEcodeError(ECODE__UNMARSHAL_URL_INVALID_INPUT)))
 		}
 	})
 
 	t.Run("UnmarshalDefault", func(t *testing.T) {
 		v1 := &Value{}
 		err := UnmarshalURL(url.Values{}, v1)
-		NewWithT(t).Expect(err).To(BeNil())
-		NewWithT(t).Expect(*v1).To(Equal(DefaultValue))
+		Expect(t, err, Succeed())
+		Expect(t, *v1, Equal(DefaultValue))
 
 		v2 := (*Value)(nil)
 		_ = UnmarshalURL(url.Values{}, &v2)
-		NewWithT(t).Expect(*v2).To(Equal(DefaultValue))
+		Expect(t, *v2, Equal(DefaultValue))
 
 		v3 := (**Value)(nil)
 		_ = UnmarshalURL(url.Values{}, &v3)
-		NewWithT(t).Expect(**v3).To(Equal(DefaultValue))
+		Expect(t, **v3, Equal(DefaultValue))
 	})
 
 	t.Run("OverwriteDefault", func(t *testing.T) {
@@ -108,8 +99,8 @@ func TestUnmarshalURL(t *testing.T) {
 			"unexported":  {"unexported"},
 			"codes":       {"d", "e", "f"},
 		}, v)
-		NewWithT(t).Expect(err).To(BeNil())
-		NewWithT(t).Expect(*v).To(Equal(Value{
+		Expect(t, err, Succeed())
+		Expect(t, *v, Equal(Value{
 			Active:    10,
 			IdleTasks: 100,
 			DB:        "database",
@@ -123,14 +114,14 @@ func TestUnmarshalURL(t *testing.T) {
 	t.Run("FailedUnmarshalText", func(t *testing.T) {
 		v := &Value{}
 		err := UnmarshalURL(url.Values{"noTag": {"abc"}}, v)
-		NewWithT(t).Expect(err).NotTo(BeNil())
-		NewWithT(t).Expect(errors.As(err, &AsErrUnmarshalURLFailed)).To(BeTrue())
-		NewWithT(t).Expect(errors.As(err, &AsErrUnmarshalParseFailed)).To(BeTrue())
+		Expect(t, err, Failed())
+		Expect(t, err, IsError(NewEcodeError(ECODE__UNMARSHAL_URL_FAILED)))
 
 		v2 := struct{ V []testdata.MustFailedArshaler }{}
 		err = UnmarshalURL(url.Values{"v": {""}}, &v2)
-		NewWithT(t).Expect(errors.As(err, &AsErrUnmarshalURLFailed)).To(BeTrue())
-		NewWithT(t).Expect(errors.As(err, &AsErrUnmarshalFailed)).To(BeTrue())
+		Expect(t, err, Failed())
+		Expect(t, err, IsError(NewEcodeError(ECODE__UNMARSHAL_URL_FAILED)))
+		Expect(t, err, IsError(NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)))
 	})
 }
 

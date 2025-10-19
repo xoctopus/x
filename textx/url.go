@@ -1,7 +1,6 @@
 package textx
 
 import (
-	"fmt"
 	"go/ast"
 	"net/url"
 	"reflect"
@@ -32,7 +31,7 @@ func MarshalURL(v any) (url.Values, error) {
 	}
 
 	if rv.Kind() != reflect.Struct {
-		return nil, NewErrMarshalURLInvalidInput(v)
+		return nil, NewEcodeErrorf(ECODE__MARSHAL_URL_INVALID_INPUT, "expect struct type")
 	}
 
 	u := url.Values{}
@@ -72,7 +71,10 @@ func MarshalURL(v any) (url.Values, error) {
 			for idx := 0; idx < fi.Len(); idx++ {
 				text, err := Marshal(fi.Index(idx))
 				if err != nil {
-					return nil, NewErrMarshalURLFailed(v, fmt.Sprintf("%s[%d]", sf.Name, idx), err)
+					return nil, NewEcodeErrorWrapf(
+						ECODE__MARSHAL_URL_FAILED, err,
+						"field %s[%d]", sf.Name, idx,
+					)
 				}
 				u[name] = append(u[name], string(text))
 			}
@@ -80,7 +82,10 @@ func MarshalURL(v any) (url.Values, error) {
 		}
 		text, err := Marshal(rv.Field(i))
 		if err != nil {
-			return nil, NewErrMarshalURLFailed(v, sf.Name, err)
+			return nil, NewEcodeErrorWrapf(
+				ECODE__MARSHAL_URL_FAILED, err,
+				"field %s", sf.Name,
+			)
 		}
 		u[name] = append(u[name], string(text))
 	}
@@ -104,11 +109,11 @@ func UnmarshalURL(u url.Values, v any) error {
 	}
 
 	if !rv.CanSet() {
-		return NewErrUnmarshalURLInvalidInput(v)
+		return NewEcodeErrorf(ECODE__UNMARSHAL_URL_INVALID_INPUT, "must canbe set")
 	}
 
 	if rv.Kind() != reflect.Struct {
-		return NewErrUnmarshalURLInvalidInput(v)
+		return NewEcodeErrorf(ECODE__UNMARSHAL_URL_INVALID_INPUT, "expect struct type")
 	}
 
 	rt := rv.Type()
@@ -141,7 +146,10 @@ func UnmarshalURL(u url.Values, v any) error {
 			for idx, text := range u[name] {
 				elem := reflect.New(fi.Type().Elem()).Elem()
 				if err := Unmarshal([]byte(text), elem); err != nil {
-					return NewErrUnmarshalURLFailed(v, fmt.Sprintf("%s[%d]", sf.Name, idx), text, err)
+					return NewEcodeErrorWrapf(
+						ECODE__UNMARSHAL_URL_FAILED,
+						err, "parse %s[%d] from `%s`", sf.Name, idx, text,
+					)
 				}
 				fi.Set(reflect.Append(fi, elem))
 			}
@@ -156,7 +164,10 @@ func UnmarshalURL(u url.Values, v any) error {
 		}
 		if len(text) > 0 {
 			if err := Unmarshal([]byte(text), rv.Field(i)); err != nil {
-				return NewErrUnmarshalURLFailed(v, sf.Name, text, err)
+				return NewEcodeErrorWrapf(
+					ECODE__UNMARSHAL_URL_FAILED, err,
+					"parse field %s from %s", sf.Name, text,
+				)
 			}
 		}
 	}

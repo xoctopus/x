@@ -1,11 +1,8 @@
 package reflectx_test
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
-
-	"github.com/pkg/errors"
 
 	. "github.com/xoctopus/x/reflectx"
 	. "github.com/xoctopus/x/testx"
@@ -29,46 +26,41 @@ func TestParseFlags(t *testing.T) {
 			{
 				name: "UnquotedFlagValue",
 				tag:  reflect.StructTag(`any:"x`),
-				err:  NewError(E_INVALID_FLAG_VALUE, ""),
+				err:  NewEcodeError(ECODE__INVALID_FLAG_VALUE),
 			},
 			{
 				name: "InvalidFlagName",
 				tag:  reflect.StructTag(`json:"x y"`),
-				err:  NewError(E_INVALID_FLAG_NAME, ""),
+				err:  NewEcodeError(ECODE__INVALID_FLAG_NAME),
 			},
 			{
 				name: "EscapeFlagValue",
 				tag:  reflect.StructTag(`escape_js\non:""`),
-				err:  NewError(E_INVALID_FLAG_KEY, ""),
+				err:  NewEcodeError(ECODE__INVALID_FLAG_NAME),
 			},
 			{
 				name: "UnquotedOption",
 				tag:  reflect.StructTag(`panic_unquoted:",a='b"`),
-				err:  NewError(E_INVALID_OPTION_UNQUOTED, ""),
+				err:  NewEcodeError(ECODE__INVALID_OPTION_UNQUOTED),
 			},
 			{
 				name: "InvalidOptionKey",
 				tag:  reflect.StructTag(`panic_invalid_key:"key,'x\n\r'='any'"`),
-				err:  NewError(E_INVALID_OPTION_KEY, ""),
+				err:  NewEcodeError(ECODE__INVALID_OPTION_KEY),
 			},
 			{
 				name: "InvalidOptionValue",
 				tag:  reflect.StructTag(`panic_invalid_value:",x=a b c"`),
-				err:  NewError(E_INVALID_OPTION_VALUE, ""),
+				err:  NewEcodeError(ECODE__INVALID_OPTION_VALUE),
 			},
 		}
 		for _, c := range cases {
 			t.Run(c.name, func(t *testing.T) {
 				if c.err != nil {
-					defer func() {
-						err := recover().(error)
-						Expect(t, errors.Is(c.err, err), BeTrue())
-						fmt.Println(err)
-						// _ = c.err.Error()
-					}()
+					ExpectPanic(t, func() { ParseTag(c.tag) }, IsError(c.err))
+				} else {
+					Expect(t, ParseTag(c.tag), HaveLen[Tag](0))
 				}
-				tag := ParseTag(c.tag)
-				Expect(t, tag, HaveLen[Tag](0))
 			})
 		}
 	})

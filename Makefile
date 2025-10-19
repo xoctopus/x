@@ -1,4 +1,5 @@
 PACKAGES=$(shell go list ./... | grep -E -v 'pb$|testdata|mock|proto|example|testx/internal')
+IGNORED=_gen.go|.pb.go|_mock.go|_genx_
 MOD=$(shell cat go.mod | grep ^module -m 1 | awk '{ print $$2; }' || '')
 MOD_NAME=$(shell basename $(MOD))
 
@@ -79,6 +80,7 @@ upgrade-dep:
 
 update:
 	@go get -u all
+	@go mod tidy
 
 tidy:
 	@echo "==> tidy"
@@ -92,9 +94,12 @@ test: dep tidy
 		$(GOTEST) test -race -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES}; \
 	fi
 
+	# @grep -vE '${IGNORED}' cover.out > cover.out
+
 cover: dep tidy
 	@echo "==> run unit test with coverage"
 	@$(GOTEST) test -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES} -covermode=count -coverprofile=cover.out
+	@grep -vE '_gen.go|.pb.go|_mock.go|_genx_|main.go' cover.out > cover2.out && mv cover2.out cover.out
 
 ci-cover:
 	@if [ "${GOTEST}" = "xgo" ]; then \
@@ -108,8 +113,9 @@ view-cover: cover
 
 fmt: dep clean
 	@echo "==> format code"
-	@goimports-reviser -rm-unused -set-alias -output write \
+	@goimports-reviser -rm-unused \
 		-imports-order 'std,general,company,project' \
+		-project-name ${MOD} \
 		-excludes '.git/,.xgo/,*.pb.go,*_generated.go' ./...
 
 lint: dep

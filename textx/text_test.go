@@ -1,26 +1,14 @@
 package textx_test
 
 import (
-	"bytes"
-	"errors"
 	"math/big"
 	"reflect"
 	"testing"
 
-	. "github.com/onsi/gomega"
-
 	"github.com/xoctopus/x/ptrx"
+	. "github.com/xoctopus/x/testx"
 	. "github.com/xoctopus/x/textx"
 	"github.com/xoctopus/x/textx/testdata"
-)
-
-var (
-	AsErrMarshalUnsupportedType   *ErrMarshalUnsupportedType
-	AsErrMarshalFailed            *ErrMarshalFailed
-	AsErrUnmarshalInvalidInput    *ErrUnmarshalInvalidInput
-	AsErrUnmarshalUnsupportedType *ErrUnmarshalUnsupportedType
-	AsErrUnmarshalParseFailed     *ErrUnmarshalParseFailed
-	AsErrUnmarshalFailed          *ErrUnmarshalFailed
 )
 
 func TestMarshalText(t *testing.T) {
@@ -51,17 +39,23 @@ func TestMarshalText(t *testing.T) {
 			reflect.ValueOf(&struct{ *big.Float }{big.NewFloat(100.001)}).Elem().Field(0),
 			[]byte("100.001"),
 		},
-		"UnsupportedType":   {[]int{1, 2, 3}, AsErrMarshalUnsupportedType},
-		"MarshalTextFailed": {testdata.MustFailedArshaler{}, AsErrMarshalFailed},
+		"UnsupportedType": {
+			[]int{1, 2, 3},
+			NewEcodeError(ECODE__MARSHAL_TEXT_INVALID_INPUT),
+		},
+		"MarshalTextFailed": {
+			testdata.MustFailedArshaler{},
+			NewEcodeError(ECODE__MARSHAL_TEXT_FAILED),
+		},
 	}
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			text, err := Marshal(c.input)
 			if err != nil {
-				NewWithT(t).Expect(errors.As(err, &c.result)).To(BeTrue())
+				Expect(t, err, IsError(c.result.(error)))
 			} else {
-				NewWithT(t).Expect(bytes.Equal(text, c.result.([]byte))).To(BeTrue())
+				Expect(t, text, Equal(c.result.([]byte)))
 			}
 		})
 	}
@@ -73,15 +67,15 @@ func TestUnmarshalText(t *testing.T) {
 		value  any
 		result any
 	}{
-		"InvalidInput1":       {nil, nil, AsErrUnmarshalInvalidInput},
-		"InvalidInput2":       {nil, 1, AsErrUnmarshalInvalidInput},
-		"IntFailed":           {[]byte("invalid"), new(int), AsErrUnmarshalParseFailed},
-		"UintFailed":          {[]byte("invalid"), new(uint), AsErrUnmarshalParseFailed},
-		"FloatFailed":         {[]byte("invalid"), new(float32), AsErrUnmarshalParseFailed},
-		"BooleanFailed":       {[]byte("invalid"), new(bool), AsErrUnmarshalParseFailed},
-		"Unsupported":         {[]byte("invalid"), new([]string), AsErrUnmarshalUnsupportedType},
-		"MustUnmarshalFailed": {nil, new(testdata.MustFailedArshaler), AsErrUnmarshalFailed},
-		"ArshalerFailed":      {[]byte{1, 2, 3, 4}, new(testdata.Integers), AsErrUnmarshalFailed},
+		"InvalidInput1":       {nil, nil, NewEcodeError(ECODE__UNMARSHAL_TEXT_INVALID_INPUT)},
+		"InvalidInput2":       {nil, 1, NewEcodeError(ECODE__UNMARSHAL_TEXT_INVALID_INPUT)},
+		"IntFailed":           {[]byte("invalid"), new(int), NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)},
+		"UintFailed":          {[]byte("invalid"), new(uint), NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)},
+		"FloatFailed":         {[]byte("invalid"), new(float32), NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)},
+		"BooleanFailed":       {[]byte("invalid"), new(bool), NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)},
+		"Unsupported":         {[]byte("invalid"), new([]string), NewEcodeError(ECODE__UNMARSHAL_TEXT_INVALID_INPUT)},
+		"MustUnmarshalFailed": {nil, new(testdata.MustFailedArshaler), NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)},
+		"ArshalerFailed":      {[]byte{1, 2, 3, 4}, new(testdata.Integers), NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)},
 		"Int":                 {[]byte("1"), new(int), ptrx.Ptr(1)},
 		"Int2":                {[]byte("1"), new(*int), ptrx.Ptr(ptrx.Ptr(1))},
 		"Uint":                {[]byte("1"), new(uint), ptrx.Ptr(uint(1))},
@@ -98,10 +92,9 @@ func TestUnmarshalText(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			err := Unmarshal(c.input, c.value)
 			if err != nil {
-				NewWithT(t).Expect(err).NotTo(BeNil())
-				NewWithT(t).Expect(errors.As(err, &c.result)).To(BeTrue())
+				Expect(t, err, IsError(c.result.(error)))
 			} else {
-				NewWithT(t).Expect(c.value).To(Equal(c.result))
+				Expect(t, c.value, Equal(c.result))
 			}
 		})
 	}
@@ -135,7 +128,7 @@ func TestUnmarshalText(t *testing.T) {
 // 		})
 // 	}
 // }
-
+//
 // func BenchmarkMarshalText(b *testing.B) {
 // 	for name, c := range marshalCases {
 // 		b.Run("MarshalText_"+name, func(b *testing.B) {
