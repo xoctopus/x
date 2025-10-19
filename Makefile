@@ -128,7 +128,10 @@ lint: dep
 	@gocyclo -over 10 -avg -ignore '_test|_test.go|vendor|pb' . || true
 	@echo "    done"
 
-pre-commit: dep lint fmt cover clean
+gen:
+	go tool github.com/xoctopus/x/tools/cmd/gen
+
+pre-commit: gen dep update lint fmt cover clean
 
 clean:
 	@find . -name cover.out | xargs rm -rf
