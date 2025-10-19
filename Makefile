@@ -94,8 +94,6 @@ test: dep tidy
 		$(GOTEST) test -race -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES}; \
 	fi
 
-	# @grep -vE '${IGNORED}' cover.out > cover.out
-
 cover: dep tidy
 	@echo "==> run unit test with coverage"
 	@$(GOTEST) test -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES} -covermode=count -coverprofile=cover.out
