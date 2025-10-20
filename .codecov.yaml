@@ -13,3 +13,4 @@ ignore:
   - "**/*_generated.go"
   - "**/*.pb.go"
   - "**/*_genx_*.go"
+  - "**/main.go"
