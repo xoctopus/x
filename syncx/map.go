@@ -2,8 +2,6 @@ package syncx
 
 import (
 	"sync"
-
-	"github.com/xoctopus/x/mapx"
 )
 
 type Map[K comparable, V any] interface {
@@ -131,7 +129,7 @@ func (m *xmap[K, V]) Range(f func(K, V) bool) {
 }
 
 func NewSmap[K comparable, V any]() Map[K, V] {
-	return mapx.NewSmap[K, V]()
+	return &smap[K, V]{m: &sync.Map{}}
 }
 
 func AsSmap[K comparable, V any, M ~map[K]V](m M) Map[K, V] {

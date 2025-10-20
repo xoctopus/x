@@ -7,9 +7,8 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/onsi/gomega"
-
 	"github.com/xoctopus/x/contextx"
+	. "github.com/xoctopus/x/testx"
 )
 
 type key struct{}
@@ -48,20 +47,14 @@ func BenchmarkWithValue(b *testing.B) {
 
 func TestWithValue(t *testing.T) {
 	t.Run("CatchParentIsNil", func(t *testing.T) {
-		defer func() {
-			NewWithT(t).Expect(recover()).NotTo(BeNil())
-		}()
-		contextx.WithValue(nil, nil, nil)
+		ExpectPanic(t, func() { contextx.WithValue(nil, nil, nil) }, NotBeNil[any]())
 	})
 	t.Run("CatchKeyIsNil", func(t *testing.T) {
-		defer func() {
-			NewWithT(t).Expect(recover()).NotTo(BeNil())
-		}()
-		contextx.WithValue(context.Background(), nil, nil)
+		ExpectPanic(t, func() { contextx.WithValue(context.Background(), nil, nil) }, NotBeNil[any]())
 	})
-	ctx := contextx.WithValue(context.Background(), key{}, t.Name())
-	NewWithT(t).Expect(ctx.Value(key{})).To(Equal(t.Name()))
 
+	ctx := contextx.WithValue(context.Background(), key{}, t.Name())
+	Expect(t, ctx.Value(key{}).(string), Equal(t.Name()))
 }
 
 type MockContext struct{}
