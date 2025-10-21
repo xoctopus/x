@@ -16,7 +16,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/xoctopus/pkgx v0.0.0-20251016074410-a511df1aef70 // indirect
-	github.com/xoctopus/typex v0.1.3-0.20251013043517-cde6be6c66a0 // indirect
+	github.com/xoctopus/typex v0.1.3-0.20251021054229-2cfe47366f95 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/net v0.46.0 // indirect

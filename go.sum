@@ -32,8 +32,8 @@ github.com/xoctopus/pkgx v0.0.0-20251016074410-a511df1aef70 h1:AXbcP+JUyBrfsl6CJ
 github.com/xoctopus/pkgx v0.0.0-20251016074410-a511df1aef70/go.mod h1:kB33Xc7ZhHdL4MXUEha9Nc0bUI3qAU+sWhE4owIA3ks=
 github.com/xoctopus/pkgx/testdata v0.0.0-20250331091630-3af90d68c457 h1:gD1hsoLJA7ph4rCie09Se/R/9YuGbPNBTYtnqcXp3eM=
 github.com/xoctopus/pkgx/testdata v0.0.0-20250331091630-3af90d68c457/go.mod h1:faPGS0iCc6caeD6QTnaNp2MnyprKk78tej+mpmDyUSc=
-github.com/xoctopus/typex v0.1.3-0.20251013043517-cde6be6c66a0 h1:oA71QVmcrDqnX4nuYfWcw6llqOygZsimKNr/eeh/x/w=
-github.com/xoctopus/typex v0.1.3-0.20251013043517-cde6be6c66a0/go.mod h1:iXkAqmWMqHeuKPOZnG5bkAhhjCvgesz1yYWJSNu8DNg=
+github.com/xoctopus/typex v0.1.3-0.20251021054229-2cfe47366f95 h1:dbuc+wYp0h0rWZYwbAQ8js2Hpws0BqqG7OD6/fKyMvU=
+github.com/xoctopus/typex v0.1.3-0.20251021054229-2cfe47366f95/go.mod h1:xlR/CvEintPV+xna2W/jKDlCZnv9DGvFamkKUo3rW0k=
 go.uber.org/automaxprocs v1.6.0 h1:O3y2/QNTOdbF+e/dpXNNW7Rx2hZ4sTIPyybbxyNqTUs=
 go.uber.org/automaxprocs v1.6.0/go.mod h1:ifeIMSnPZuznNm6jmdzmU3/bfk01Fe2fotchwEFJ8r8=
 go.yaml.in/yaml/v3 v3.0.4 h1:tfq32ie2Jv2UxXFdLJdh3jXuOzWiL1fo0bu/FbuKpbc=

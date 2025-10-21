@@ -82,6 +82,9 @@ func TestMap(t *testing.T) {
 
 	m := syncx.AsSmap(map[any]any{k1: 100})
 	Expect(t, results(m.Load(k1)), Equal([]any{100, true}))
+	Expect(t, m.Len(), Equal(1))
+	Expect(t, m.Keys(), Equal([]any{k1}))
+	Expect(t, m.Values(), Equal([]any{100}))
 
 	m = syncx.AsXmap(map[any]any{k1: 100})
 	m.Range(func(k any, v any) bool {
@@ -93,41 +96,8 @@ func TestMap(t *testing.T) {
 		}
 		return true
 	})
-}
 
-// func TestSet(t *testing.T) {
-// 	for _, set := range []mapx.Set[int]{mapx.NewSet[int](), mapx.NewSafeSet[int]()} {
-// 		set.Store(1, 2, 3)
-// 		NewWithT(t).Expect(set.Exists(1)).To(BeTrue())
-// 		set.Delete(1)
-// 		NewWithT(t).Expect(set.Exists(1)).To(BeFalse())
-// 		NewWithT(t).Expect(set.Keys()).To(ConsistOf(2, 3))
-// 		NewWithT(t).Expect(set.Len()).To(Equal(2))
-//
-// 		f := func(expect int, has *bool) func(k int) bool {
-// 			return func(k int) bool {
-// 				if k == expect {
-// 					*has = true
-// 					return false
-// 				}
-// 				return true
-// 			}
-// 		}
-//
-// 		has := false
-// 		expect := 2
-// 		set.Range(f(expect, &has))
-// 		NewWithT(t).Expect(has).To(BeTrue())
-//
-// 		has = false
-// 		expect = 1
-// 		set.Range(f(expect, &has))
-// 		NewWithT(t).Expect(has).To(BeFalse())
-//
-// 		set2 := set.Clone()
-// 		NewWithT(t).Expect(set.Equal(set2)).To(BeTrue())
-//
-// 		set.Clear()
-// 		NewWithT(t).Expect(set.Len()).To(Equal(0))
-// 	}
-// }
+	Expect(t, m.Len(), Equal(1))
+	Expect(t, m.Keys(), Equal([]any{k1}))
+	Expect(t, m.Values(), Equal([]any{100}))
+}

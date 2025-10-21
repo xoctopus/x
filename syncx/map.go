@@ -18,6 +18,10 @@ type Map[K comparable, V any] interface {
 	LoadAndDelete(K) (v V, loaded bool)
 	LoadOrStore(K, V) (actual V, loaded bool)
 	Range(func(K, V) bool)
+
+	Len() int
+	Keys() []K
+	Values() []V
 }
 
 func NewXmap[K comparable, V any]() Map[K, V] {
@@ -128,6 +132,30 @@ func (m *xmap[K, V]) Range(f func(K, V) bool) {
 	}
 }
 
+func (m *xmap[K, V]) Len() int {
+	i := 0
+	for _, _ = range m.Range {
+		i++
+	}
+	return i
+}
+
+func (m *xmap[K, V]) Keys() []K {
+	keys := make([]K, 0)
+	for k := range m.Range {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func (m *xmap[K, V]) Values() []V {
+	values := make([]V, 0)
+	for _, v := range m.Range {
+		values = append(values, v)
+	}
+	return values
+}
+
 func NewSmap[K comparable, V any]() Map[K, V] {
 	return &smap[K, V]{m: &sync.Map{}}
 }
@@ -186,13 +214,33 @@ func (m *smap[K, V]) Range(f func(K, V) bool) {
 	})
 }
 
+func (m *smap[K, V]) Len() int {
+	i := 0
+	for _, _ = range m.Range {
+		i++
+	}
+	return i
+}
+
+func (m *smap[K, V]) Keys() []K {
+	keys := make([]K, 0)
+	for k, _ := range m.Range {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func (m *smap[K, V]) Values() []V {
+	values := make([]V, 0)
+	for _, v := range m.Range {
+		values = append(values, v)
+	}
+	return values
+}
+
 func (m *smap[K, V]) result(x any, b bool) (V, bool) {
 	if v, ok := x.(V); ok {
 		return v, b
 	}
 	return *new(V), b
 }
-
-// type Set[K comparable, V any] struct {
-// 	Map[K, struct{}]
-// }
