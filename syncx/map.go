@@ -181,7 +181,9 @@ func (m *smap[K, V]) LoadOrStore(k K, v V) (actual V, loaded bool) {
 }
 
 func (m *smap[K, V]) Range(f func(K, V) bool) {
-	m.m.Range(func(key, value any) bool { return f(key.(K), value.(V)) })
+	m.m.Range(func(key, value any) bool {
+		return f(key.(K), value.(V))
+	})
 }
 
 func (m *smap[K, V]) result(x any, b bool) (V, bool) {

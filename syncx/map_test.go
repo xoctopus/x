@@ -29,8 +29,8 @@ func TestMap(t *testing.T) {
 	Expect(t, k1 == ptrx.Ptr(1), BeFalse())
 
 	for _, m := range []syncx.Map[any, any]{
-		syncx.NewSmap[any, any](),
 		syncx.NewXmap[any, any](),
+		syncx.NewSmap[any, any](),
 		syncx.AsSmap(map[any]any{}),
 		syncx.AsXmap(map[any]any{}),
 	} {
