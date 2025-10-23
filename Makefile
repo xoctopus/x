@@ -89,14 +89,14 @@ tidy:
 test: dep tidy
 	@echo "==> run unit test"
 	@if [ "${GOTEST}" = "xgo" ]; then \
-		$(GOTEST) test -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES}; # xgo mock functions may cause data race \
+		GOWORK=off $(GOTEST) test -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES}; # xgo mock functions may cause data race \
 	else \
-		$(GOTEST) test -race -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES}; \
+		GOWORK=off $(GOTEST) test -race -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES}; \
 	fi
 
 cover: dep tidy
 	@echo "==> run unit test with coverage"
-	@$(GOTEST) test -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES} -covermode=count -coverprofile=cover.out
+	@GOWORK=off $(GOTEST) test -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES} -covermode=count -coverprofile=cover.out
 	@grep -vE '_gen.go|.pb.go|_mock.go|_genx_|main.go' cover.out > cover2.out && mv cover2.out cover.out
 
 ci-cover:
@@ -107,7 +107,7 @@ ci-cover:
 
 view-cover: cover
 	@echo "==> run unit test with coverage and view"
-	@go tool cover -html cover.out
+	@$(GOBUILD) tool cover -html cover.out
 
 fmt: dep clean
 	@echo "==> format code"
@@ -119,7 +119,7 @@ fmt: dep clean
 lint: dep
 	@echo "==> static check"
 	@echo "    >>>static checking"
-	@go vet ./...
+	@$(GOBUILD) vet ./...
 	@echo "    done"
 	@echo "    >>>detecting ineffectual assignments"
 	@ineffassign ./...
