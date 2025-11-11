@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"reflect"
 
+	"github.com/xoctopus/errx/pkg/codex"
+
 	"github.com/xoctopus/x/reflectx"
 	"github.com/xoctopus/x/stringsx"
 )
@@ -31,7 +33,7 @@ func MarshalURL(v any) (url.Values, error) {
 	}
 
 	if rv.Kind() != reflect.Struct {
-		return nil, NewEcodeErrorf(ECODE__MARSHAL_URL_INVALID_INPUT, "expect struct type")
+		return nil, codex.Errorf(ECODE__MARSHAL_URL_INVALID_INPUT, "expect struct type")
 	}
 
 	u := url.Values{}
@@ -71,10 +73,7 @@ func MarshalURL(v any) (url.Values, error) {
 			for idx := 0; idx < fi.Len(); idx++ {
 				text, err := Marshal(fi.Index(idx))
 				if err != nil {
-					return nil, NewEcodeErrorWrapf(
-						ECODE__MARSHAL_URL_FAILED, err,
-						"field %s[%d]", sf.Name, idx,
-					)
+					return nil, codex.Wrapf(ECODE__MARSHAL_URL_FAILED, err, "field %s[%d]", sf.Name, idx)
 				}
 				u[name] = append(u[name], string(text))
 			}
@@ -82,10 +81,7 @@ func MarshalURL(v any) (url.Values, error) {
 		}
 		text, err := Marshal(rv.Field(i))
 		if err != nil {
-			return nil, NewEcodeErrorWrapf(
-				ECODE__MARSHAL_URL_FAILED, err,
-				"field %s", sf.Name,
-			)
+			return nil, codex.Wrapf(ECODE__MARSHAL_URL_FAILED, err, "field %s", sf.Name)
 		}
 		u[name] = append(u[name], string(text))
 	}
@@ -109,11 +105,11 @@ func UnmarshalURL(u url.Values, v any) error {
 	}
 
 	if !rv.CanSet() {
-		return NewEcodeErrorf(ECODE__UNMARSHAL_URL_INVALID_INPUT, "must canbe set")
+		return codex.Errorf(ECODE__UNMARSHAL_URL_INVALID_INPUT, "must canbe set")
 	}
 
 	if rv.Kind() != reflect.Struct {
-		return NewEcodeErrorf(ECODE__UNMARSHAL_URL_INVALID_INPUT, "expect struct type")
+		return codex.Errorf(ECODE__UNMARSHAL_URL_INVALID_INPUT, "expect struct type")
 	}
 
 	rt := rv.Type()
@@ -146,10 +142,7 @@ func UnmarshalURL(u url.Values, v any) error {
 			for idx, text := range u[name] {
 				elem := reflect.New(fi.Type().Elem()).Elem()
 				if err := Unmarshal([]byte(text), elem); err != nil {
-					return NewEcodeErrorWrapf(
-						ECODE__UNMARSHAL_URL_FAILED,
-						err, "parse %s[%d] from `%s`", sf.Name, idx, text,
-					)
+					return codex.Wrapf(ECODE__UNMARSHAL_URL_FAILED, err, "parse %s[%d] from `%s`", sf.Name, idx, text)
 				}
 				fi.Set(reflect.Append(fi, elem))
 			}
@@ -164,10 +157,7 @@ func UnmarshalURL(u url.Values, v any) error {
 		}
 		if len(text) > 0 {
 			if err := Unmarshal([]byte(text), rv.Field(i)); err != nil {
-				return NewEcodeErrorWrapf(
-					ECODE__UNMARSHAL_URL_FAILED, err,
-					"parse field %s from %s", sf.Name, text,
-				)
+				return codex.Wrapf(ECODE__UNMARSHAL_URL_FAILED, err, "parse field %s from %s", sf.Name, text)
 			}
 		}
 	}

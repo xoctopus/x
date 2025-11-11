@@ -2,7 +2,6 @@
 package reflectx
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -25,72 +24,4 @@ func (e Ecode) Message() string {
 	case ECODE__INVALID_OPTION_UNQUOTED:
 		return "[PARSING_TAG:6] invalid option unquoted"
 	}
-}
-
-func NewEcodeError(code Ecode) error {
-	return &EcodeError{
-		code: code,
-	}
-}
-
-func NewEcodeErrorf(code Ecode, msg string, args ...any) error {
-	return &EcodeError{
-		code: code,
-		msg:  msg,
-		args: args,
-	}
-}
-
-func NewEcodeErrorWrap(code Ecode, cause error) error {
-	if cause == nil {
-		return nil
-	}
-	return &EcodeError{
-		code:  code,
-		args:  []any{cause},
-		cause: cause,
-	}
-}
-
-func NewEcodeErrorWrapf(code Ecode, cause error, msg string, args ...any) error {
-	if cause == nil {
-		return nil
-	}
-	return &EcodeError{
-		code:  code,
-		msg:   msg,
-		args:  append(args, cause),
-		cause: cause,
-	}
-}
-
-type EcodeError struct {
-	code  Ecode
-	msg   string
-	args  []any
-	cause error
-}
-
-func (e *EcodeError) Error() string {
-	msg := e.code.Message()
-	if len(e.msg) > 0 {
-		msg += ". " + e.msg
-	}
-	if e.cause != nil {
-		msg += ". [cause: %+v]"
-	}
-	return fmt.Sprintf(msg, e.args...)
-}
-
-func (e *EcodeError) Code() Ecode {
-	return e.code
-}
-
-func (e *EcodeError) Is(err error) bool {
-	var target *EcodeError
-	return errors.As(err, &target) && target.code == e.code
-}
-
-func (e *EcodeError) Unwrap() error {
-	return e.cause
 }

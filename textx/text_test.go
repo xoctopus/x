@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/xoctopus/errx/pkg/codex"
+
 	"github.com/xoctopus/x/ptrx"
 	. "github.com/xoctopus/x/testx"
 	. "github.com/xoctopus/x/textx"
@@ -41,11 +43,11 @@ func TestMarshalText(t *testing.T) {
 		},
 		"UnsupportedType": {
 			[]int{1, 2, 3},
-			NewEcodeError(ECODE__MARSHAL_TEXT_INVALID_INPUT),
+			codex.New(ECODE__MARSHAL_TEXT_INVALID_INPUT),
 		},
 		"MarshalTextFailed": {
 			testdata.MustFailedArshaler{},
-			NewEcodeError(ECODE__MARSHAL_TEXT_FAILED),
+			codex.New(ECODE__MARSHAL_TEXT_FAILED),
 		},
 	}
 
@@ -67,15 +69,15 @@ func TestUnmarshalText(t *testing.T) {
 		value  any
 		result any
 	}{
-		"InvalidInput1":       {nil, nil, NewEcodeError(ECODE__UNMARSHAL_TEXT_INVALID_INPUT)},
-		"InvalidInput2":       {nil, 1, NewEcodeError(ECODE__UNMARSHAL_TEXT_INVALID_INPUT)},
-		"IntFailed":           {[]byte("invalid"), new(int), NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)},
-		"UintFailed":          {[]byte("invalid"), new(uint), NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)},
-		"FloatFailed":         {[]byte("invalid"), new(float32), NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)},
-		"BooleanFailed":       {[]byte("invalid"), new(bool), NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)},
-		"Unsupported":         {[]byte("invalid"), new([]string), NewEcodeError(ECODE__UNMARSHAL_TEXT_INVALID_INPUT)},
-		"MustUnmarshalFailed": {nil, new(testdata.MustFailedArshaler), NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)},
-		"ArshalerFailed":      {[]byte{1, 2, 3, 4}, new(testdata.Integers), NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)},
+		"InvalidInput1":       {nil, nil, codex.New(ECODE__UNMARSHAL_TEXT_INVALID_INPUT)},
+		"InvalidInput2":       {nil, 1, codex.New(ECODE__UNMARSHAL_TEXT_INVALID_INPUT)},
+		"IntFailed":           {[]byte("invalid"), new(int), codex.New(ECODE__UNMARSHAL_TEXT_FAILED)},
+		"UintFailed":          {[]byte("invalid"), new(uint), codex.New(ECODE__UNMARSHAL_TEXT_FAILED)},
+		"FloatFailed":         {[]byte("invalid"), new(float32), codex.New(ECODE__UNMARSHAL_TEXT_FAILED)},
+		"BooleanFailed":       {[]byte("invalid"), new(bool), codex.New(ECODE__UNMARSHAL_TEXT_FAILED)},
+		"Unsupported":         {[]byte("invalid"), new([]string), codex.New(ECODE__UNMARSHAL_TEXT_INVALID_INPUT)},
+		"MustUnmarshalFailed": {nil, new(testdata.MustFailedArshaler), codex.New(ECODE__UNMARSHAL_TEXT_FAILED)},
+		"ArshalerFailed":      {[]byte{1, 2, 3, 4}, new(testdata.Integers), codex.New(ECODE__UNMARSHAL_TEXT_FAILED)},
 		"Int":                 {[]byte("1"), new(int), ptrx.Ptr(1)},
 		"Int2":                {[]byte("1"), new(*int), ptrx.Ptr(ptrx.Ptr(1))},
 		"Uint":                {[]byte("1"), new(uint), ptrx.Ptr(uint(1))},

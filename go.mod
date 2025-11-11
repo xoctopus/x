@@ -1,11 +1,12 @@
 module github.com/xoctopus/x
 
-go 1.25.1
+go 1.25.3
 
 require (
 	github.com/google/go-cmp v0.7.0
 	github.com/onsi/gomega v1.38.2
 	github.com/pkg/errors v0.9.1
+	github.com/xoctopus/errx v0.0.0-20251110065924-ca3348b82575
 	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546
 )
 

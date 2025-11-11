@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/xoctopus/errx/pkg/codex"
 	"golang.org/x/exp/maps"
 
 	"github.com/xoctopus/x/misc/must"
@@ -42,7 +43,7 @@ func ParseTag(tag reflect.StructTag) Tag {
 		}
 		key := string(tag[:i])
 		if !stringsx.ValidFlagName(key) {
-			panic(NewEcodeErrorf(ECODE__INVALID_FLAG_NAME, "name: %q", key))
+			panic(codex.Errorf(ECODE__INVALID_FLAG_NAME, "name: %q", key))
 		}
 
 		tag = tag[i+1:]
@@ -56,7 +57,7 @@ func ParseTag(tag reflect.StructTag) Tag {
 			i++
 		}
 		if i >= len(tag) {
-			panic(NewEcodeErrorf(ECODE__INVALID_FLAG_VALUE, "tag: %q", tag))
+			panic(codex.Errorf(ECODE__INVALID_FLAG_VALUE, "tag: %q", tag))
 		}
 		quoted := string(tag[:i+1])
 		if _, ok := flags[key]; !ok {
@@ -127,7 +128,7 @@ func (f *Flag) parse() {
 		}
 		if i == len(val)-1 {
 			if quoted {
-				panic(NewEcodeErrorf(ECODE__INVALID_OPTION_UNQUOTED, "raw: %q", val))
+				panic(codex.Errorf(ECODE__INVALID_OPTION_UNQUOTED, "raw: %q", val))
 			}
 			i++
 			goto FinishPart
@@ -146,7 +147,7 @@ func (f *Flag) parse() {
 		if index == 0 {
 			f.name = part
 			if !stringsx.ValidFlagName(f.name) {
-				panic(NewEcodeErrorf(ECODE__INVALID_FLAG_NAME, "name: %q", f.name))
+				panic(codex.Errorf(ECODE__INVALID_FLAG_NAME, "name: %q", f.name))
 			}
 			continue
 		}
@@ -179,13 +180,13 @@ func (f *Flag) parse() {
 			}
 			k = unquote(k)
 			if !stringsx.ValidFlagOptionKey(k) {
-				panic(NewEcodeErrorf(ECODE__INVALID_OPTION_KEY, "key: %q", k))
+				panic(codex.Errorf(ECODE__INVALID_OPTION_KEY, "key: %q", k))
 			}
 			if !strings.HasPrefix(v, "'") && !strings.HasSuffix(v, "'") {
 				// if option value contains control characters or spaces,
 				// it MUST be quoted with `'`.
 				if !stringsx.ValidUnquotedOptionValue(v) {
-					panic(NewEcodeErrorf(ECODE__INVALID_OPTION_VALUE, "value: %q", v))
+					panic(codex.Errorf(ECODE__INVALID_OPTION_VALUE, "value: %q", v))
 				}
 			}
 			if opt := NewOption(k, v, index); !opt.IsZero() {

@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/xoctopus/errx/pkg/codex"
+
 	. "github.com/xoctopus/x/testx"
 	. "github.com/xoctopus/x/textx"
 	"github.com/xoctopus/x/textx/testdata"
@@ -42,15 +44,15 @@ func TestMarshalURL(t *testing.T) {
 		Expect(t, u, Equal(url.Values{}))
 
 		_, err = MarshalURL(1)
-		Expect(t, err, IsError(NewEcodeError(ECODE__MARSHAL_URL_INVALID_INPUT)))
+		Expect(t, err, IsError(codex.New(ECODE__MARSHAL_URL_INVALID_INPUT)))
 	})
 
 	t.Run("FailedMarshal", func(t *testing.T) {
 		_, err := MarshalURL(struct{ testdata.MustFailedArshaler }{testdata.MustFailedArshaler{V: 1}})
-		Expect(t, err, IsError(NewEcodeError(ECODE__MARSHAL_URL_FAILED)))
+		Expect(t, err, IsError(codex.New(ECODE__MARSHAL_URL_FAILED)))
 
 		_, err = MarshalURL(struct{ V []testdata.MustFailedArshaler }{V: []testdata.MustFailedArshaler{{}}})
-		Expect(t, err, IsError(NewEcodeError(ECODE__MARSHAL_URL_FAILED)))
+		Expect(t, err, IsError(codex.New(ECODE__MARSHAL_URL_FAILED)))
 	})
 
 	u, err := MarshalURL(DefaultValue)
@@ -68,7 +70,7 @@ func TestUnmarshalURL(t *testing.T) {
 	t.Run("InvalidInput", func(t *testing.T) {
 		for _, v := range []any{nil, new(int)} {
 			err := UnmarshalURL(url.Values{}, v)
-			Expect(t, err, IsError(NewEcodeError(ECODE__UNMARSHAL_URL_INVALID_INPUT)))
+			Expect(t, err, IsError(codex.New(ECODE__UNMARSHAL_URL_INVALID_INPUT)))
 		}
 	})
 
@@ -115,13 +117,13 @@ func TestUnmarshalURL(t *testing.T) {
 		v := &Value{}
 		err := UnmarshalURL(url.Values{"noTag": {"abc"}}, v)
 		Expect(t, err, Failed())
-		Expect(t, err, IsError(NewEcodeError(ECODE__UNMARSHAL_URL_FAILED)))
+		Expect(t, err, IsError(codex.New(ECODE__UNMARSHAL_URL_FAILED)))
 
 		v2 := struct{ V []testdata.MustFailedArshaler }{}
 		err = UnmarshalURL(url.Values{"v": {""}}, &v2)
 		Expect(t, err, Failed())
-		Expect(t, err, IsError(NewEcodeError(ECODE__UNMARSHAL_URL_FAILED)))
-		Expect(t, err, IsError(NewEcodeError(ECODE__UNMARSHAL_TEXT_FAILED)))
+		Expect(t, err, IsError(codex.New(ECODE__UNMARSHAL_URL_FAILED)))
+		Expect(t, err, IsError(codex.New(ECODE__UNMARSHAL_TEXT_FAILED)))
 	})
 }
 
