@@ -154,6 +154,13 @@ func TestDeref(t *testing.T) {
 	}
 }
 
+func TestDerefPointer(t *testing.T) {
+	type Pointer *int
+	Expect(t, DerefPointer(reflect.TypeFor[*Pointer]()), Equal(reflect.TypeFor[Pointer]()))
+	Expect(t, DerefPointer(reflect.TypeFor[***int]()), Equal(reflect.TypeFor[int]()))
+	Expect(t, DerefPointer(InvalidType), Equal(InvalidType))
+}
+
 func TestNew(t *testing.T) {
 	cases := []*struct {
 		value any

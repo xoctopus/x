@@ -83,6 +83,17 @@ func Deref(t reflect.Type) reflect.Type {
 	return t
 }
 
+func DerefPointer(t reflect.Type) reflect.Type {
+	if t == InvalidType {
+		return InvalidType
+	}
+
+	for t.Kind() == reflect.Pointer && t.Name() == "" {
+		t = t.Elem()
+	}
+	return t
+}
+
 // New a `reflect.Value` with reflect.Type
 // not like reflect.New, but new all level pointer ref
 func New(t reflect.Type) reflect.Value {
