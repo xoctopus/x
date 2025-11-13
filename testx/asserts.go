@@ -19,6 +19,8 @@ func ExpectPanic[A any](t testing.TB, f func(), matchers ...Matcher[A]) {
 	t.Helper()
 
 	defer func() {
+		t.Helper()
+
 		recovered := recover()
 		if len(matchers) == 0 {
 			Expect(t, recovered, NotBeNil[any]())
