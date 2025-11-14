@@ -1,6 +1,6 @@
 module github.com/xoctopus/x
 
-go 1.25.3
+go 1.25.4
 
 require (
 	github.com/google/btree v1.1.3
@@ -8,7 +8,7 @@ require (
 	github.com/onsi/gomega v1.38.2
 	github.com/pkg/errors v0.9.1
 	github.com/xoctopus/errx v0.0.0-20251110065924-ca3348b82575
-	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546
+	golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6
 )
 
 require (
