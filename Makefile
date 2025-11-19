@@ -79,12 +79,12 @@ upgrade-dep:
 	fi
 
 update:
-	@go get -u all
-	@go mod tidy
+	@GOWORK=off go get -u all
+	@GOWORK=off go mod tidy
 
 tidy:
 	@echo "==> tidy"
-	@go mod tidy
+	@GOWORK=off go mod tidy
 
 test: dep tidy
 	@echo "==> run unit test"
@@ -103,11 +103,11 @@ ci-cover:
 	@if [ "${GOTEST}" = "xgo" ]; then \
 		go install github.com/xhd2015/xgo/cmd/xgo@latest; \
 	fi
-	@$(GOTEST) test -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES} -covermode=count -coverprofile=cover.out
+	@GOWORK=off $(GOTEST) test -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES} -covermode=count -coverprofile=cover.out
 
 view-cover: cover
 	@echo "==> run unit test with coverage and view"
-	@$(GOBUILD) tool cover -html cover.out
+	@GOWORK=off $(GOBUILD) tool cover -html cover.out
 
 fmt: dep clean
 	@echo "==> format code"

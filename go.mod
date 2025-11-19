@@ -7,7 +7,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/onsi/gomega v1.38.2
 	github.com/pkg/errors v0.9.1
-	github.com/xoctopus/errx v0.0.0-20251110065924-ca3348b82575
+	github.com/xoctopus/errx v0.0.0-20251114065230-871de3541e69
 	golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6
 )
 

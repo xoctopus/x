@@ -28,8 +28,8 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=
 github.com/rogpeppe/go-internal v1.14.1/go.mod h1:MaRKkUm5W0goXpeCfT7UZI6fk/L7L7so1lCWt35ZSgc=
-github.com/xoctopus/errx v0.0.0-20251110065924-ca3348b82575 h1:8LNZtB9plN78bv5XGuuOIjmBYP3KH4Zz0P/lVA1JvPQ=
-github.com/xoctopus/errx v0.0.0-20251110065924-ca3348b82575/go.mod h1:a0b0/VcC5ee6RqjNGYXRtGp+oIFAdR4gOkxte8PUmn8=
+github.com/xoctopus/errx v0.0.0-20251114065230-871de3541e69 h1:mv+yKUjRifSPcFrfiHE55SNBtq0nWIoBqSXKHPwGfK4=
+github.com/xoctopus/errx v0.0.0-20251114065230-871de3541e69/go.mod h1:5lfd0WrnWNsRJt+rROllUAVSZnjMS+wRIgoQuOHSIbA=
 go.uber.org/automaxprocs v1.6.0 h1:O3y2/QNTOdbF+e/dpXNNW7Rx2hZ4sTIPyybbxyNqTUs=
 go.uber.org/automaxprocs v1.6.0/go.mod h1:ifeIMSnPZuznNm6jmdzmU3/bfk01Fe2fotchwEFJ8r8=
 go.yaml.in/yaml/v3 v3.0.4 h1:tfq32ie2Jv2UxXFdLJdh3jXuOzWiL1fo0bu/FbuKpbc=
