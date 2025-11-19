@@ -110,7 +110,7 @@ view-cover: cover
 	@GOWORK=off $(GOBUILD) tool cover -html cover.out
 
 fmt: dep clean
-	@echo "==> format code"
+	@echo "==> formating code"
 	@goimports-reviser -rm-unused \
 		-imports-order 'std,general,company,project' \
 		-project-name ${MOD} \
@@ -119,7 +119,7 @@ fmt: dep clean
 lint: dep
 	@echo "==> static check"
 	@echo "    >>>static checking"
-	@$(GOBUILD) vet ./...
+	@GOWORK=off $(GOBUILD) vet ./...
 	@echo "    done"
 	@echo "    >>>detecting ineffectual assignments"
 	@ineffassign ./...
