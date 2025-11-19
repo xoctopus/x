@@ -128,7 +128,7 @@ lint: dep
 	@gocyclo -over 10 -avg -ignore '_test|_test.go|vendor|pb' . || true
 	@echo "    done"
 
-pre-commit: dep update lint fmt cover clean
+pre-commit: dep update lint fmt view-cover
 
 clean:
 	@find . -name cover.out | xargs rm -rf
