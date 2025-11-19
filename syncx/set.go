@@ -1,7 +1,7 @@
 package syncx
 
-func NewSet[K comparable](keys ...K) Set[K] {
-	set := Set[K]{m: NewXmap[K, struct{}]()}
+func NewSet[K comparable](keys ...K) *Set[K] {
+	set := &Set[K]{m: NewXmap[K, struct{}]()}
 	for _, key := range keys {
 		set.Store(key)
 	}
