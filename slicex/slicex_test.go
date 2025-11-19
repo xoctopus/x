@@ -14,3 +14,13 @@ func TestUnique(t *testing.T) {
 	ints = []int{1, 1, 4, 2, 3, 2, 3, 4}
 	Expect(t, slicex.Unique(ints), Equal([]int{1, 4, 2, 3}))
 }
+
+func TestEqualElements(t *testing.T) {
+	Expect(t, slicex.Equivalent([]int{1}, []int{1}), BeTrue())
+	Expect(t, slicex.Equivalent([]int{}, nil), BeFalse())
+	Expect(t, slicex.Equivalent(nil, []int{}), BeFalse())
+	Expect(t, slicex.Equivalent([]int{1, 2}, []int{2, 1}), BeTrue())
+	Expect(t, slicex.Equivalent([]int{1, 1, 2}, []int{1, 2, 1}), BeTrue())
+	Expect(t, slicex.Equivalent([]int{1, 2}, []int{1, 2, 1}), BeFalse())
+	Expect(t, slicex.Equivalent([]int{2, 1, 2}, []int{1, 2, 1}), BeFalse())
+}

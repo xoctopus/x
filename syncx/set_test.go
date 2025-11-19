@@ -1,7 +1,6 @@
 package syncx_test
 
 import (
-	"sort"
 	"testing"
 
 	"github.com/xoctopus/x/syncx"
@@ -16,20 +15,16 @@ func TestNewSet(t *testing.T) {
 	s.Store(1)
 	Expect(t, s.Exists(1), BeTrue())
 
-	keys := s.Keys()
-	sort.Ints(keys)
-	Expect(t, s.Keys(), Equal([]int{0, 1}))
-	Expect(t, s.Len(), Equal(2))
+	Expect(t, s.Keys(), EquivalentSlice([]int{0, 1}))
 	s.Store(2)
 	Expect(t, s.Exists(1), BeTrue())
 	Expect(t, s.Len(), Equal(3))
+	Expect(t, s.Keys(), EquivalentSlice([]int{0, 1, 2}))
 
 	s.Delete(1)
 	Expect(t, s.Exists(1), BeFalse())
 	Expect(t, s.Len(), Equal(2))
-	keys = s.Keys()
-	sort.Ints(keys)
-	Expect(t, keys, Equal([]int{0, 2}))
+	Expect(t, s.Keys(), EquivalentSlice([]int{0, 2}))
 
 	s.Clear()
 	Expect(t, s.Exists(0), BeFalse())

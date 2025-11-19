@@ -87,5 +87,7 @@ func TestExpect(t *testing.T) {
 		Expect[any](t, String("1"), BeConvertibleTo[string]())
 
 		Expect(t, errors.New("any"), Failed())
+
+		Expect(t, []int{1, 2}, EquivalentSlice([]int{2, 1}))
 	})
 }

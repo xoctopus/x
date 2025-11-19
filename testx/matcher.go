@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/xoctopus/x/reflectx"
+	"github.com/xoctopus/x/slicex"
 	"github.com/xoctopus/x/testx/internal"
 )
 
@@ -124,6 +125,13 @@ func Contains[S []E, E comparable](v E) Matcher[S] {
 		"ContainsStringItem",
 		slices.Contains[S, E],
 	)(v)
+}
+
+func EquivalentSlice[E comparable, S ~[]E](expected S) Matcher[S] {
+	return NewComparedMatcher(
+		"EqualElements",
+		slicex.Equivalent[E, S],
+	)(expected)
 }
 
 func BeAssignableTo[E any]() Matcher[any] {
