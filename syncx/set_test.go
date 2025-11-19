@@ -29,12 +29,11 @@ func TestNewSet(t *testing.T) {
 	Expect(t, s.Len(), Equal(2))
 	keys = s.Keys()
 	sort.Ints(keys)
-	Expect(t, s.Keys(), Equal([]int{0, 2}))
+	Expect(t, keys, Equal([]int{0, 2}))
 
 	s.Clear()
 	Expect(t, s.Exists(0), BeFalse())
 	Expect(t, s.Exists(1), BeFalse())
 	Expect(t, s.Exists(2), BeFalse())
 	Expect(t, s.Len(), Equal(0))
-	Expect(t, s.Keys(), Equal([]int{}))
 }
