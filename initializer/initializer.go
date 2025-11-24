@@ -42,7 +42,7 @@ func CanBeInitialized(initializer any) bool {
 	}
 }
 
-var ErrInvalidValue = errors.New("invalid value")
+var ErrInvalidValue = errors.New("invalid initializer")
 
 func InitByContext(ctx context.Context, initializer any) error {
 	switch v := initializer.(type) {

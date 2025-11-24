@@ -6,10 +6,10 @@ import (
 	"testing"
 	_ "unsafe"
 
-	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 
 	"github.com/xoctopus/x/initializer"
+	. "github.com/xoctopus/x/testx"
 )
 
 var (
@@ -59,9 +59,9 @@ func TestInit(t *testing.T) {
 	} {
 		_ = i
 		if v.err == nil {
-			NewWithT(t).Expect(initializer.Init(v.val)).To(BeNil())
+			Expect(t, initializer.Init(v.val), Succeed())
 		} else {
-			NewWithT(t).Expect(initializer.Init(v.val)).To(Equal(v.err))
+			Expect(t, initializer.Init(v.val), Equal(v.err))
 		}
 	}
 }
@@ -84,6 +84,6 @@ func TestCanBeInitialized(t *testing.T) {
 	} {
 		_ = i
 		can := initializer.CanBeInitialized(v.v)
-		NewWithT(t).Expect(v.can).To(Equal(can))
+		Expect(t, v.can, Equal(can))
 	}
 }

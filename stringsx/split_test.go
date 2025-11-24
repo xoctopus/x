@@ -3,9 +3,8 @@ package stringsx_test
 import (
 	"testing"
 
-	. "github.com/onsi/gomega"
-
 	"github.com/xoctopus/x/stringsx"
+	. "github.com/xoctopus/x/testx"
 )
 
 func Test_SplitToWords(t *testing.T) {
@@ -26,7 +25,7 @@ func Test_SplitToWords(t *testing.T) {
 		{"\xF1\xF4\x8F\xBF\xBF", []string{"\xF1\xF4\x8F\xBF\xBF"}},
 	}
 	for _, c := range cases {
-		NewWithT(t).Expect(stringsx.SplitToWords(c.phrase)).To(Equal(c.words))
+		Expect(t, stringsx.SplitToWords(c.phrase), Equal(c.words))
 	}
 
 	t.Log(stringsx.CheckLetterType('1'))

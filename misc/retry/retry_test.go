@@ -2,18 +2,19 @@ package retry_test
 
 import (
 	"testing"
+	"time"
 
-	g "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 
 	"github.com/xoctopus/x/misc/retry"
+	. "github.com/xoctopus/x/testx"
 )
 
 func TestRetry_Do(t *testing.T) {
 	r := &retry.Retry{}
 	r.SetDefault()
-	g.NewWithT(t).Expect(r.Interval).To(g.Equal(retry.Default.Interval))
-	g.NewWithT(t).Expect(r.Repeats).To(g.Equal(retry.Default.Repeats))
+	Expect(t, r.Interval, Equal(3*time.Second))
+	Expect(t, r.Repeats, Equal(3))
 
 	times := 0
 	exec := func() error {
@@ -24,9 +25,9 @@ func TestRetry_Do(t *testing.T) {
 		return errors.Errorf("times %d", times)
 	}
 
-	g.NewWithT(t).Expect(retry.Do(r, exec)).To(g.BeNil())
+	Expect(t, retry.Do(r, exec), Succeed())
 
 	times = 0
 	r.Repeats = 0
-	g.NewWithT(t).Expect(retry.Do(r, exec)).NotTo(g.BeNil())
+	Expect(t, retry.Do(r, exec), Failed())
 }

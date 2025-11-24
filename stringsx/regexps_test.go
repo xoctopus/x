@@ -3,9 +3,8 @@ package stringsx_test
 import (
 	"testing"
 
-	. "github.com/onsi/gomega"
-
 	. "github.com/xoctopus/x/stringsx"
+	. "github.com/xoctopus/x/testx"
 )
 
 func TestRegexps(t *testing.T) {
@@ -17,14 +16,14 @@ func TestRegexps(t *testing.T) {
 			"_123_abc_",
 			"x",
 		} {
-			NewWithT(t).Expect(ValidIdentifier(v)).To(BeTrue())
+			Expect(t, ValidIdentifier(v), BeTrue())
 		}
 		for _, v := range []string{
 			"1var",
 			"foo-bar",
 			"",
 		} {
-			NewWithT(t).Expect(ValidIdentifier(v)).To(BeFalse())
+			Expect(t, ValidIdentifier(v), BeFalse())
 		}
 	})
 
@@ -37,7 +36,7 @@ func TestRegexps(t *testing.T) {
 			"cmd",
 			"x",
 		} {
-			NewWithT(t).Expect(ValidFlagKey(v)).To(BeTrue())
+			Expect(t, ValidFlagKey(v), BeTrue())
 		}
 
 		for _, v := range []string{
@@ -47,7 +46,7 @@ func TestRegexps(t *testing.T) {
 			"\t",
 			"ABC",
 		} {
-			NewWithT(t).Expect(ValidFlagKey(v)).To(BeFalse())
+			Expect(t, ValidFlagKey(v), BeFalse())
 		}
 	})
 	t.Run("FlagName", func(t *testing.T) {
@@ -63,14 +62,14 @@ func TestRegexps(t *testing.T) {
 			"lower-dash-1",
 			"b",
 		} {
-			NewWithT(t).Expect(ValidFlagName(v)).To(BeTrue())
+			Expect(t, ValidFlagName(v), BeTrue())
 		}
 		for _, v := range []string{
 			" x",
 			"1x",
 			"\tx7f",
 		} {
-			NewWithT(t).Expect(ValidFlagName(v)).To(BeFalse())
+			Expect(t, ValidFlagName(v), BeFalse())
 		}
 	})
 	t.Run("FlagOptionKey", func(t *testing.T) {
@@ -80,7 +79,7 @@ func TestRegexps(t *testing.T) {
 			"_",
 			"x",
 		} {
-			NewWithT(t).Expect(ValidFlagOptionKey(v)).To(BeTrue())
+			Expect(t, ValidFlagOptionKey(v), BeTrue())
 		}
 		for _, v := range []string{
 			"1",
@@ -88,7 +87,7 @@ func TestRegexps(t *testing.T) {
 			"A",
 			"-",
 		} {
-			NewWithT(t).Expect(ValidFlagOptionKey(v)).To(BeFalse())
+			Expect(t, ValidFlagOptionKey(v), BeFalse())
 		}
 	})
 	t.Run("UnquotedOptionValue", func(t *testing.T) {
@@ -98,7 +97,7 @@ func TestRegexps(t *testing.T) {
 			"XyZ_0123",
 			"",
 		} {
-			NewWithT(t).Expect(ValidUnquotedOptionValue(v)).To(BeTrue())
+			Expect(t, ValidUnquotedOptionValue(v), BeTrue())
 		}
 		for _, v := range []string{
 			"1 2 3",
@@ -108,7 +107,7 @@ func TestRegexps(t *testing.T) {
 			"\r",
 			",",
 		} {
-			NewWithT(t).Expect(ValidUnquotedOptionValue(v)).To(BeFalse())
+			Expect(t, ValidUnquotedOptionValue(v), BeFalse())
 		}
 	})
 }

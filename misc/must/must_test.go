@@ -6,10 +6,10 @@ import (
 	"testing"
 	"unsafe"
 
-	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 
 	"github.com/xoctopus/x/misc/must"
+	. "github.com/xoctopus/x/testx"
 )
 
 func ExampleNoError() {
@@ -209,5 +209,5 @@ func ExampleSuccess() {
 }
 
 func TestIdenticalTypes(t *testing.T) {
-	NewWithT(t).Expect(must.IdenticalTypes(1, 1)).To(BeTrue())
+	Expect(t, must.IdenticalTypes(1, 1), BeTrue())
 }

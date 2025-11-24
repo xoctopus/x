@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/pkg/errors"
+	"github.com/xoctopus/x/misc/must"
 )
 
 type (
@@ -80,13 +80,9 @@ func (c *ctx[T]) From(ctx context.Context) (T, bool) {
 }
 
 func (c *ctx[T]) MustFrom(ctx context.Context) T {
-	if v, ok := ctx.Value(c).(T); ok {
-		return v
-	}
-	if c.defaulter != nil {
-		return c.defaulter()
-	}
-	panic(errors.Errorf("%T not found in context", c))
+	v, ok := c.From(ctx)
+	must.BeTrueF(ok, "%T not found in context", c)
+	return v
 }
 
 func (c *ctx[T]) Carry(v T) Carrier {
