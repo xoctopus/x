@@ -2,6 +2,7 @@ package contextx
 
 import (
 	"context"
+	"sync"
 
 	"github.com/pkg/errors"
 )
@@ -9,12 +10,20 @@ import (
 type (
 	Option[T any] func(*ctx[T])
 	Valuer[T any] func() T
-	WithContext   func(context.Context) context.Context
+
+	// Deprecated: use Carrier instead
+	WithContext func(context.Context) context.Context
 )
 
 func WithDefault[T any](v T) Option[T] {
 	return func(c *ctx[T]) {
 		c.defaulter = func() T { return v }
+	}
+}
+
+func WithOnce[T any]() Option[T] {
+	return func(c *ctx[T]) {
+		c.once = true
 	}
 }
 
@@ -38,14 +47,24 @@ type Context[T any] interface {
 	With(context.Context, T) context.Context
 	From(context.Context) (T, bool)
 	MustFrom(context.Context) T
-	WithCompose(v T) WithContext
+	Carry(v T) Carrier
 }
 
 type ctx[T any] struct {
 	defaulter Valuer[T]
+	once      bool
+	with      func() context.Context
 }
 
 func (c *ctx[T]) With(ctx context.Context, v T) context.Context {
+	if c.once {
+		if c.with == nil {
+			c.with = sync.OnceValue(func() context.Context {
+				return WithValue(ctx, c, v)
+			})
+		}
+		return c.with()
+	}
 	return WithValue(ctx, c, v)
 }
 
@@ -70,16 +89,18 @@ func (c *ctx[T]) MustFrom(ctx context.Context) T {
 	panic(errors.Errorf("%T not found in context", c))
 }
 
-func (c *ctx[T]) WithCompose(v T) WithContext {
+func (c *ctx[T]) Carry(v T) Carrier {
 	return func(ctx context.Context) context.Context {
-		return WithValue(ctx, c, v)
+		return c.With(ctx, v)
 	}
 }
 
-func Compose(withs ...WithContext) WithContext {
+type Carrier func(context.Context) context.Context
+
+func Compose(carriers ...Carrier) Carrier {
 	return func(ctx context.Context) context.Context {
-		for _, with := range withs {
-			ctx = with(ctx)
+		for _, carrier := range carriers {
+			ctx = carrier(ctx)
 		}
 		return ctx
 	}

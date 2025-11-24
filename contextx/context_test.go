@@ -6,9 +6,8 @@ import (
 	"net"
 	"testing"
 
-	. "github.com/onsi/gomega"
-
 	"github.com/xoctopus/x/contextx"
+	. "github.com/xoctopus/x/testx"
 )
 
 func TestContext(t *testing.T) {
@@ -17,25 +16,24 @@ func TestContext(t *testing.T) {
 		t.Run("NoDefaults", func(t *testing.T) {
 			t.Run("From", func(t *testing.T) {
 				val, ok := contextx.NewT[string]().From(ctx)
-				NewWithT(t).Expect(val).To(Equal(""))
-				NewWithT(t).Expect(ok).To(BeFalse())
+				Expect(t, val, Equal(""))
+				Expect(t, ok, BeFalse())
 			})
 			t.Run("MustFrom", func(t *testing.T) {
-				defer func() {
-					NewWithT(t).Expect(recover()).NotTo(BeNil())
-				}()
-				_ = contextx.NewT[string]().MustFrom(ctx)
+				ExpectPanic[error](t, func() {
+					_ = contextx.NewT[string]().MustFrom(ctx)
+				})
 			})
 		})
 		t.Run("HasDefaults", func(t *testing.T) {
 			t.Run("From", func(t *testing.T) {
 				val, ok := contextx.NewV(t.Name()).From(ctx)
-				NewWithT(t).Expect(ok).To(BeTrue())
-				NewWithT(t).Expect(val).To(Equal(t.Name()))
+				Expect(t, ok, BeTrue())
+				Expect(t, val, Equal(t.Name()))
 			})
 			t.Run("MustFrom", func(t *testing.T) {
 				val := contextx.NewT(contextx.WithDefault(t.Name())).MustFrom(ctx)
-				NewWithT(t).Expect(val).To(Equal(t.Name()))
+				Expect(t, val, Equal(t.Name()))
 			})
 		})
 	})
@@ -44,11 +42,20 @@ func TestContext(t *testing.T) {
 		ctx := c.With(context.Background(), t.Name())
 
 		val, ok := c.From(ctx)
-		NewWithT(t).Expect(ok).To(BeTrue())
-		NewWithT(t).Expect(val).To(Equal(t.Name()))
+		Expect(t, ok, BeTrue())
+		Expect(t, val, Equal(t.Name()))
 
-		val = c.MustFrom(ctx)
-		NewWithT(t).Expect(val).To(Equal(t.Name()))
+		Expect(t, c.MustFrom(ctx), Equal(t.Name()))
+
+		t.Run("Once", func(t *testing.T) {
+			c = contextx.NewT[string](contextx.WithOnce[string]())
+
+			ctx := c.With(ctx, t.Name())
+			Expect(t, c.MustFrom(ctx), Equal(t.Name()))
+
+			ctx = c.With(context.Background(), "replace")
+			Expect(t, c.MustFrom(ctx), Equal(t.Name()))
+		})
 	})
 }
 
@@ -58,9 +65,9 @@ func ExampleCompose() {
 	c3 := contextx.NewT[fmt.Stringer]()
 
 	ctx := contextx.Compose(
-		c1.WithCompose("1"),
-		c2.WithCompose(2),
-		c3.WithCompose(net.IPv4(1, 1, 1, 1)),
+		c1.Carry("1"),
+		c2.Carry(2),
+		c3.Carry(net.IPv4(1, 1, 1, 1)),
 	)(context.Background())
 	fmt.Println(ctx)
 	fmt.Println(c1.MustFrom(ctx))

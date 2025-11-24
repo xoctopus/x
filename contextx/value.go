@@ -17,42 +17,44 @@ func WithValue(parent context.Context, k, v any) context.Context {
 	return &kv{parent, k, v}
 }
 
-/*
-kv vs context.Context: when finding key
-
-context.Context
-+----------------+
-| ctx.Value(key) |
-+----------------+
-
-	|
-	v
-
-+---------------------+
-| Value method of kv? |  (kv from WithValue)
-+---------------------+
-
-	  |
-	  |-- key matches? --> return v
-	  |-- key not match? --> ctx.parent.Value(key)
-	  v
-	traverse recursively up to root context.Background()
-
-kv
-+-------------------+
-| c.Value(key)      |
-+-------------------+
-
-	|
-	v
-
-+-------------------+
-| if c.k == key     |
-+-------------------+
-
-	|-- match --> return c.v
-	|-- no match --> c.Context.Value(key) // to traverse std.Context
-*/
+// kv vs context.Context: when finding key
+//
+// context.Context
+// +----------------+
+// | ctx.Value(key) |
+// +----------------+
+//
+//	|
+//	V
+//
+// +---------------------+
+// | Value method of kv? |  (kv from WithValue)
+// +---------------------+
+//
+//	|
+//	|-- key matches? --> return v
+//	|-- key not match? --> ctx.parent.Value(key)
+//	V
+//
+// traverse recursively up to root context.Background()
+//
+// kv
+// +-------------------+
+// | c.Value(key)      |
+// +-------------------+
+//
+//	|
+//	V
+//
+// +-------------------+
+// | if c.k == key     |
+// +-------------------+
+//
+//	|-- match --> return c.v
+//	|-- no match --> c.Context.Value(key)
+//	V
+//
+// traverse std.Context
 type kv struct {
 	context.Context
 	k, v any
