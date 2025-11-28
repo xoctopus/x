@@ -2,14 +2,13 @@ package reflectx
 
 import (
 	"iter"
+	"maps"
 	"reflect"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 
-	"github.com/xoctopus/errx/pkg/codex"
-	"golang.org/x/exp/maps"
-
+	"github.com/xoctopus/x/codex"
 	"github.com/xoctopus/x/misc/must"
 	"github.com/xoctopus/x/stringsx"
 )
@@ -233,11 +232,12 @@ func (f *Flag) Value() string {
 		return f.value
 	}
 
-	options := maps.Values(f.options)
-	sort.Slice(options, func(i, j int) bool {
-		return options[i].index < options[j].index
-	})
-
+	options := slices.SortedFunc(
+		maps.Values(f.options),
+		func(a *Option, b *Option) int {
+			return a.index - b.index
+		},
+	)
 	parts := []string{f.name}
 	for _, opt := range options {
 		parts = append(parts, opt.String())

@@ -6,8 +6,6 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/pkg/errors"
-
 	"github.com/xoctopus/x/misc/must"
 	. "github.com/xoctopus/x/testx"
 )
@@ -18,7 +16,7 @@ func ExampleNoError() {
 		defer func() {
 			fmt.Println(recover())
 		}()
-		must.NoError(errors.New("NoError: some error"))
+		must.NoError(fmt.Errorf("NoError: some error"))
 	}()
 
 	fmt.Println(must.NoErrorV(100, nil))
@@ -26,7 +24,7 @@ func ExampleNoError() {
 		defer func() {
 			fmt.Println(recover())
 		}()
-		must.NoErrorV(100, errors.New("NoErrorV: some error"))
+		must.NoErrorV(100, fmt.Errorf("NoErrorV: some error"))
 	}()
 
 	must.NoErrorF(nil, "any")
@@ -35,7 +33,7 @@ func ExampleNoError() {
 		defer func() {
 			fmt.Println(recover())
 		}()
-		must.NoErrorF(errors.New("some error"), "NoErrorF: some message: %d", 10)
+		must.NoErrorF(fmt.Errorf("some error"), "NoErrorF: some message: %d", 10)
 	}()
 
 	// Output:
@@ -58,14 +56,14 @@ func ExampleBeTrue() {
 		defer func() {
 			fmt.Println(recover())
 		}()
-		must.BeTrueWrap(false, errors.New("BeTrueWrap: some error"))
+		must.BeTrueWrap(false, fmt.Errorf("BeTrueWrap: some error"))
 	}()
 
 	func() {
 		defer func() {
 			fmt.Println(recover())
 		}()
-		must.BeTrueWrapF(false, errors.New("some error"), "BeTrueWrapF: message and args: %d", 100)
+		must.BeTrueWrapF(false, fmt.Errorf("some error"), "BeTrueWrapF: message and args: %d", 100)
 	}()
 
 	f1 := func() (int, bool) { return 100, true }
@@ -127,14 +125,14 @@ func ExampleNotNilV() {
 			defer func() {
 				fmt.Println(recover())
 			}()
-			must.NotNilWrap(v, errors.Errorf("business message: %v", 101))
+			must.NotNilWrap(v, fmt.Errorf("business message: %v", 101))
 		}(rv.Field(i).Interface())
 
 		func(v any) {
 			defer func() {
 				fmt.Println(recover())
 			}()
-			must.NotNilWrapF(v, errors.Errorf("business message: %v", 101), "more custom message and args: %d", 102)
+			must.NotNilWrapF(v, fmt.Errorf("business message: %v", 101), "more custom message and args: %d", 102)
 		}(rv.Field(i).Interface())
 	}
 	fmt.Println(must.NotNilV(1))
@@ -192,7 +190,7 @@ func ExampleSuccess() {
 		defer func() {
 			fmt.Println(recover())
 		}()
-		_ = must.Success(func() (int, error) { return 0, errors.New("some error") })
+		_ = must.Success(func() (int, error) { return 0, fmt.Errorf("some error") })
 	}()
 	func() {
 		defer func() {

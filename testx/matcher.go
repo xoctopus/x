@@ -1,11 +1,10 @@
 package testx
 
 import (
+	"errors"
 	"reflect"
 	"slices"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	"github.com/xoctopus/x/reflectx"
 	"github.com/xoctopus/x/slicex"

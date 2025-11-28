@@ -2,11 +2,10 @@ package initializer_test
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 	_ "unsafe"
-
-	"github.com/pkg/errors"
 
 	"github.com/xoctopus/x/initializer"
 	. "github.com/xoctopus/x/testx"

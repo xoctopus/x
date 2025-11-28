@@ -1,10 +1,9 @@
 package must
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
-
-	"github.com/pkg/errors"
 )
 
 func NoError(err error) {
@@ -15,7 +14,7 @@ func NoError(err error) {
 
 func NoErrorF(err error, msg string, args ...any) {
 	if err != nil {
-		panic(errors.Wrapf(err, msg, args...))
+		panic(fmt.Errorf(msg+": %w", append(args, err)...))
 	}
 }
 
@@ -34,7 +33,7 @@ func BeTrue(ok bool) {
 
 func BeTrueF(b bool, msg string, args ...any) {
 	if !b {
-		panic(errors.Errorf("must be true: "+msg, args...))
+		panic(fmt.Errorf("must be true: "+msg, args...))
 	}
 }
 
@@ -80,7 +79,7 @@ Panic:
 	if msg != "" {
 		format = format + " " + msg
 	}
-	err := errors.Errorf(format, args...)
+	err := fmt.Errorf(format, args...)
 	panic(err)
 }
 

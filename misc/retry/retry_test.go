@@ -1,10 +1,9 @@
 package retry_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
-
-	"github.com/pkg/errors"
 
 	"github.com/xoctopus/x/misc/retry"
 	. "github.com/xoctopus/x/testx"
@@ -22,7 +21,7 @@ func TestRetry_Do(t *testing.T) {
 		if times == 3 {
 			return nil
 		}
-		return errors.Errorf("times %d", times)
+		return fmt.Errorf("times %d", times)
 	}
 
 	Expect(t, retry.Do(r, exec), Succeed())

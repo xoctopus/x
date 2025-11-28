@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func Expect[A any](t testing.TB, actual A, m Matcher[A]) {
@@ -31,14 +30,19 @@ func failed[T any](actual T, m Matcher[T]) string {
 	return fmt.Sprintf("%s %s, but got\n%v", prefix, m.Action(), diff(v, m))
 }
 
-func diff(actual any, m any) any {
+func diff(actual any, m any) (x any) {
 	if normalizer, ok := m.(NormalizedExpectedMatcher); ok {
-		return cmp.Diff(
-			actual,
-			normalizer.NormalizeExpect(),
-			cmpopts.IgnoreUnexported(),
-			cmpopts.EquateErrors(),
-		)
+		expect := normalizer.NormalizeExpect()
+		defer func() {
+			if r := recover(); r != nil {
+				// some case may cause cmp.Diff panic. catch to compare dumped
+				x = cmp.Diff(
+					fmt.Sprintf("%T:%+v", expect, expect),
+					fmt.Sprintf("%T:%+v", expect, actual),
+				)
+			}
+		}()
+		return cmp.Diff(expect, actual)
 	}
 	return actual
 }

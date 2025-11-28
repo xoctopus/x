@@ -4,8 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/xoctopus/errx/pkg/codex"
-
+	"github.com/xoctopus/x/codex"
 	. "github.com/xoctopus/x/reflectx"
 	. "github.com/xoctopus/x/testx"
 )

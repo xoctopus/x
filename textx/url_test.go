@@ -5,8 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/xoctopus/errx/pkg/codex"
-
+	"github.com/xoctopus/x/codex"
 	. "github.com/xoctopus/x/testx"
 	. "github.com/xoctopus/x/textx"
 	"github.com/xoctopus/x/textx/testdata"
