@@ -23,4 +23,8 @@ func TestAtoi(t *testing.T) {
 	i, err = Atoi("11")
 	Expect(t, err, Succeed())
 	Expect(t, i, Equal(11))
+
+	i, err = Atoi("0")
+	Expect(t, err, Succeed())
+	Expect(t, i, Equal(0))
 }

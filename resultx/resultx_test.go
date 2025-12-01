@@ -36,7 +36,7 @@ func TestResult(t *testing.T) {
 	t.Run("UnwrapB", func(t *testing.T) {
 		Expect(t, resultx.UnwrapB(strings.CutPrefix("good morning", "good ")), Equal("morning"))
 		t.Run("Panic", func(t *testing.T) {
-			ExpectPanic[error](t, func() {
+			ExpectPanic[bool](t, func() {
 				resultx.UnwrapB(strings.CutPrefix("good morning", "x"))
 			})
 		})

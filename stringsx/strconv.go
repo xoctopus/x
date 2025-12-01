@@ -14,7 +14,7 @@ func Atoi(s string) (int, error) {
 		i, err := strconv.ParseInt(s[2:], 16, 64)
 		return int(i), err
 	}
-	if strings.HasPrefix(s, "0") {
+	if len(s) > 1 && strings.HasPrefix(s, "0") {
 		i, err := strconv.ParseInt(s[1:], 8, 64)
 		return int(i), err
 	}

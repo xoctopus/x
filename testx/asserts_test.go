@@ -2,6 +2,7 @@ package testx_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	. "github.com/xoctopus/x/testx"
@@ -64,17 +65,7 @@ func TestExpect(t *testing.T) {
 		Expect[error](t, nil, Not(ErrorEqual("any")))
 		Expect[error](t, nil, Not(ErrorContains("any")))
 
-		ExpectPanic(
-			t,
-			func() {
-				ExpectPanic[error](
-					t,
-					func() { panic("any") },
-					Not(IsError(errors.New("any"))),
-				)
-			},
-			ContainsSubString("caught panic"),
-		)
+		ExpectPanic(t, func() { panic("any") }, Equal("any"))
 
 		// refuse comparing nils
 		Expect(t, nil, Not(BeType[any]()))
@@ -90,4 +81,23 @@ func TestExpect(t *testing.T) {
 
 		Expect(t, []int{1, 2}, EquivalentSlice([]int{2, 1}))
 	})
+
+	// this help to verify failure point
+	// TODO trace2 case's failure point is not correct
+	// t.Run("Trace", func(t *testing.T) {
+	// 	// Should be traced to current line as case failure point
+	// 	ExpectPanic[error](t, func() { panic("any") })
+	// })
+	// t.Run("Trace2", func(t *testing.T) {
+	// 	ExpectPanic[string](t, func() { crash(1) })
+	// })
+}
+
+func crash(i int) {
+	switch i {
+	case 0:
+		return
+	case 1:
+		panic(fmt.Errorf("any"))
+	}
 }

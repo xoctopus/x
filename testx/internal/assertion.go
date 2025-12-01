@@ -8,12 +8,13 @@ import (
 )
 
 func Expect[A any](t testing.TB, actual A, m Matcher[A]) {
+	t.Helper()
+
 	matched := m.Match(actual)
 	if m.Negative() {
 		matched = !matched
 	}
 	if !matched {
-		t.Helper()
 		t.Fatal("\n" + failed(actual, m))
 	}
 }
