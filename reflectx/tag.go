@@ -181,13 +181,13 @@ func (f *Flag) parse() {
 			if !stringsx.ValidFlagOptionKey(k) {
 				panic(codex.Errorf(ECODE__INVALID_OPTION_KEY, "key: %q", k))
 			}
-			if !strings.HasPrefix(v, "'") && !strings.HasSuffix(v, "'") {
-				// if option value contains control characters or spaces,
-				// it MUST be quoted with `'`.
-				if !stringsx.ValidUnquotedOptionValue(v) {
-					panic(codex.Errorf(ECODE__INVALID_OPTION_VALUE, "value: %q", v))
-				}
-			}
+			// if !strings.HasPrefix(v, "'") && !strings.HasSuffix(v, "'") {
+			// 	// if option value contains control characters or spaces,
+			// 	// it MUST be quoted with `'`.
+			// 	if !stringsx.ValidUnquotedOptionValue(v) {
+			// 		panic(codex.Errorf(ECODE__INVALID_OPTION_VALUE, "value: %q", v))
+			// 	}
+			// }
 			if opt := NewOption(k, v, index); !opt.IsZero() {
 				if _, exists := f.options[opt.key]; !exists {
 					f.options[opt.key] = opt
@@ -289,6 +289,8 @@ func (o *Option) Key() string {
 	return o.key
 }
 
+// Value returns literal text of option.
+// eg: `db:"f_id,auto_inc,default='100'` Value() returns '100', Unquoted returns 100
 func (o *Option) Value() string {
 	if !o.IsZero() {
 		return o.val
