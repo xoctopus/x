@@ -1,7 +1,7 @@
 package flagx
 
 type _Uint interface {
-	uint8 | uint16 | uint32 | uint64
+	~uint8 | ~uint16 | ~uint32 | ~uint64
 }
 
 type Flagger[U _Uint] interface {
