@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/xoctopus/x/codex"
 	. "github.com/xoctopus/x/testx"
 )
 
@@ -80,6 +81,8 @@ func TestExpect(t *testing.T) {
 		Expect(t, errors.New("any"), Failed())
 
 		Expect(t, []int{1, 2}, EquivalentSlice([]int{2, 1}))
+
+		Expect(t, codex.New(MockCodeErr(0)), Not(IsCodeError(MockCodeErr(1))))
 	})
 
 	// this help to verify failure point
@@ -92,6 +95,10 @@ func TestExpect(t *testing.T) {
 	// 	ExpectPanic[string](t, func() { crash(1) })
 	// })
 }
+
+type MockCodeErr int
+
+func (MockCodeErr) Message() string { return "mock" }
 
 func crash(i int) {
 	switch i {

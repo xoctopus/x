@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/xoctopus/x/codex"
 	"github.com/xoctopus/x/reflectx"
 	"github.com/xoctopus/x/slicex"
 	"github.com/xoctopus/x/testx/internal"
@@ -173,6 +174,15 @@ func IsError(expect error) Matcher[error] {
 	return NewComparedMatcher[error, error](
 		"IsError",
 		errors.Is,
+	)(expect)
+}
+
+func IsCodeError[Code codex.Code](expect Code) Matcher[error] {
+	return NewComparedMatcher[error, Code](
+		"IsCodeError",
+		func(target error, code Code) bool {
+			return errors.Is(target, codex.New(code))
+		},
 	)(expect)
 }
 
