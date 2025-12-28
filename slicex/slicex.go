@@ -1,5 +1,10 @@
 package slicex
 
+import (
+	"maps"
+	"slices"
+)
+
 func Unique[T comparable, E ~[]T](s E) E {
 	if len(s) <= 1 {
 		return s
@@ -15,6 +20,16 @@ func Unique[T comparable, E ~[]T](s E) E {
 		r = append(r, v)
 	}
 	return r
+}
+
+func UniqueM[SE any, RE comparable, SS ~[]SE](ss SS, m func(e SE) RE) []RE {
+	dict := make(map[RE]struct{})
+
+	for i := range ss {
+		dict[m(ss[i])] = struct{}{}
+	}
+
+	return slices.Collect(maps.Keys(dict))
 }
 
 // Equivalent compares two slices has same elements without order
