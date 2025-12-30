@@ -5,60 +5,31 @@ version: 2
 
 run:
   timeout: 2m
-  tests: false # skip lint _test.go files
   concurrency: 4
-
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-  govet:
-    check-shadowing: true
-  gocyclo:
-    min-complexity: 40
-  dupl:
-    threshold: 150
-  depguard:
-    #list-type: blacklist
-    packages:
-      - fmt
-    packages-with-error-message:
-      fmt: "use log package instead of fmt in production"
-  revive:
-    #config: ""
-    disable-rules:
-      - exported
-  goimports:
-    local-prefixes: github.com/your-org/your-project
-
-issues:
-  exclude-use-default: false  # 使用默认的排除规则
-  max-issues-per-linter: 0
-  max-same-issues: 0
-
-  # 排除某些 false positive 的问题（支持正则）
-  exclude:
-    - "field .* is unused"           # 可能是 proto 或序列化保留字段
-
-linters:
-  enable:
-    - govet
-    - errcheck
-    - dupl
-    - ineffassign
-    - unused
-
-  disable:
-    - nakedret
-    - revive
-    - gocyclo
-    - depguard
-    - staticcheck
-    #- scopelint
-    #- typecheck
-    #- gofmt
-    #- goimports
-    #- structcheck
+  tests: false
+  skip-dirs:
+    - vendor
+  skip-files:
+    - "*_generated.go"
+    - "*.pb.go"
 
 output:
   format: colored-line-number
   sort-results: true
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+  exclude-rules:
+    - linters:
+        - errcheck:
+            text: "defer *.Close()"
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - staticcheck
+

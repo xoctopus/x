@@ -3,8 +3,10 @@ package codex_test
 import (
 	"errors"
 	"fmt"
+	"testing"
 
 	. "github.com/xoctopus/x/codex"
+	. "github.com/xoctopus/x/testx"
 )
 
 type ECode int8
@@ -29,6 +31,10 @@ func (e ECode) Message() string {
 		return prefix + "unknown"
 	}
 }
+
+type ECode2 int8
+
+func (e ECode2) Message() string { return "" }
 
 func ExampleError() {
 	fmt.Println(New(ECODE_UNDEFINED).Error())
@@ -57,4 +63,29 @@ func ExampleError() {
 	// expecting false errors.Is(e1, e2): false
 	// expecting nil Wrap(ECODE__REASON1, nil): <nil>
 	// expecting nil Wrapf(ECODE__REASON2, nil): <nil>
+}
+
+func TestIs(t *testing.T) {
+	code, isCode := Is[ECode](New(ECODE__REASON1))
+	Expect(t, isCode, BeTrue())
+	Expect(t, code, Equal(ECODE__REASON1))
+
+	code2, isCode2 := Is[ECode2](New(ECODE__REASON2))
+	Expect(t, isCode2, BeFalse())
+	Expect(t, code2, Equal(ECode2(0)))
+
+	code3, isCode3 := Is[ECode](errors.New("any"))
+	Expect(t, isCode3, BeFalse())
+	Expect(t, code3, Equal(ECode(0)))
+
+	Expect(t, IsCode(New(ECODE__REASON1), ECODE__REASON1), BeTrue())
+	Expect(t, IsCode(New(ECODE__REASON1), ECODE__REASON2), BeFalse())
+
+	as1, asserted := As[ECode](New(ECODE__REASON1))
+	Expect(t, asserted, BeTrue())
+	Expect(t, as1.Code(), Equal(ECODE__REASON1))
+
+	as2, asserted := As[ECode2](New(ECODE__REASON2))
+	Expect(t, as2 == nil, BeTrue())
+	Expect(t, asserted, BeFalse())
 }

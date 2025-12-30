@@ -313,13 +313,8 @@ func (o *Option) Unquoted() string {
 }
 
 func unquote(s string) string {
-	if strings.HasPrefix(s, "'") {
-		s = strings.TrimPrefix(s, "'")
-	}
-	if strings.HasSuffix(s, "'") {
-		s = strings.TrimSuffix(s, "'")
-	}
-	return s
+	s = strings.TrimPrefix(s, "'")
+	return strings.TrimSuffix(s, "'")
 }
 
 func quote(s string) string {

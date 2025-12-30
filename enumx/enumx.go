@@ -43,7 +43,7 @@ func Scan(src any, offset int) (int, error) {
 	switch v := src.(type) {
 	case []byte:
 		if len(v) == 0 {
-			return offset - offset, nil
+			return 0, nil
 		}
 		i, err := strconv.ParseInt(string(v), 10, 64)
 		if err != nil {
@@ -52,7 +52,7 @@ func Scan(src any, offset int) (int, error) {
 		return int(i) - offset, nil
 	case string:
 		if len(v) == 0 {
-			return offset - offset, nil
+			return 0, nil
 		}
 		i, err := strconv.ParseInt(v, 10, 64)
 		if err != nil {
@@ -64,7 +64,7 @@ func Scan(src any, offset int) (int, error) {
 	case uint, uint8, uint16, uint32, uint64:
 		return int(reflect.ValueOf(v).Uint()) - offset, nil
 	default:
-		return offset - offset, nil
+		return 0, nil
 	}
 }
 

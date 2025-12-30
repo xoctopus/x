@@ -52,6 +52,26 @@ func Wrapf[C Code](e C, cause error, format string, args ...any) error {
 	return &coderr[C]{code: e, cause: cause, msg: format, args: append(args, cause)}
 }
 
+func IsCode[C Code](e error, code C) bool {
+	return errors.Is(e, New(code))
+}
+
+func Is[C Code](e error) (C, bool) {
+	var target *coderr[C]
+	if errors.As(e, &target) {
+		return target.code, true
+	}
+	return *new(C), false
+}
+
+func As[C Code](e error) (Error[C], bool) {
+	var target *coderr[C]
+	if errors.As(e, &target) {
+		return target, true
+	}
+	return nil, false
+}
+
 type coderr[C Code] struct {
 	code  C
 	msg   string

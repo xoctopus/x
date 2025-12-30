@@ -25,21 +25,15 @@ type Map[K comparable, V any] interface {
 }
 
 func NewXmap[K comparable, V any]() Map[K, V] {
-	return &xmap[K, V]{
-		mtx: &sync.RWMutex{},
-		m:   make(map[K]V),
-	}
+	return &xmap[K, V]{m: make(map[K]V)}
 }
 
 func AsXmap[K comparable, V any, M ~map[K]V](m M) Map[K, V] {
-	return &xmap[K, V]{
-		mtx: &sync.RWMutex{},
-		m:   m,
-	}
+	return &xmap[K, V]{m: m}
 }
 
 type xmap[K comparable, V any] struct {
-	mtx *sync.RWMutex
+	mtx sync.RWMutex
 	m   map[K]V
 }
 
@@ -124,7 +118,7 @@ func (m *xmap[K, V]) LoadOrStore(k K, v V) (actual V, loaded bool) {
 
 func (m *xmap[K, V]) Range(f func(K, V) bool) {
 	m.mtx.RLock()
-	m.mtx.RUnlock()
+	defer m.mtx.RUnlock()
 	for k, v := range m.m {
 		if !f(k, v) {
 			break
