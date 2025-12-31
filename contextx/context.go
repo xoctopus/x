@@ -10,9 +10,6 @@ import (
 type (
 	Option[T any] func(*ctx[T])
 	Valuer[T any] func() T
-
-	// Deprecated: use Carrier instead
-	WithContext func(context.Context) context.Context
 )
 
 func WithDefault[T any](v T) Option[T] {
