@@ -97,7 +97,7 @@ test: dep tidy
 cover: dep tidy
 	@echo "==> run unit test with coverage"
 	@GOWORK=off $(GOTEST) test -failfast -parallel 1 -gcflags="all=-N -l" ${PACKAGES} -covermode=count -coverprofile=cover.out
-	@grep -vE '_gen.go|.pb.go|_mock.go|_genx_|main.go' cover.out > cover2.out && mv cover2.out cover.out
+	@grep -vE '_gen.go|.pb.go|_mock.go|_genx_|main.go|testx/asserts.go' cover.out > cover2.out && mv cover2.out cover.out
 
 ci-cover:
 	@if [ "${GOTEST}" = "xgo" ]; then \
@@ -127,7 +127,6 @@ lint: dep
 	@echo ">>>detecting ineffectual assignments"
 	@ineffassign ./...
 	@echo "done"
-
 
 # @echo ">>>detecting cyclomatic complexities over 10 and average"
 # @gocyclo -over 10 -avg -ignore '_test|_test.go|vendor|pb' . || true
