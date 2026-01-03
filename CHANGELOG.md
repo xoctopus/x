@@ -267,20 +267,20 @@
 * **mapx:** add enhanced map implements with map[k]v and sync.Map
 * **misc:** strings helper
 * **misc:** must util funcs
+* **reflectx:** indirectNew to allocate and return the deepest indirect reflect value
+* **reflectx:** fix struct tag parsing
+* **reflectx:** hack unexported struct field
+* **reflectx:** type assert and casting
 * **reflectx:** add reflectx.DeepCopy and reflectx.Clone for value copy and remove reflectx.Set
 * **reflectx:** reflectx
-* **reflectx:** add reflectx.DeepCopy and Clone for value copy
-* **reflectx:** fix struct tag parsing
-* **reflectx:** type assert and casting
-* **reflectx:** check if reflect.Type can call Elem without panic
 * **reflectx:** improve IsZero, more stricter
-* **reflectx:** indirectNew to allocate and return the deepest indirect reflect value
-* **reflectx:** hack unexported struct field
+* **reflectx:** check if reflect.Type can call Elem without panic
+* **reflectx:** add reflectx.DeepCopy and Clone for value copy
 * **reflectx:** add Set function to shallow copy reflect.Value
 * **reflextx:** add `IsNumeric` `IsInteger` and `IsFloat` functions
+* **resultx:** add resultx for universal function result handler
 * **resultx:** add result Succeed and Failed methods
 * **resultx:** function results handler
-* **resultx:** add resultx for universal function result handler
 * **textx:** add MarshalURL and UnmarshalURL for conversion between url.Value and struct
 * **textx:** add simple text (de)serializer
 * **textx:** use fmt.Sscan to parse numeric types from string to support multi numerical bases input
