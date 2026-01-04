@@ -22,14 +22,26 @@ func Unique[T comparable, E ~[]T](s E) E {
 	return r
 }
 
-func UniqueM[SE any, RE comparable, SS ~[]SE](ss SS, m func(e SE) RE) []RE {
-	dict := make(map[RE]struct{})
+// UniqueKeys collects partials P from slices S by func m
+func UniqueKeys[E any, S ~[]E, P comparable](s S, m func(E) P) []P {
+	dict := make(map[P]struct{})
 
-	for i := range ss {
-		dict[m(ss[i])] = struct{}{}
+	for i := range s {
+		dict[m(s[i])] = struct{}{}
 	}
 
 	return slices.Collect(maps.Keys(dict))
+}
+
+// UniqueValues collects unique []E from slices S by func m
+func UniqueValues[E any, S ~[]E, K comparable](s S, m func(E) K) []E {
+	dict := make(map[K]E)
+
+	for i := range s {
+		dict[m(s[i])] = s[i]
+	}
+
+	return slices.Collect(maps.Values(dict))
 }
 
 // Equivalent compares two slices has same elements without order

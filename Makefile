@@ -12,6 +12,7 @@ DEP_XGO=$(shell type xgo > /dev/null 2>&1 && echo $$?)
 DEP_INEFFASSIGN=$(shell type ineffassign > /dev/null 2>&1 && echo $$?)
 DEP_GOCYCLO=$(shell type gocyclo > /dev/null 2>&1 && echo $$?)
 DEP_LINTER=$(shell type golangci-lint > /dev/null 2>&1 && echo $$?)
+DEP_GITCHGLOG=$(shell type git-chglog > /dev/null 2>&1 && echo $$?)
 
 # git info
 GIT_COMMIT=$(shell git rev-parse --short HEAD)

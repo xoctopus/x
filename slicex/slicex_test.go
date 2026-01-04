@@ -27,13 +27,26 @@ func TestEqualElements(t *testing.T) {
 
 func TestUniqueMapping(t *testing.T) {
 	type X struct {
-		val string
+		key   string
+		other int
 	}
 
 	ss := []X{
-		{"a"}, {"b"}, {"c"}, {"d"}, {"a"}, {"b"},
+		{"a", 1},
+		{"b", 2},
+		{"c", 3},
+		{"d", 4},
+		{"a", 1},
+		{"b", 2},
 	}
 
-	vals := slicex.UniqueM(ss, func(e X) string { return e.val })
-	Expect(t, vals, EquivalentSlice([]string{"a", "b", "c", "d"}))
+	keys := slicex.UniqueKeys(ss, func(e X) string { return e.key })
+	Expect(t, keys, EquivalentSlice([]string{"a", "b", "c", "d"}))
+
+	values := slicex.UniqueValues(ss, func(e X) string { return e.key })
+	Expect(t, len(values), Equal(4))
+
+	others := slicex.UniqueKeys(values, func(e X) int { return e.other })
+	Expect(t, others, EquivalentSlice([]int{1, 2, 3, 4}))
+
 }
