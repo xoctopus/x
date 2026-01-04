@@ -1,4 +1,22 @@
 
+<a name="v0.2.11"></a>
+## [v0.2.11](https://github.com/xoctopus/x/compare/v0.2.10...v0.2.11)
+
+> 2026-01-05
+
+### Ci
+
+* add makefile changelog gen entry and regen changelog
+
+### Doc
+
+* add changelog
+
+### Feat
+
+* **slicex:** unique mapping for keys and values
+
+
 <a name="v0.2.10"></a>
 ## [v0.2.10](https://github.com/xoctopus/x/compare/v0.2.9...v0.2.10)
 
