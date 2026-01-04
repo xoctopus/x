@@ -27,9 +27,9 @@ GOBUILD := go
 
 # dependencies flags
 DEP_DEVGEN            := $(shell type devgen > /dev/null 2>&1 && echo $$?)
-DEP_GOLANGCI_LINT     := $(shell type golangci-lint > /dev/null 2>&1 && echo $$?)
-DEP_GOIMPORTS_REVISER := $(shell type goimports-reviser > /dev/null 2>&1 && echo $$?)
 DEP_GIT_CHGLOG        := $(shell type git-chglog > /dev/null 2>&1 && echo $$?)
+DEP_GOIMPORTS_REVISER := $(shell type goimports-reviser > /dev/null 2>&1 && echo $$?)
+DEP_GOLANGCI_LINT     := $(shell type golangci-lint > /dev/null 2>&1 && echo $$?)
 
 show:
 	@echo "module:"
@@ -45,25 +45,15 @@ show:
 	@echo "	build=$(GOBUILD)"
 	@echo "	test=$(GOTEST)"
 	@echo "	devgen=$(shell which devgen) $(DEP_DEVGEN)"
-	@echo "	golangci-lint=$(shell which golangci-lint) $(DEP_GOLANGCI_LINT)"
-	@echo "	goimports-reviser=$(shell which goimports-reviser) $(DEP_GOIMPORTS_REVISER)"
 	@echo "	git-chglog=$(shell which git-chglog) $(DEP_GIT_CHGLOG)"
+	@echo "	goimports-reviser=$(shell which goimports-reviser) $(DEP_GOIMPORTS_REVISER)"
+	@echo "	golangci-lint=$(shell which golangci-lint) $(DEP_GOLANGCI_LINT)"
 
 dep:
 	@echo "==> installing dependencies"
 	@if [ "${DEP_DEVGEN}" != "0" ]; then \
 		echo "	devgen for dev configuration generating"; \
-		go install github.com/xoctopus/devgen/cmd/devgen@main; \
-		echo "	DONE."; \
-	fi
-	@if [ "${DEP_GOLANGCI_LINT}" != "0" ]; then \
-		echo "	golangci-lint for code linting"; \
-		go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest; \
-		echo "	DONE."; \
-	fi
-	@if [ "${DEP_GOIMPORTS_REVISER}" != "0" ]; then \
-		echo "	goimports-reviser for code formating"; \
-		go install github.com/incu6us/goimports-reviser/v3@latest; \
+		go install github.com/xoctopus/devx/cmd/devgen@main; \
 		echo "	DONE."; \
 	fi
 	@if [ "${DEP_GIT_CHGLOG}" != "0" ]; then \
@@ -71,20 +61,30 @@ dep:
 		go install github.com/git-chglog/git-chglog/cmd/git-chglog@latest; \
 		echo "	DONE."; \
 	fi
+	@if [ "${DEP_GOIMPORTS_REVISER}" != "0" ]; then \
+		echo "	goimports-reviser for code formating"; \
+		go install github.com/incu6us/goimports-reviser/v3@latest; \
+		echo "	DONE."; \
+	fi
+	@if [ "${DEP_GOLANGCI_LINT}" != "0" ]; then \
+		echo "	golangci-lint for code linting"; \
+		go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest; \
+		echo "	DONE."; \
+	fi
 
 upgrade-dep:
 	@echo "==> upgrading dependencies"
 	@echo "	devgen for dev configuration generating"
-	@go install github.com/xoctopus/devgen/cmd/devgen@main
+	@go install github.com/xoctopus/devx/cmd/devgen@main
 	@echo "	DONE."
-	@echo "	golangci-lint for code linting"
-	@go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+	@echo "	git-chglog for generating changelog"
+	@go install github.com/git-chglog/git-chglog/cmd/git-chglog@latest
 	@echo "	DONE."
 	@echo "	goimports-reviser for code formating"
 	@go install github.com/incu6us/goimports-reviser/v3@latest
 	@echo "	DONE."
-	@echo "	git-chglog for generating changelog"
-	@go install github.com/git-chglog/git-chglog/cmd/git-chglog@latest
+	@echo "	golangci-lint for code linting"
+	@go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 	@echo "	DONE."
 
 tidy:
