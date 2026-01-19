@@ -7,7 +7,7 @@ import (
 	"unsafe"
 
 	"github.com/xoctopus/x/ptrx"
-	. "github.com/xoctopus/x/reflectx"
+	"github.com/xoctopus/x/reflectx"
 	. "github.com/xoctopus/x/testx"
 )
 
@@ -36,7 +36,7 @@ func TestIndirect(t *testing.T) {
 		{
 			name:   "NilInput",
 			input:  nil,
-			expect: InvalidValue,
+			expect: reflectx.InvalidValue,
 			check: func(t *testing.T, result reflect.Value) {
 				Expect(t, result.IsValid(), BeFalse())
 			},
@@ -83,7 +83,7 @@ func TestIndirect(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			result := Indirect(c.input)
+			result := reflectx.Indirect(c.input)
 
 			if c.check != nil {
 				c.check(t, result)
@@ -109,16 +109,16 @@ func TestIndirectNew(t *testing.T) {
 	}{
 		{1, reflect.ValueOf(1)},
 		{ptrx.Ptr(1), reflect.ValueOf(1)},
-		{nil, InvalidValue},
+		{nil, reflectx.InvalidValue},
 		{reflect.ValueOf(v1).Elem().Field(0), reflect.ValueOf(1)},
 		{reflect.ValueOf(v2).Elem().Field(0), reflect.ValueOf(0)},
 		{reflect.ValueOf(v3).Elem().Field(0), reflect.ValueOf(0)},
-		{reflect.ValueOf(v4).Elem().Field(0), InvalidValue},
+		{reflect.ValueOf(v4).Elem().Field(0), reflectx.InvalidValue},
 	}
 
 	for _, c := range cases {
-		result := IndirectNew(c.Input)
-		if c.expect == InvalidValue {
+		result := reflectx.IndirectNew(c.Input)
+		if c.expect == reflectx.InvalidValue {
 			Expect(t, result, Equal(c.expect))
 			continue
 		}
@@ -126,7 +126,7 @@ func TestIndirectNew(t *testing.T) {
 		Expect(t, result.Interface(), Equal(c.expect.Interface()))
 	}
 
-	v2f0rv := IndirectNew(reflect.ValueOf(v2).Elem().Field(0))
+	v2f0rv := reflectx.IndirectNew(reflect.ValueOf(v2).Elem().Field(0))
 	v2f0rv.Set(reflect.ValueOf(100))
 	Expect(t, ***v2.Int, Equal(100))
 }
@@ -140,13 +140,13 @@ func TestDeref(t *testing.T) {
 		{ptrx.Ptr(1), reflect.TypeOf(1)},
 		{(*int)(nil), reflect.TypeOf(1)},
 		{ptrx.Ptr(ptrx.Ptr(0.2)), reflect.TypeOf(float64(0))},
-		{InvalidType, InvalidType},
+		{reflectx.InvalidType, reflectx.InvalidType},
 		{any(1), reflect.TypeOf(int(0))},
 	}
 
 	for _, c := range cases {
-		result := Deref(reflect.TypeOf(c.input))
-		if c.expect == InvalidType {
+		result := reflectx.Deref(reflect.TypeOf(c.input))
+		if c.expect == reflectx.InvalidType {
 			Expect(t, result, BeNil[reflect.Type]())
 		} else {
 			Expect(t, result, Equal(c.expect))
@@ -156,9 +156,9 @@ func TestDeref(t *testing.T) {
 
 func TestDerefPointer(t *testing.T) {
 	type Pointer *int
-	Expect(t, DerefPointer(reflect.TypeFor[*Pointer]()), Equal(reflect.TypeFor[Pointer]()))
-	Expect(t, DerefPointer(reflect.TypeFor[***int]()), Equal(reflect.TypeFor[int]()))
-	Expect(t, DerefPointer(InvalidType), Equal(InvalidType))
+	Expect(t, reflectx.DerefPointer(reflect.TypeFor[*Pointer]()), Equal(reflect.TypeFor[Pointer]()))
+	Expect(t, reflectx.DerefPointer(reflect.TypeFor[***int]()), Equal(reflect.TypeFor[int]()))
+	Expect(t, reflectx.DerefPointer(reflectx.InvalidType), Equal(reflectx.InvalidType))
 }
 
 func TestNew(t *testing.T) {
@@ -176,8 +176,8 @@ func TestNew(t *testing.T) {
 	for _, c := range cases {
 		rt := reflect.TypeOf(c.value)
 
-		rv := New(rt)
-		rve := NewElem(rt)
+		rv := reflectx.New(rt)
+		rve := reflectx.NewElem(rt)
 
 		Expect(t, rv.Type(), Equal(c.orig))
 		Expect(t, rve.Type(), Equal(c.elem))
@@ -216,8 +216,8 @@ func TestIsZero(t *testing.T) {
 		zero  bool
 	}{
 		{reflect.ValueOf(1), false},
-		{InvalidValue, true},
-		{InvalidType, true},
+		{reflectx.InvalidValue, true},
+		{reflectx.InvalidType, true},
 		{(*int)(nil), true},
 		{ptrx.Ptr(1), false},
 		{any(nil), true},
@@ -246,7 +246,7 @@ func TestIsZero(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		Expect(t, IsZero(c.value), Equal(c.zero))
+		Expect(t, reflectx.IsZero(c.value), Equal(c.zero))
 	}
 }
 
@@ -266,7 +266,7 @@ func TestTypename(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		typename := Typename(reflect.TypeOf(c.value))
+		typename := reflectx.Typename(reflect.TypeOf(c.value))
 		Expect(t, typename, Equal(c.typename))
 	}
 }
@@ -286,7 +286,7 @@ func TestIsBytes(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		Expect(t, IsBytes(c.value), Equal(c.expect))
+		Expect(t, reflectx.IsBytes(c.value), Equal(c.expect))
 	}
 }
 
@@ -305,7 +305,7 @@ func TestIsInteger(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		Expect(t, IsInteger(c.value), Equal(c.expect))
+		Expect(t, reflectx.IsInteger(c.value), Equal(c.expect))
 	}
 }
 
@@ -324,7 +324,7 @@ func TestIsFloat(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		Expect(t, IsFloat(c.value), Equal(c.expect))
+		Expect(t, reflectx.IsFloat(c.value), Equal(c.expect))
 	}
 }
 
@@ -345,7 +345,7 @@ func TestIsNumeric(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		Expect(t, IsNumeric(c.value), Equal(c.expect))
+		Expect(t, reflectx.IsNumeric(c.value), Equal(c.expect))
 	}
 }
 
@@ -365,7 +365,7 @@ func TestCanElemType(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		Expect(t, CanElem(c.typ), Equal(c.expect))
+		Expect(t, reflectx.CanElem(c.typ), Equal(c.expect))
 	}
 }
 
@@ -389,10 +389,10 @@ func TestCanNilValue(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		Expect(t, CanNilValue(c.value), Equal(c.expect))
+		Expect(t, reflectx.CanNilValue(c.value), Equal(c.expect))
 	}
 
 	// type nil trap
 	var v interface{} = []int(nil)
-	Expect(t, CanNilValue(v), BeTrue())
+	Expect(t, reflectx.CanNilValue(v), BeTrue())
 }

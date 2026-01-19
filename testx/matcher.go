@@ -22,8 +22,8 @@ func NewMatcher[A any](name string, match func(A) bool) Matcher[A] {
 }
 
 func NewComparedMatcher[A any, E any](name string, match func(A, E) bool) internal.MatcherNewer[A, E] {
-	return func(expected E) internal.Matcher[A] {
-		return internal.NewComparedMatcher(name, match)(expected)
+	return func(expect E) internal.Matcher[A] {
+		return internal.NewComparedMatcher(name, match)(expect)
 	}
 }
 
@@ -48,7 +48,7 @@ func BeNil[A any]() Matcher[A] {
 }
 
 func NotBeNil[A any]() Matcher[A] {
-	return Not(BeNil[A]())
+	return internal.Not(BeNil[A]())
 }
 
 func BeTrue() Matcher[bool] {
@@ -59,30 +59,34 @@ func BeFalse() Matcher[bool] {
 	return NewMatcher[bool]("BeFalse", func(a bool) bool { return !a })
 }
 
-func BeEmpty[A any]() Matcher[A] {
-	return NewMatcher[A]("BeEmpty", func(a A) bool {
+func IsZero[A any]() Matcher[A] {
+	return NewMatcher[A]("IsZero", func(a A) bool {
 		return reflectx.IsZero(a)
 	})
 }
 
-func Be[T any](expected T) Matcher[T] {
-	return NewComparedMatcher[T, T]("Be", func(a T, e T) bool {
+func IsNotZero[A any]() Matcher[A] {
+	return Not(IsZero[A]())
+}
+
+func Be[E any](expect E) Matcher[E] {
+	return NewComparedMatcher[E, E]("Be", func(a, e E) bool {
 		return any(a) == any(e)
-	})(expected)
+	})(expect)
 }
 
-func NotBe[T any](expected T) Matcher[T] {
-	return Not(Be[T](expected))
+func NotBe[E any](expect E) Matcher[E] {
+	return Not(Be[E](expect))
 }
 
-func Equal[T any](expected T) Matcher[T] {
-	return NewComparedMatcher[T, T]("Equal", func(a T, e T) bool {
+func Equal[E any](expect E) Matcher[E] {
+	return NewComparedMatcher[E, E]("Equal", func(a, e E) bool {
 		return reflect.DeepEqual(a, e)
-	})(expected)
+	})(expect)
 }
 
-func NotEqual[T any](expected T) Matcher[T] {
-	return Not(Equal[T](expected))
+func NotEqual[E any](expect E) Matcher[E] {
+	return Not(Equal[E](expect))
 }
 
 func HaveCap[T any](cap int) Matcher[T] {
@@ -120,18 +124,18 @@ func ContainsSubString(sub string) Matcher[string] {
 	)(sub)
 }
 
-func Contains[S []E, E comparable](v E) Matcher[S] {
+func Contains[E comparable, S ~[]E](v E) Matcher[S] {
 	return NewComparedMatcher(
-		"ContainsStringItem",
+		"Contains",
 		slices.Contains[S, E],
 	)(v)
 }
 
-func EquivalentSlice[E comparable, S ~[]E](expected S) Matcher[S] {
+func EquivalentSlice[E comparable, S ~[]E](expect S) Matcher[S] {
 	return NewComparedMatcher(
 		"EqualElements",
 		slicex.Equivalent[E, S],
-	)(expected)
+	)(expect)
 }
 
 func BeAssignableTo[E any]() Matcher[any] {
@@ -180,9 +184,7 @@ func IsError(expect error) Matcher[error] {
 func IsCodeError[Code codex.Code](expect Code) Matcher[error] {
 	return NewComparedMatcher[error, Code](
 		"IsCodeError",
-		func(target error, code Code) bool {
-			return errors.Is(target, codex.New(code))
-		},
+		codex.IsCode,
 	)(expect)
 }
 

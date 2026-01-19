@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/xoctopus/x/codex"
-	. "github.com/xoctopus/x/reflectx"
+	"github.com/xoctopus/x/reflectx"
 	. "github.com/xoctopus/x/testx"
 )
 
@@ -27,27 +27,27 @@ func TestParseFlags(t *testing.T) {
 			{
 				name: "UnquotedFlagValue",
 				tag:  reflect.StructTag(`any:"x`),
-				err:  codex.New(ECODE__INVALID_FLAG_VALUE),
+				err:  codex.New(reflectx.ECODE__INVALID_FLAG_VALUE),
 			},
 			{
 				name: "InvalidFlagName",
 				tag:  reflect.StructTag(`json:"x y"`),
-				err:  codex.New(ECODE__INVALID_FLAG_NAME),
+				err:  codex.New(reflectx.ECODE__INVALID_FLAG_NAME),
 			},
 			{
 				name: "EscapeFlagValue",
 				tag:  reflect.StructTag(`escape_js\non:""`),
-				err:  codex.New(ECODE__INVALID_FLAG_NAME),
+				err:  codex.New(reflectx.ECODE__INVALID_FLAG_NAME),
 			},
 			{
 				name: "UnquotedOption",
 				tag:  reflect.StructTag(`panic_unquoted:",a='b"`),
-				err:  codex.New(ECODE__INVALID_OPTION_UNQUOTED),
+				err:  codex.New(reflectx.ECODE__INVALID_OPTION_UNQUOTED),
 			},
 			{
 				name: "InvalidOptionKey",
 				tag:  reflect.StructTag(`panic_invalid_key:"key,'x\n\r'='any'"`),
-				err:  codex.New(ECODE__INVALID_OPTION_KEY),
+				err:  codex.New(reflectx.ECODE__INVALID_OPTION_KEY),
 			},
 			// {
 			// 	name: "InvalidOptionValue",
@@ -58,17 +58,17 @@ func TestParseFlags(t *testing.T) {
 		for _, c := range cases {
 			t.Run(c.name, func(t *testing.T) {
 				if c.err != nil {
-					ExpectPanic(t, func() { ParseTag(c.tag) }, IsError(c.err))
+					ExpectPanic(t, func() { reflectx.ParseTag(c.tag) }, IsError(c.err))
 				} else {
-					Expect(t, ParseTag(c.tag), HaveLen[Tag](0))
+					Expect(t, reflectx.ParseTag(c.tag), HaveLen[reflectx.Tag](0))
 				}
 			})
 		}
 	})
 
 	t.Run("FlagDuplicated", func(t *testing.T) {
-		tag := ParseTag(`json:"conflict" json:"ignored"`)
-		Expect(t, tag, HaveLen[Tag](1))
+		tag := reflectx.ParseTag(`json:"conflict" json:"ignored"`)
+		Expect(t, tag, HaveLen[reflectx.Tag](1))
 		Expect(t, tag.Get("json").Value(), Equal(`"conflict"`))
 	})
 
@@ -79,7 +79,7 @@ func TestParseFlags(t *testing.T) {
 			name     string
 			value    string
 			prettied string
-			options  map[string]*Option
+			options  map[string]*reflectx.Option
 		}{
 			"OptionValueContainsSpecialChar": {
 				tag:      `tag:" a, x = '\"\\?#=%,;{}[] ' "`,
@@ -87,8 +87,8 @@ func TestParseFlags(t *testing.T) {
 				name:     "a",
 				value:    `"a,x='\"\\?#=%,;{}[] '"`,
 				prettied: `tag:"a,x='\"\\?#=%,;{}[] '"`,
-				options: map[string]*Option{
-					"x": NewOption("x", `'"\?#=%,;{}[] '`, 0),
+				options: map[string]*reflectx.Option{
+					"x": reflectx.NewOption("x", `'"\?#=%,;{}[] '`, 0),
 				},
 			},
 			"MultiOptions": {
@@ -97,9 +97,9 @@ func TestParseFlags(t *testing.T) {
 				name:     "b",
 				value:    `"b,x,y='15.0,10.0'"`,
 				prettied: `tag:"b,x,y='15.0,10.0'"`,
-				options: map[string]*Option{
-					"x": NewOption("x", "", 0),
-					"y": NewOption("y", "'15.0,10.0'", 1),
+				options: map[string]*reflectx.Option{
+					"x": reflectx.NewOption("x", "", 0),
+					"y": reflectx.NewOption("y", "'15.0,10.0'", 1),
 				},
 			},
 			"EmptyFlagValue": {
@@ -108,7 +108,7 @@ func TestParseFlags(t *testing.T) {
 				name:     "",
 				value:    `""`,
 				prettied: `tag:""`,
-				options:  map[string]*Option{},
+				options:  map[string]*reflectx.Option{},
 			},
 			"NeedHandleOptionKeyValueQuotes": {
 				tag:      `tag:",'opt'=xyz"`,
@@ -116,16 +116,16 @@ func TestParseFlags(t *testing.T) {
 				name:     "",
 				value:    `",opt=xyz"`,
 				prettied: `tag:",opt=xyz"`,
-				options: map[string]*Option{
-					"opt": NewOption("opt", "xyz", 0),
+				options: map[string]*reflectx.Option{
+					"opt": reflectx.NewOption("opt", "xyz", 0),
 				},
 			},
 		}
 
 		for name, c := range cases {
 			t.Run(name, func(t *testing.T) {
-				tag := ParseTag(reflect.StructTag(c.tag))
-				Expect(t, tag.Get("x"), BeNil[*Flag]())
+				tag := reflectx.ParseTag(reflect.StructTag(c.tag))
+				Expect(t, tag.Get("x"), BeNil[*reflectx.Flag]())
 
 				f := tag.Get("tag")
 				Expect(t, f.Key(), Equal("tag"))
@@ -146,9 +146,9 @@ func TestParseFlags(t *testing.T) {
 	})
 
 	t.Run("EmptyOption", func(t *testing.T) {
-		options := []*Option{
-			NewOption("", "", 0),
-			NewOption("", "has", 0),
+		options := []*reflectx.Option{
+			reflectx.NewOption("", "", 0),
+			reflectx.NewOption("", "has", 0),
 		}
 		for _, option := range options {
 			Expect(t, option.IsZero(), BeTrue())
@@ -161,7 +161,7 @@ func TestParseFlags(t *testing.T) {
 	})
 
 	t.Run("External", func(t *testing.T) {
-		f := ParseTag(`db:"f_col,default=CURRENT_TIMESTAMP(3),onupdate=CURRENT_TIMESTAMP(3)"`).Get("db")
+		f := reflectx.ParseTag(`db:"f_col,default=CURRENT_TIMESTAMP(3),onupdate=CURRENT_TIMESTAMP(3)"`).Get("db")
 		Expect(t, f.Key(), Equal("db"))
 		Expect(t, f.Name(), Equal("f_col"))
 		Expect(t, f.Option("default").String(), Equal("default=CURRENT_TIMESTAMP(3)"))

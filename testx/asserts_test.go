@@ -25,8 +25,8 @@ func TestExpect(t *testing.T) {
 		Expect(t, error(nil), BeNil[error]())
 		Expect(t, true, BeTrue())
 		Expect(t, false, BeFalse())
-		Expect(t, "", BeEmpty[string]())
-		Expect(t, (*int)(nil), BeEmpty[*int]())
+		Expect(t, "", IsZero[string]())
+		Expect(t, (*int)(nil), IsZero[*int]())
 		Expect(t, errors.New("any"), NotBe[error](nil))
 		Expect(t, errors.New("any"), Not(BeNil[error]()))
 		Expect(t, errors.New("any"), NotBeNil[error]())
@@ -34,7 +34,7 @@ func TestExpect(t *testing.T) {
 		Expect(t, []int{1, 2, 3},
 			HaveLen[[]int](3),
 			HaveCap[[]int](3),
-			Contains(2),
+			Contains[int, []int](2),
 		)
 		Expect(t, "123",
 			ContainsSubString("1"),
