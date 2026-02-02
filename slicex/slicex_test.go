@@ -1,6 +1,8 @@
 package slicex_test
 
 import (
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/xoctopus/x/slicex"
@@ -48,5 +50,20 @@ func TestUniqueMapping(t *testing.T) {
 
 	others := slicex.UniqueKeys(values, func(e X) int { return e.other })
 	Expect(t, others, EquivalentSlice([]int{1, 2, 3, 4}))
+}
 
+type MyError struct {
+	idx string
+}
+
+func (e *MyError) Error() string { return e.idx }
+
+func TestM(t *testing.T) {
+	errs := []*MyError{{"1"}, {"2"}, {"3"}}
+
+	mapped := slicex.M(errs, func(e *MyError) error { return e })
+	Expect(t, len(errs), Equal(len(mapped)))
+
+	joined := errors.Join(mapped...)
+	Expect(t, joined.Error(), Equal(strings.Join([]string{"1", "2", "3"}, "\n")))
 }

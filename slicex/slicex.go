@@ -22,23 +22,23 @@ func Unique[T comparable, E ~[]T](s E) E {
 	return r
 }
 
-// UniqueKeys collects partials P from slices S by func m
-func UniqueKeys[E any, S ~[]E, P comparable](s S, m func(E) P) []P {
-	dict := make(map[P]struct{})
+// UniqueKeys collects partials P from slices S by func keyOfE
+func UniqueKeys[E any, S ~[]E, K comparable](s S, keyOfE func(E) K) []K {
+	dict := make(map[K]struct{})
 
 	for i := range s {
-		dict[m(s[i])] = struct{}{}
+		dict[keyOfE(s[i])] = struct{}{}
 	}
 
 	return slices.Collect(maps.Keys(dict))
 }
 
-// UniqueValues collects unique []E from slices S by func m
-func UniqueValues[E any, S ~[]E, K comparable](s S, m func(E) K) []E {
+// UniqueValues collects unique []E from slices S by func keyOfE
+func UniqueValues[E any, S ~[]E, K comparable](s S, keyOfE func(E) K) []E {
 	dict := make(map[K]E)
 
 	for i := range s {
-		dict[m(s[i])] = s[i]
+		dict[keyOfE(s[i])] = s[i]
 	}
 
 	return slices.Collect(maps.Values(dict))
@@ -67,4 +67,13 @@ func Equivalent[T comparable, E ~[]T](x, y E) bool {
 		}
 	}
 	return len(marks) == 0
+}
+
+// M converts ~[]FROM to []TO by mapping function m
+func M[FROM any, TO any, E ~[]FROM](s E, m func(FROM) TO) []TO {
+	results := make([]TO, 0, len(s))
+	for i := range s {
+		results = append(results, m(s[i]))
+	}
+	return results
 }
