@@ -1,4 +1,15 @@
 
+<a name="v0.3.0"></a>
+## [v0.3.0](https://github.com/xoctopus/x/compare/v0.2.12...v0.3.0)
+
+> 2026-02-05
+
+### Feat
+
+* **contextx:** generic context provider
+* **slicex:** range slice elements to converted values
+
+
 <a name="v0.2.12"></a>
 ## [v0.2.12](https://github.com/xoctopus/x/compare/v0.2.11...v0.2.12)
 
