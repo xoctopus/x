@@ -1,19 +1,10 @@
 package bdd
 
 import (
-	"context"
 	"testing"
 )
 
-type TB interface {
-	Chdir(dir string)
-	Setenv(key, value string)
-
-	Skip(args ...any)
-	Skipped() bool
-
-	Context() context.Context
-}
+type TB = testing.TB
 
 // T defines a Behavior Driver Development testing.
 // It provides a domain-specific language (DSL) that is close to natural language,
@@ -29,9 +20,11 @@ type TB interface {
 type T interface {
 	TB
 
-	Given(summary string, do func(b T))
-	When(summary string, do func(b T))
+	Given(summary string, do func(t T))
+	When(summary string, do func(t T))
 	Then(summary string, checkers ...Checker)
+
+	Unwrap() *testing.T
 }
 
 func From(t *testing.T) T {
