@@ -24,5 +24,6 @@ func TestFeature(t *testing.T) {
 	t.Run("GIVEN v=1", bdd.Given(func(t bdd.T) {
 		v := 1
 		t.Then("StringIs", bdd.Equal("1", strconv.Itoa(v)))
+		t.Then("NothingWarned")
 	}))
 }

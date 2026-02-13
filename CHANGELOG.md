@@ -1,4 +1,18 @@
 
+<a name="v0.3.1"></a>
+## [v0.3.1](https://github.com/xoctopus/x/compare/v0.3.0...v0.3.1)
+
+> 2026-02-13
+
+### Chore
+
+* alias bdd.TB as testing.TB
+
+### Doc
+
+* update CHANGELOG
+
+
 <a name="v0.3.0"></a>
 ## [v0.3.0](https://github.com/xoctopus/x/compare/v0.2.12...v0.3.0)
 

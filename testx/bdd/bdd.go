@@ -81,10 +81,15 @@ func (t *bddT) Then(summary string, checkers ...Checker) {
 
 		tt := From(t)
 
+		checked := 0
 		for _, c := range checkers {
 			if c != nil {
 				c.Check(tt)
+				checked++
 			}
+		}
+		if checked == 0 {
+			t.Logf("case %s has no checkers", t.Name())
 		}
 	})
 }
