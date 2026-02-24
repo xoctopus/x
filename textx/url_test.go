@@ -147,3 +147,24 @@ func ExampleMarshalURL() {
 	// Output:
 	// age=30&codes=a&codes=b&codes=c&country=cn&id=Alex
 }
+
+func ExampleSetDefault() {
+	fmt.Println("=> need struct value for marshaling")
+	_, err := SetDefault(1)
+	fmt.Println(err.Error())
+
+	var config = struct {
+		K1 int    `url:",default=100"`
+		K2 string `url:",default=v2"`
+	}{K1: 101}
+
+	fmt.Println("=> initialize a mutable(pointer) struct")
+	u, _ := SetDefault(&config)
+	fmt.Printf("url parameter values: %s", u.Encode())
+
+	// Output:
+	// => need struct value for marshaling
+	// [textx:3] marshal url got invalid input. expect struct type
+	// => initialize a mutable(pointer) struct
+	// url parameter values: k1=101&k2=v2
+}

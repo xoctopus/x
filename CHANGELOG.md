@@ -1,4 +1,18 @@
 
+<a name="v0.3.3"></a>
+## [v0.3.3](https://github.com/xoctopus/x/compare/v0.3.2...v0.3.3)
+
+> 2026-02-23
+
+### Chore
+
+* **deps:** bump go1.26
+
+### Doc
+
+* update CHANGELOG
+
+
 <a name="v0.3.2"></a>
 ## [v0.3.2](https://github.com/xoctopus/x/compare/v0.3.1...v0.3.2)
 

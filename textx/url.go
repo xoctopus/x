@@ -162,3 +162,11 @@ func UnmarshalURL(u url.Values, v any) error {
 	}
 	return nil
 }
+
+func SetDefault(v any) (url.Values, error) {
+	u, err := MarshalURL(v)
+	if err != nil {
+		return nil, err
+	}
+	return u, UnmarshalURL(u, v)
+}
