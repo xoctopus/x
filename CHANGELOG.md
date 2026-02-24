@@ -1,4 +1,16 @@
 
+<a name="v0.3.4"></a>
+## [v0.3.4](https://github.com/xoctopus/x/compare/v0.3.3...v0.3.4) (2026-02-24)
+
+### Chore
+
+* regen changelog
+
+### Feat
+
+* **textx:** textx.SetDefault to initialize by original value and url tags
+
+
 <a name="v0.3.3"></a>
 ## [v0.3.3](https://github.com/xoctopus/x/compare/v0.3.2...v0.3.3) (2026-02-23)
 
