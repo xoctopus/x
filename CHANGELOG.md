@@ -1,8 +1,6 @@
 
 <a name="v0.3.3"></a>
-## [v0.3.3](https://github.com/xoctopus/x/compare/v0.3.2...v0.3.3)
-
-> 2026-02-23
+## [v0.3.3](https://github.com/xoctopus/x/compare/v0.3.2...v0.3.3) (2026-02-23)
 
 ### Chore
 
@@ -14,9 +12,7 @@
 
 
 <a name="v0.3.2"></a>
-## [v0.3.2](https://github.com/xoctopus/x/compare/v0.3.1...v0.3.2)
-
-> 2026-02-13
+## [v0.3.2](https://github.com/xoctopus/x/compare/v0.3.1...v0.3.2) (2026-02-13)
 
 ### Chore
 
@@ -24,9 +20,7 @@
 
 
 <a name="v0.3.1"></a>
-## [v0.3.1](https://github.com/xoctopus/x/compare/v0.3.0...v0.3.1)
-
-> 2026-02-13
+## [v0.3.1](https://github.com/xoctopus/x/compare/v0.3.0...v0.3.1) (2026-02-13)
 
 ### Chore
 
@@ -38,9 +32,7 @@
 
 
 <a name="v0.3.0"></a>
-## [v0.3.0](https://github.com/xoctopus/x/compare/v0.2.12...v0.3.0)
-
-> 2026-02-05
+## [v0.3.0](https://github.com/xoctopus/x/compare/v0.2.12...v0.3.0) (2026-02-05)
 
 ### Feat
 
@@ -49,9 +41,7 @@
 
 
 <a name="v0.2.12"></a>
-## [v0.2.12](https://github.com/xoctopus/x/compare/v0.2.11...v0.2.12)
-
-> 2026-01-19
+## [v0.2.12](https://github.com/xoctopus/x/compare/v0.2.11...v0.2.12) (2026-01-19)
 
 ### Chore
 
@@ -67,9 +57,7 @@
 
 
 <a name="v0.2.11"></a>
-## [v0.2.11](https://github.com/xoctopus/x/compare/v0.2.10...v0.2.11)
-
-> 2026-01-05
+## [v0.2.11](https://github.com/xoctopus/x/compare/v0.2.10...v0.2.11) (2026-01-05)
 
 ### Ci
 
@@ -85,9 +73,7 @@
 
 
 <a name="v0.2.10"></a>
-## [v0.2.10](https://github.com/xoctopus/x/compare/v0.2.9...v0.2.10)
-
-> 2026-01-03
+## [v0.2.10](https://github.com/xoctopus/x/compare/v0.2.9...v0.2.10) (2026-01-03)
 
 ### Feat
 
@@ -95,9 +81,7 @@
 
 
 <a name="v0.2.9"></a>
-## [v0.2.9](https://github.com/xoctopus/x/compare/v0.2.8...v0.2.9)
-
-> 2026-01-02
+## [v0.2.9](https://github.com/xoctopus/x/compare/v0.2.8...v0.2.9) (2026-01-02)
 
 ### Feat
 
@@ -105,9 +89,7 @@
 
 
 <a name="v0.2.8"></a>
-## [v0.2.8](https://github.com/xoctopus/x/compare/v0.2.7...v0.2.8)
-
-> 2025-12-31
+## [v0.2.8](https://github.com/xoctopus/x/compare/v0.2.7...v0.2.8) (2025-12-31)
 
 ### Feat
 
@@ -115,9 +97,7 @@
 
 
 <a name="v0.2.7"></a>
-## [v0.2.7](https://github.com/xoctopus/x/compare/v0.2.6...v0.2.7)
-
-> 2025-12-30
+## [v0.2.7](https://github.com/xoctopus/x/compare/v0.2.6...v0.2.7) (2025-12-30)
 
 ### Chore
 
@@ -125,9 +105,7 @@
 
 
 <a name="v0.2.6"></a>
-## [v0.2.6](https://github.com/xoctopus/x/compare/v0.2.5...v0.2.6)
-
-> 2025-12-28
+## [v0.2.6](https://github.com/xoctopus/x/compare/v0.2.5...v0.2.6) (2025-12-28)
 
 ### Feat
 
@@ -135,9 +113,7 @@
 
 
 <a name="v0.2.5"></a>
-## [v0.2.5](https://github.com/xoctopus/x/compare/v0.2.4...v0.2.5)
-
-> 2025-12-25
+## [v0.2.5](https://github.com/xoctopus/x/compare/v0.2.4...v0.2.5) (2025-12-25)
 
 ### Feat
 
@@ -145,9 +121,7 @@
 
 
 <a name="v0.2.4"></a>
-## [v0.2.4](https://github.com/xoctopus/x/compare/v0.2.3...v0.2.4)
-
-> 2025-12-21
+## [v0.2.4](https://github.com/xoctopus/x/compare/v0.2.3...v0.2.4) (2025-12-21)
 
 ### Fix
 
@@ -155,9 +129,7 @@
 
 
 <a name="v0.2.3"></a>
-## [v0.2.3](https://github.com/xoctopus/x/compare/v0.2.2...v0.2.3)
-
-> 2025-12-16
+## [v0.2.3](https://github.com/xoctopus/x/compare/v0.2.2...v0.2.3) (2025-12-16)
 
 ### Feat
 
@@ -165,9 +137,7 @@
 
 
 <a name="v0.2.2"></a>
-## [v0.2.2](https://github.com/xoctopus/x/compare/v0.2.1...v0.2.2)
-
-> 2025-12-08
+## [v0.2.2](https://github.com/xoctopus/x/compare/v0.2.1...v0.2.2) (2025-12-08)
 
 ### Feat
 
@@ -175,9 +145,7 @@
 
 
 <a name="v0.2.1"></a>
-## [v0.2.1](https://github.com/xoctopus/x/compare/v0.2.0...v0.2.1)
-
-> 2025-12-02
+## [v0.2.1](https://github.com/xoctopus/x/compare/v0.2.0...v0.2.1) (2025-12-02)
 
 ### Chore
 
@@ -215,9 +183,7 @@
 
 
 <a name="v0.2.0"></a>
-## [v0.2.0](https://github.com/xoctopus/x/compare/v0.1.2...v0.2.0)
-
-> 2025-10-23
+## [v0.2.0](https://github.com/xoctopus/x/compare/v0.1.2...v0.2.0) (2025-10-23)
 
 ### Chore
 
@@ -274,9 +240,7 @@
 
 
 <a name="v0.1.2"></a>
-## [v0.1.2](https://github.com/xoctopus/x/compare/v0.1.1...v0.1.2)
-
-> 2025-09-21
+## [v0.1.2](https://github.com/xoctopus/x/compare/v0.1.1...v0.1.2) (2025-09-21)
 
 ### Chore
 
@@ -296,9 +260,7 @@
 
 
 <a name="v0.1.1"></a>
-## [v0.1.1](https://github.com/xoctopus/x/compare/v0.1.0...v0.1.1)
-
-> 2025-09-21
+## [v0.1.1](https://github.com/xoctopus/x/compare/v0.1.0...v0.1.1) (2025-09-21)
 
 ### Ci
 
@@ -312,9 +274,7 @@
 
 
 <a name="v0.1.0"></a>
-## v0.1.0
-
-> 2025-06-01
+## v0.1.0 (2025-06-01)
 
 ### Build
 
@@ -352,20 +312,20 @@
 * **mapx:** add enhanced map implements with map[k]v and sync.Map
 * **misc:** strings helper
 * **misc:** must util funcs
-* **reflectx:** indirectNew to allocate and return the deepest indirect reflect value
-* **reflectx:** fix struct tag parsing
-* **reflectx:** hack unexported struct field
-* **reflectx:** type assert and casting
 * **reflectx:** add reflectx.DeepCopy and reflectx.Clone for value copy and remove reflectx.Set
 * **reflectx:** reflectx
-* **reflectx:** improve IsZero, more stricter
-* **reflectx:** check if reflect.Type can call Elem without panic
 * **reflectx:** add reflectx.DeepCopy and Clone for value copy
+* **reflectx:** fix struct tag parsing
+* **reflectx:** type assert and casting
+* **reflectx:** check if reflect.Type can call Elem without panic
+* **reflectx:** improve IsZero, more stricter
+* **reflectx:** indirectNew to allocate and return the deepest indirect reflect value
+* **reflectx:** hack unexported struct field
 * **reflectx:** add Set function to shallow copy reflect.Value
 * **reflextx:** add `IsNumeric` `IsInteger` and `IsFloat` functions
-* **resultx:** add resultx for universal function result handler
 * **resultx:** add result Succeed and Failed methods
 * **resultx:** function results handler
+* **resultx:** add resultx for universal function result handler
 * **textx:** add MarshalURL and UnmarshalURL for conversion between url.Value and struct
 * **textx:** add simple text (de)serializer
 * **textx:** use fmt.Sscan to parse numeric types from string to support multi numerical bases input
