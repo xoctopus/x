@@ -57,16 +57,14 @@ func IsCode[C Code](e error, code C) bool {
 }
 
 func Is[C Code](e error) (C, bool) {
-	var target *coderr[C]
-	if errors.As(e, &target) {
+	if target, ok := errors.AsType[*coderr[C]](e); ok {
 		return target.code, true
 	}
 	return *new(C), false
 }
 
 func As[C Code](e error) (Error[C], bool) {
-	var target *coderr[C]
-	if errors.As(e, &target) {
+	if target, ok := errors.AsType[*coderr[C]](e); ok {
 		return target, true
 	}
 	return nil, false
@@ -99,6 +97,6 @@ func (e *coderr[C]) Unwrap() error {
 }
 
 func (e *coderr[C]) Is(err error) bool {
-	var target *coderr[C]
-	return errors.As(err, &target) && target.Code() == e.Code()
+	target, ok := errors.AsType[*coderr[C]](err)
+	return ok && target.Code() == e.Code()
 }

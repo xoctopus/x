@@ -64,8 +64,8 @@ func TestParseErrorFor(t *testing.T) {
 	target := enumx.ParseErrorFor[int]("some other")
 	Expect(t, errors.Is(target, err), BeFalse())
 
-	target = enumx.ParseErrorFor[Gender]("some other")
+	target = enumx.ParseErrorFor[Gender]("any")
 	Expect(t, errors.Is(target, err), BeTrue())
 
-	Expect(t, target.Error(), NotEqual(err.Error()))
+	Expect(t, target.Error(), Equal(err.Error()))
 }

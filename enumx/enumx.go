@@ -81,6 +81,6 @@ func (e *ParseError[E]) Error() string {
 }
 
 func (e *ParseError[E]) Is(err error) bool {
-	var target *ParseError[E]
-	return errors.As(err, &target)
+	target, ok := errors.AsType[*ParseError[E]](err)
+	return ok && target.from == e.from
 }
