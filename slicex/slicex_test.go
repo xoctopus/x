@@ -67,3 +67,22 @@ func TestM(t *testing.T) {
 	joined := errors.Join(mapped...)
 	Expect(t, joined.Error(), Equal(strings.Join([]string{"1", "2", "3"}, "\n")))
 }
+
+func TestMap(t *testing.T) {
+	type KV struct {
+		K int
+		V string
+	}
+
+	result := slicex.Map([]KV{
+		{1, "1"},
+		{2, "2"},
+		{3, "3"},
+	}, func(e KV) (int, string) {
+		return e.K, e.V
+	})
+	Expect(t, len(result), Equal(3))
+	Expect(t, result[1], Equal("1"))
+	Expect(t, result[2], Equal("2"))
+	Expect(t, result[3], Equal("3"))
+}

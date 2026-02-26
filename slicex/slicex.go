@@ -77,3 +77,13 @@ func M[FROM any, TO any, E ~[]FROM](s E, m func(FROM) TO) []TO {
 	}
 	return results
 }
+
+// Map converts ~[]E to map[K]v by mapping function m
+func Map[E any, K comparable, V any, S ~[]E, R map[K]V](s S, m func(E) (K, V)) R {
+	r := make(R)
+	for i := range s {
+		k, v := m(s[i])
+		r[k] = v
+	}
+	return r
+}
