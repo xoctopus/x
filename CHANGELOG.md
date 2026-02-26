@@ -1,4 +1,20 @@
 
+<a name="HEAD"></a>
+## [HEAD](https://github.com/xoctopus/x/compare/v0.3.4...HEAD) (2026-02-26)
+
+### Chore
+
+* use errors.AsType to assert error
+
+### Doc
+
+* update CHANGELOG
+
+### Feat
+
+* **slicex:** add slicex.Map for converting slice to map
+
+
 <a name="v0.3.4"></a>
 ## [v0.3.4](https://github.com/xoctopus/x/compare/v0.3.3...v0.3.4) (2026-02-24)
 
