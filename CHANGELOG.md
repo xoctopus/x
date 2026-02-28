@@ -1,9 +1,14 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.3.4...HEAD) (2026-02-26)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.3.5...HEAD) (0001-01-01)
+
+
+<a name="v0.3.5"></a>
+## [v0.3.5](https://github.com/xoctopus/x/compare/v0.3.4...v0.3.5) (2026-02-26)
 
 ### Chore
 
+* update ci config and changelog
 * use errors.AsType to assert error
 
 ### Doc
