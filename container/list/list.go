@@ -42,51 +42,53 @@ func (e *Element[T]) Prev() *Element[T] {
 }
 
 type List[T any] interface {
-	// Clear clears list.
+	// Clear release all element from List.
 	Clear() List[T]
-	// Len returns the number of elements of list l.
+	// Len returns the number of elements of List.
 	// The complexity is O(1).
 	Len() int
-	// Front returns the first element of list l or nil if the list is empty.
+	// Front returns the first element of List or nil if the List is empty.
 	Front() *Element[T]
-	// Back returns the last element of list l or nil if the list is empty.
+	// Back returns the last element of List or nil if the List is empty.
 	Back() *Element[T]
-	// Remove removes e from l if e is an element of list l.
+	// Remove removes e from List if e is an element of List.
 	// It returns the element value e.Value.
 	// The element must not be nil.
 	Remove(e *Element[T]) T
-	// PushFront inserts a new element e with value v at the front of list l and returns e.
-	PushFront(T) *Element[T]
-	// PushBack inserts a new element e with value v at the back of list l and returns e.
-	PushBack(T) *Element[T]
-	// InsertBefore inserts a new element e with value v immediately before mark and returns e.
-	// If mark is not an element of l, the list is not modified.
-	// The mark must not be nil.
-	InsertBefore(T, *Element[T]) *Element[T]
-	// InsertAfter inserts a new element e with value v immediately after mark and returns e.
-	// If mark is not an element of l, the list is not modified.
-	// The mark must not be nil.
-	InsertAfter(T, *Element[T]) *Element[T]
-	// MoveToFront moves element e to the front of list l.
-	// If e is not an element of l, the list is not modified.
+	// PushFront inserts a new element e with value v at the front of List
+	// and returns Element of v.
+	PushFront(v T) *Element[T]
+	// PushBack inserts a new element e with value v at the back of List
+	// and returns Element of v.
+	PushBack(v T) *Element[T]
+	// InsertBefore inserts a new element e with value v immediately before
+	// mark and returns Element of v. If mark is not an element of List,
+	// the List is not modified. The mark must not be nil.
+	InsertBefore(v T, mark *Element[T]) *Element[T]
+	// InsertAfter inserts a new element e with value v immediately after
+	// mark and returns Element of v. If mark is not an element of List,
+	// the list is not modified. The mark must not be nil.
+	InsertAfter(v T, mark *Element[T]) *Element[T]
+	// MoveToFront moves element e to the front of List.
+	// If e is not an element of l, the List is not modified.
 	// The element must not be nil.
-	MoveToFront(*Element[T])
-	// MoveToBack moves element e to the back of list l.
-	// If e is not an element of l, the list is not modified.
+	MoveToFront(e *Element[T])
+	// MoveToBack moves element e to the back of List.
+	// If e is not an element of l, the List is not modified.
 	// The element must not be nil.
-	MoveToBack(*Element[T])
+	MoveToBack(e *Element[T])
 	// MoveBefore moves element e to its new position before mark.
-	// If e or mark is not an element of l, or e == mark, the list is not modified.
+	// If e or mark is not an element of l, or e == mark, the List is not modified.
 	// The element and mark must not be nil.
 	MoveBefore(e *Element[T], mark *Element[T])
 	// MoveAfter moves element e to its new position after mark.
-	// If e or mark is not an element of l, or e == mark, the list is not modified.
+	// If e or mark is not an element of l, or e == mark, the List is not modified.
 	// The element and mark must not be nil.
 	MoveAfter(e *Element[T], mark *Element[T])
-	// PushBackList inserts a copy of another list at the back of list l.
+	// PushBackList inserts a copy of other List at the back of List.
 	// The lists l and other may be the same. They must not be nil.
 	PushBackList(other List[T])
-	// PushFrontList inserts a copy of another list at the front of list l.
+	// PushFrontList inserts a copy of other List at the front of List.
 	// The lists l and other may be the same. They must not be nil.
 	PushFrontList(other List[T])
 }

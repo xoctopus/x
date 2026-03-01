@@ -7,11 +7,20 @@ import (
 )
 
 type Queue[T any] interface {
+	// Len returns length of Queue
 	Len() int
+	// Push pushes element to end of Queue
 	Push(v T)
+	// Pop pops element from head of Queue
 	Pop() (T, bool)
+	// Head returns head element of Queue
 	Head() (T, bool)
+	// Tail returns tail element of Queue
 	Tail() (T, bool)
+	// Range calls f sequentially for each element present in the Queue.
+	// If f returns false, range stops the iteration.
+	Range(f func(T) bool)
+	// Clear releases all the entries, resulting in an empty Queue.
 	Clear()
 }
 
@@ -89,4 +98,16 @@ func (q *queue[T]) Clear() {
 		defer q.mtx.Unlock()
 	}
 	q.List.Clear()
+}
+
+func (q *queue[T]) Range(f func(T) bool) {
+	if q.mtx != nil {
+		q.mtx.RLock()
+		defer q.mtx.RUnlock()
+	}
+	for e := q.Front(); e != nil; e = e.Next() {
+		if !f(e.Value) {
+			break
+		}
+	}
 }

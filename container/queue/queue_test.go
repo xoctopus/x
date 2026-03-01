@@ -20,13 +20,15 @@ func ExampleQueue() {
 		tail, _ := q.Tail()
 		fmt.Println("head:", head)
 		fmt.Println("tail:", tail)
-		for {
-			if v, ok := q.Pop(); ok {
-				fmt.Println(v)
-				continue
-			}
-			break
+
+		v, _ := q.Pop()
+		fmt.Println(v)
+
+		for v = range q.Range {
+			fmt.Println(v)
+			continue
 		}
+
 		q.Clear()
 		q.Len()
 		_, ok := q.Head()

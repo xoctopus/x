@@ -18,12 +18,12 @@ func ExampleStack() {
 
 		top, _ := s.Top()
 		fmt.Println("top:", top)
-		for {
-			if v, ok := s.Pop(); ok {
-				fmt.Println(v)
-				continue
-			}
-			break
+
+		v, _ := s.Pop()
+		fmt.Println(v)
+
+		for v = range s.Range {
+			fmt.Println(v)
 		}
 		s.Clear()
 		fmt.Println("len:", s.Len())
