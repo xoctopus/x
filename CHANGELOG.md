@@ -1,6 +1,14 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.3.6...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.3.7...HEAD) (0001-01-01)
+
+
+<a name="v0.3.7"></a>
+## [v0.3.7](https://github.com/xoctopus/x/compare/v0.3.6...v0.3.7) (2026-03-01)
+
+### Feat
+
+* **container:** add Range for Queue and Stack
 
 
 <a name="v0.3.6"></a>
