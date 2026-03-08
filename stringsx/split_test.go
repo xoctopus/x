@@ -27,10 +27,32 @@ func Test_SplitToWords(t *testing.T) {
 	for _, c := range cases {
 		Expect(t, stringsx.SplitToWords(c.phrase), Equal(c.words))
 	}
+}
 
-	t.Log(stringsx.CheckLetterType('1'))
-	t.Log(stringsx.CheckLetterType('a'))
-	t.Log(stringsx.CheckLetterType('A'))
-	t.Log(stringsx.CheckLetterType('+'))
-	t.Log(stringsx.CheckLetterType('🚀'))
+func TestSplitCamelCase(t *testing.T) {
+	for _, word := range [][]string{
+		{""},
+		{"a", "a"},
+		{"A", "A"},
+		{"abc", "abc"},
+		{"ABC", "ABC"},
+		{"HTTPServer", "HTTP", "Server"},
+		{"PDFLoader", "PDF", "Loader"},
+		{"UserID", "User", "ID"},
+		{"UserID100", "User", "ID100"},
+		{"UserV2", "User", "V2"},
+		{"User100Failed", "User100", "Failed"},
+		{"userV2Model", "user", "V2", "Model"},
+		{"你好World", "你好", "World"},
+		{"JSON解析器", "JSON", "解析器"},
+		{"ΓειάΣουWorld", "Γειά", "Σου", "World"},
+		{"golang👍", "golang", "👍"},
+		{string([]byte{0xff, 0xfe}), string([]byte{0xff, 0xfe})},
+	} {
+		t.Run(word[0], func(t *testing.T) {
+			words := stringsx.SplitCamelCase(word[0])
+			Expect(t, words, Equal(word[1:]))
+		})
+	}
+
 }

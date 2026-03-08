@@ -67,6 +67,7 @@ type joint func(result, word string, index int) string
 
 func rewords(s string, fn joint) string {
 	words := SplitToWords(s)
+	// words := SplitCamelCase(s)
 	ret := ""
 
 	for i, word := range words {
