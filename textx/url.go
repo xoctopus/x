@@ -68,6 +68,20 @@ func MarshalURL(v any) (url.Values, error) {
 			}
 			continue
 		}
+
+		if flag != nil {
+			if opt := flag.Option("inline"); opt != nil {
+				uv, err := MarshalURL(fi)
+				if err != nil {
+					return nil, err
+				}
+				for k, vs := range uv {
+					u[k] = append(u[k], vs...)
+				}
+				continue
+			}
+		}
+
 		if fi.Kind() == reflect.Slice && !reflectx.IsBytes(fi) {
 			for idx := 0; idx < fi.Len(); idx++ {
 				text, err := Marshal(fi.Index(idx))
@@ -131,6 +145,15 @@ func UnmarshalURL(u url.Values, v any) error {
 		}
 
 		fi := rv.Field(i)
+		if flag != nil {
+			if opt := flag.Option("inline"); opt != nil {
+				if err := UnmarshalURL(u, fi); err != nil {
+					return err
+				}
+				continue
+			}
+		}
+
 		if fi.Kind() == reflect.Slice && !reflectx.IsBytes(fi) {
 			if len(u[name]) == 0 {
 				continue

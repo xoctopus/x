@@ -19,7 +19,13 @@ type Value struct {
 	Ignored    any               `url:"-,default=100"`
 	NoTag      float32           `url:",default='1.1'"`
 	Codes      []string
+	Inlined    `url:",inline"`
 	unexported any
+}
+
+type Inlined struct {
+	K1 int    `url:",default=100"`
+	K2 string `url:",default=v2"`
 }
 
 var DefaultValue = Value{
@@ -30,6 +36,10 @@ var DefaultValue = Value{
 	Ignored:    nil,
 	NoTag:      1.1,
 	unexported: nil,
+	Inlined: Inlined{
+		K1: 100,
+		K2: "v2",
+	},
 }
 
 func TestMarshalURL(t *testing.T) {
@@ -62,6 +72,8 @@ func TestMarshalURL(t *testing.T) {
 		"db":          {"10"},
 		"timeout":     {"100"},
 		"noTag":       {"1.1"},
+		"k1":          {"100"},
+		"k2":          {"v2"},
 	}))
 }
 
@@ -99,6 +111,8 @@ func TestUnmarshalURL(t *testing.T) {
 			"noTag":       {"1.2"},
 			"unexported":  {"unexported"},
 			"codes":       {"d", "e", "f"},
+			"k1":          {"101"},
+			"k2":          {"v3"},
 		}, v)
 		Expect(t, err, Succeed())
 		Expect(t, *v, Equal(Value{
@@ -109,6 +123,7 @@ func TestUnmarshalURL(t *testing.T) {
 			Ignored:   nil,
 			NoTag:     1.2,
 			Codes:     []string{"d", "e", "f"},
+			Inlined:   Inlined{K1: 101, K2: "v3"},
 		}))
 	})
 

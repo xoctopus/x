@@ -1,6 +1,20 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.3.8...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.4.0...HEAD) (2026-03-08)
+
+### Ci
+
+* update Makefile
+* update Makefile
+* update Makefile
+
+
+<a name="v0.4.0"></a>
+## [v0.4.0](https://github.com/xoctopus/x/compare/v0.3.8...v0.4.0) (2026-03-08)
+
+### Doc
+
+* update CHANGELOG
 
 
 <a name="v0.3.8"></a>
