@@ -1,10 +1,18 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.3.7...HEAD) (2026-03-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.3.8...HEAD) (0001-01-01)
+
+
+<a name="v0.3.8"></a>
+## [v0.3.8](https://github.com/xoctopus/x/compare/v0.3.7...v0.3.8) (2026-03-04)
 
 ### Doc
 
 * update CHANGELOG
+
+### Feat
+
+* **urlx:** a more user-friendly URL parser, modifier and builder
 
 
 <a name="v0.3.7"></a>
