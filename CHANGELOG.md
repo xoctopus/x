@@ -1,12 +1,20 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.4.0...HEAD) (2026-03-08)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.4.1...HEAD) (0001-01-01)
+
+
+<a name="v0.4.1"></a>
+## [v0.4.1](https://github.com/xoctopus/x/compare/v0.4.0...v0.4.1) (2026-03-09)
 
 ### Ci
 
 * update Makefile
 * update Makefile
 * update Makefile
+
+### Feat
+
+* **textx:** url parse with inline option
 
 
 <a name="v0.4.0"></a>
