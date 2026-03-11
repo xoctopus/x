@@ -77,7 +77,7 @@ func Deref(t reflect.Type) reflect.Type {
 	if t == InvalidType {
 		return InvalidType
 	}
-	if kind := t.Kind(); kind == reflect.Pointer || kind == reflect.Interface {
+	if kind := t.Kind(); kind == reflect.Pointer {
 		return Deref(t.Elem())
 	}
 	return t

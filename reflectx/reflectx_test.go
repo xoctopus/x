@@ -137,9 +137,9 @@ func TestDeref(t *testing.T) {
 		expect reflect.Type
 	}{
 		{1, reflect.TypeOf(1)},
-		{ptrx.Ptr(1), reflect.TypeOf(1)},
+		{new(1), reflect.TypeOf(1)},
 		{(*int)(nil), reflect.TypeOf(1)},
-		{ptrx.Ptr(ptrx.Ptr(0.2)), reflect.TypeOf(float64(0))},
+		{new(new(0.2)), reflect.TypeOf(float64(0))},
 		{reflectx.InvalidType, reflectx.InvalidType},
 		{any(1), reflect.TypeOf(int(0))},
 	}
