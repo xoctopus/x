@@ -7,7 +7,7 @@ import (
 
 var (
 	InvalidValue = reflect.Value{}
-	InvalidType  = reflect.TypeOf(nil)
+	InvalidType  reflect.Type
 )
 
 type ZeroChecker interface {

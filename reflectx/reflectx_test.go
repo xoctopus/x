@@ -351,7 +351,7 @@ func TestCanElemType(t *testing.T) {
 		{reflect.TypeFor[chan int](), true},
 		{reflect.ValueOf([]int{}).Type(), true},
 		{reflect.ValueOf(1).Type(), false},
-		{reflect.TypeOf(nil), false},
+		{reflectx.InvalidType, false},
 	}
 
 	for _, c := range cases {
@@ -365,7 +365,7 @@ func TestCanNilValue(t *testing.T) {
 		expect bool
 	}{
 		{nil, false},
-		{reflect.TypeOf(nil), false},
+		{reflectx.InvalidValue, false},
 		{reflect.Value{}, false},
 		{make(chan int), true},
 		{(func())(nil), true},
@@ -385,4 +385,7 @@ func TestCanNilValue(t *testing.T) {
 	// type nil trap
 	var v any = []int(nil)
 	Expect(t, reflectx.CanNilValue(v), BeTrue())
+
+	// invalid reflect.Type
+	Expect(t, reflectx.InvalidType, Equal(reflect.Type(nil)))
 }
