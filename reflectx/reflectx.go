@@ -170,7 +170,7 @@ func IsZero(v any) bool {
 // Typename returns the full type name of rt
 func Typename(rt reflect.Type) string {
 	buf := bytes.NewBuffer(nil)
-	for rt.Kind() == reflect.Ptr {
+	for rt.Kind() == reflect.Pointer {
 		buf.WriteByte('*')
 		rt = rt.Elem()
 	}

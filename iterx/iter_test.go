@@ -144,7 +144,7 @@ func Example() {
 	)
 
 	for v := range seq {
-		fmt.Println(reflect.TypeOf(v), v)
+		fmt.Println(reflect.TypeFor[string](), v)
 	}
 
 	fmt.Println(iterx.Values(seq))

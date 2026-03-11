@@ -106,34 +106,34 @@ func ExampleNotNilV() {
 		V5 []int
 		V6 map[string]int
 	}{})
-	for i := range rv.NumField() {
+	for _, field := range rv.Fields() {
 		func(v any) {
 			defer func() {
 				fmt.Println(recover())
 			}()
 			must.NotNilV(v)
-		}(rv.Field(i).Interface())
+		}(field.Interface())
 
 		func(v any) {
 			defer func() {
 				fmt.Println(recover())
 			}()
 			must.NotNilF(v, "business message: %v", 100)
-		}(rv.Field(i).Interface())
+		}(field.Interface())
 
 		func(v any) {
 			defer func() {
 				fmt.Println(recover())
 			}()
 			must.NotNilWrap(v, fmt.Errorf("business message: %v", 101))
-		}(rv.Field(i).Interface())
+		}(field.Interface())
 
 		func(v any) {
 			defer func() {
 				fmt.Println(recover())
 			}()
 			must.NotNilWrapF(v, fmt.Errorf("business message: %v", 101), "more custom message and args: %d", 102)
-		}(rv.Field(i).Interface())
+		}(field.Interface())
 	}
 	fmt.Println(must.NotNilV(1))
 	fmt.Println(*must.NotNilV(new(int)))

@@ -8,9 +8,9 @@ import (
 )
 
 func Example() {
-	fmt.Println(*ptrx.Ptr(10))
-	fmt.Println(*ptrx.Ptr(uint64(10)))
-	fmt.Println(*ptrx.Ptr("abc"))
+	fmt.Println(*new(10))
+	fmt.Println(*new(uint64(10)))
+	fmt.Println(*new("abc"))
 	fmt.Println(ptrx.Ptr(time.Second))
 	fmt.Println(ptrx.Ptr(time.Hour))
 

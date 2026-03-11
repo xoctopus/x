@@ -1,6 +1,14 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.4.3...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.4.4...HEAD) (0001-01-01)
+
+
+<a name="v0.4.4"></a>
+## [v0.4.4](https://github.com/xoctopus/x/compare/v0.4.3...v0.4.4) (2026-03-11)
+
+### Fix
+
+* **reflectx:** fix Indirect
 
 
 <a name="v0.4.3"></a>

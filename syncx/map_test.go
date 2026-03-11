@@ -3,7 +3,6 @@ package syncx_test
 import (
 	"testing"
 
-	"github.com/xoctopus/x/ptrx"
 	"github.com/xoctopus/x/syncx"
 	. "github.com/xoctopus/x/testx"
 )
@@ -13,8 +12,8 @@ func results(v ...any) []any {
 }
 
 func TestMap(t *testing.T) {
-	k1 := ptrx.Ptr(1)
-	k2 := ptrx.Ptr(2)
+	k1 := new(1)
+	k2 := new(2)
 	// k3 := ptrx.Ptr(3)
 	// equal := func(x any) func(k any) bool {
 	// 	return func(k any) bool {
@@ -25,8 +24,8 @@ func TestMap(t *testing.T) {
 	// 	}
 	// }
 
-	Expect(t, k1, Equal(ptrx.Ptr(1)))
-	Expect(t, k1 == ptrx.Ptr(1), BeFalse())
+	Expect(t, k1, Equal(new(1)))
+	Expect(t, k1 == new(1), BeFalse())
 
 	for _, m := range []syncx.Map[any, any]{
 		syncx.NewXmap[any, any](),
@@ -40,7 +39,7 @@ func TestMap(t *testing.T) {
 		Expect(t, results(m.Load(k1)), Equal([]any{100, true}))
 		Expect(t, results(m.Load(k2)), Equal([]any{nil, false}))
 
-		m.Delete(ptrx.Ptr(1))
+		m.Delete(new(1))
 		Expect(t, results(m.Load(k1)), Equal([]any{100, true}))
 		Expect(t, results(m.Load(k2)), Equal([]any{nil, false}))
 

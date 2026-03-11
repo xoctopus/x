@@ -4,7 +4,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/xoctopus/x/ptrx"
 	. "github.com/xoctopus/x/reflectx/exp"
 	. "github.com/xoctopus/x/testx"
 )
@@ -111,7 +110,7 @@ func TestDeepCopy(t *testing.T) {
 
 	src := []any{
 		1,
-		ptrx.Ptr(100),
+		new(100),
 		[1]any{1},
 		struct{ A string }{A: "100"},
 		nil,

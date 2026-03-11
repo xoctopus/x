@@ -6,7 +6,6 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/xoctopus/x/ptrx"
 	"github.com/xoctopus/x/reflectx"
 	. "github.com/xoctopus/x/testx"
 )
@@ -43,15 +42,15 @@ func TestIndirect(t *testing.T) {
 			expect: reflect.ValueOf(1),
 		}, {
 			name:   "PointerToInt",
-			input:  ptrx.Ptr(1),
+			input:  new(1),
 			expect: reflect.ValueOf(1),
 		}, {
 			name:   "NamedPointerNotDereferenced",
-			input:  ptrx.Ptr(IntPtr(ptrx.Ptr(1))),
-			expect: reflect.ValueOf(IntPtr(ptrx.Ptr(1))),
+			input:  new(IntPtr(new(1))),
+			expect: reflect.ValueOf(IntPtr(new(1))),
 		}, {
 			name:   "PointerToPointer",
-			input:  ptrx.Ptr(ptrx.Ptr(0.2)),
+			input:  new(new(0.2)),
 			expect: reflect.ValueOf(0.2),
 		}, {
 			name:   "PointerToInvalid",
@@ -99,7 +98,7 @@ func TestIndirectNew(t *testing.T) {
 		expect reflect.Value
 	}{
 		{1, reflect.ValueOf(1)},
-		{ptrx.Ptr(1), reflect.ValueOf(1)},
+		{new(1), reflect.ValueOf(1)},
 		{nil, reflectx.InvalidValue},
 		{reflect.ValueOf(v1).Elem().Field(0), reflect.ValueOf(1)},
 		{reflect.ValueOf(v2).Elem().Field(0), reflect.ValueOf(0)},
@@ -127,12 +126,12 @@ func TestDeref(t *testing.T) {
 		input  any
 		expect reflect.Type
 	}{
-		{1, reflect.TypeOf(1)},
-		{new(1), reflect.TypeOf(1)},
-		{(*int)(nil), reflect.TypeOf(1)},
-		{new(new(0.2)), reflect.TypeOf(float64(0))},
+		{1, reflect.TypeFor[int]()},
+		{new(1), reflect.TypeFor[int]()},
+		{(*int)(nil), reflect.TypeFor[int]()},
+		{new(new(0.2)), reflect.TypeFor[float64]()},
 		{reflectx.InvalidType, reflectx.InvalidType},
-		{any(1), reflect.TypeOf(int(0))},
+		{any(1), reflect.TypeFor[int]()},
 	}
 
 	for _, c := range cases {
@@ -158,10 +157,10 @@ func TestNew(t *testing.T) {
 		orig  reflect.Type
 		elem  reflect.Type
 	}{
-		{1, reflect.TypeOf(int(0)), reflect.TypeOf(int(0))},
-		{ptrx.Ptr(1), reflect.TypeOf(new(int)), reflect.TypeOf(int(0))},
-		{ptrx.Ptr(ptrx.Ptr(0.2)), reflect.TypeOf(new(*float64)), reflect.TypeOf(new(float64))},
-		{[]int{}, reflect.TypeOf([]int{}), reflect.TypeOf([]int{})},
+		{1, reflect.TypeFor[int](), reflect.TypeFor[int]()},
+		{new(1), reflect.TypeFor[*int](), reflect.TypeFor[int]()},
+		{new(new(0.2)), reflect.TypeFor[**float64](), reflect.TypeFor[*float64]()},
+		{[]int{}, reflect.TypeFor[[]int](), reflect.TypeFor[[]int]()},
 	}
 
 	for _, c := range cases {
@@ -210,7 +209,7 @@ func TestIsZero(t *testing.T) {
 		{reflectx.InvalidValue, true},
 		{reflectx.InvalidType, true},
 		{(*int)(nil), true},
-		{ptrx.Ptr(1), false},
+		{new(1), false},
 		{any(nil), true},
 		{new(any), true},
 		{[3]int{}, true},
@@ -271,7 +270,7 @@ func TestIsBytes(t *testing.T) {
 	}{
 		{1, false},
 		{[]byte{}, true},
-		{reflect.TypeOf([]byte{}), true},
+		{reflect.TypeFor[[]byte](), true},
 		{[]Byte{}, false},
 		{reflect.ValueOf([]Byte{}), false},
 	}
@@ -291,7 +290,7 @@ func TestIsInteger(t *testing.T) {
 		{"1", false},
 		{Int(0), true},
 		{any(100), true},
-		{reflect.TypeOf(1), true},
+		{reflect.TypeFor[int](), true},
 		{reflect.Int, true},
 	}
 
@@ -311,7 +310,7 @@ func TestIsFloat(t *testing.T) {
 		{Int(0), false},
 		{any(100), false},
 		{any(100.0), true},
-		{reflect.TypeOf(1.0), true},
+		{reflect.TypeFor[float64](), true},
 	}
 
 	for _, c := range cases {
@@ -331,8 +330,8 @@ func TestIsNumeric(t *testing.T) {
 		{Float(0), true},
 		{any(100), true},
 		{any(100.0), true},
-		{reflect.TypeOf(1), true},
-		{reflect.TypeOf(1.0), true},
+		{reflect.TypeFor[int](), true},
+		{reflect.TypeFor[float64](), true},
 	}
 
 	for _, c := range cases {
@@ -345,11 +344,11 @@ func TestCanElemType(t *testing.T) {
 		typ    reflect.Type
 		expect bool
 	}{
-		{reflect.TypeOf([]int{}), true},
-		{reflect.TypeOf(map[string]int{}), true},
-		{reflect.TypeOf(1), false},
-		{reflect.TypeOf(new(int)), true},
-		{reflect.TypeOf(make(chan int)), true},
+		{reflect.TypeFor[[]int](), true},
+		{reflect.TypeFor[map[string]int](), true},
+		{reflect.TypeFor[int](), false},
+		{reflect.TypeFor[*int](), true},
+		{reflect.TypeFor[chan int](), true},
 		{reflect.ValueOf([]int{}).Type(), true},
 		{reflect.ValueOf(1).Type(), false},
 		{reflect.TypeOf(nil), false},
@@ -370,7 +369,7 @@ func TestCanNilValue(t *testing.T) {
 		{reflect.Value{}, false},
 		{make(chan int), true},
 		{(func())(nil), true},
-		{interface{}(nil), false}, // type nil trap
+		{any(nil), false}, // type nil trap
 		{map[string]int{}, true},
 		{[]int{}, true},
 		{new(int), true},
@@ -384,6 +383,6 @@ func TestCanNilValue(t *testing.T) {
 	}
 
 	// type nil trap
-	var v interface{} = []int(nil)
+	var v any = []int(nil)
 	Expect(t, reflectx.CanNilValue(v), BeTrue())
 }
