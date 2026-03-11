@@ -1,6 +1,14 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.4.2...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.4.3...HEAD) (0001-01-01)
+
+
+<a name="v0.4.3"></a>
+## [v0.4.3](https://github.com/xoctopus/x/compare/v0.4.2...v0.4.3) (2026-03-11)
+
+### Fix
+
+* deref an interface
 
 
 <a name="v0.4.2"></a>

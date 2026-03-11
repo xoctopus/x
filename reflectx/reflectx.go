@@ -39,7 +39,7 @@ func Indirect(v any) reflect.Value {
 		return InvalidValue
 	}
 
-	if (rv.Kind() == reflect.Interface || rv.Kind() == reflect.Pointer) && rv.Type().Name() == "" && !rv.IsNil() {
+	if rv.Kind() == reflect.Pointer && rv.Type().Name() == "" {
 		return Indirect(rv.Elem())
 	}
 

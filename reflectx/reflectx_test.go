@@ -37,9 +37,6 @@ func TestIndirect(t *testing.T) {
 			name:   "NilInput",
 			input:  nil,
 			expect: reflectx.InvalidValue,
-			check: func(t *testing.T, result reflect.Value) {
-				Expect(t, result.IsValid(), BeFalse())
-			},
 		}, {
 			name:   "BasicInt",
 			input:  1,
@@ -53,13 +50,13 @@ func TestIndirect(t *testing.T) {
 			input:  ptrx.Ptr(IntPtr(ptrx.Ptr(1))),
 			expect: reflect.ValueOf(IntPtr(ptrx.Ptr(1))),
 		}, {
-			name:   "InterfaceWrappingPointer",
-			input:  reflect.ValueOf(&AnyHolder{Any: 100.1}).Elem().Field(0),
-			expect: reflect.ValueOf(100.1),
-		}, {
 			name:   "PointerToPointer",
 			input:  ptrx.Ptr(ptrx.Ptr(0.2)),
 			expect: reflect.ValueOf(0.2),
+		}, {
+			name:   "PointerToInvalid",
+			input:  new((*int)(nil)),
+			expect: reflectx.InvalidValue,
 		}, {
 			name:   "ReflectValueInput",
 			input:  reflect.ValueOf(123),
@@ -73,26 +70,20 @@ func TestIndirect(t *testing.T) {
 			input:  Interface(Impl{}),
 			expect: reflect.ValueOf(Interface(Impl{})),
 		}, {
-			name:  "InterfaceNil",
-			input: Interface(nil),
-			check: func(t *testing.T, result reflect.Value) {
-				Expect(t, result.IsValid(), BeFalse())
-			},
+			name:   "InterfaceNil",
+			input:  Interface(nil),
+			expect: reflectx.InvalidValue,
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			result := reflectx.Indirect(c.input)
-
-			if c.check != nil {
-				c.check(t, result)
-				return
+			v := reflectx.Indirect(c.input)
+			if c.expect == reflectx.InvalidValue {
+				Expect(t, v, Equal(c.expect))
+			} else {
+				Expect(t, v.Interface(), Equal(c.expect.Interface()))
 			}
-
-			Expect(t, result.IsValid(), BeTrue())
-			Expect(t, result.Type(), Equal(c.expect.Type()))
-			Expect(t, result.Interface(), Equal(c.expect.Interface()))
 		})
 	}
 }
