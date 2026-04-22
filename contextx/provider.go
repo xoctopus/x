@@ -6,22 +6,28 @@ import (
 	"github.com/xoctopus/x/misc/must"
 )
 
-func With[K comparable, T any](ctx context.Context, v T) context.Context {
-	k := *new(K)
-	return context.WithValue(ctx, k, v)
+func With[KT comparable, P any](ctx context.Context, v P) context.Context {
+	return context.WithValue(ctx, *new(KT), v)
 }
 
-func From[K comparable, T any](ctx context.Context) (T, bool) {
-	v, ok := ctx.Value(*new(K)).(T)
+func From[KT comparable, P any](ctx context.Context) (P, bool) {
+	v, ok := ctx.Value(*new(KT)).(P)
 	return v, ok
 }
 
-func Must[K comparable, T any](ctx context.Context) T {
-	return must.BeTrueV(From[K, T](ctx))
+func FromOr[KT comparable, P any](ctx context.Context, or P) P {
+	if x, ok := From[KT, P](ctx); ok {
+		return x
+	}
+	return or
 }
 
-func Carry[K comparable, T any](v T) Carrier {
+func Must[KT comparable, P any](ctx context.Context) P {
+	return must.BeTrueV(From[KT, P](ctx))
+}
+
+func Carry[KT comparable, P any](v P) Carrier {
 	return func(ctx context.Context) context.Context {
-		return With[K, T](ctx, v)
+		return With[KT, P](ctx, v)
 	}
 }
