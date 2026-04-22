@@ -167,4 +167,11 @@ func TestParseFlags(t *testing.T) {
 		Expect(t, f.Option("default").String(), Equal("default=CURRENT_TIMESTAMP(3)"))
 		Expect(t, f.Option("default").Value(), Equal("CURRENT_TIMESTAMP(3)"))
 	})
+
+	t.Run("UserSplitter", func(t *testing.T) {
+		t1 := reflectx.ParseTag(`db:"f_col,default=CURRENT_TIMESTAMP(3),onupdate=CURRENT_TIMESTAMP(3)"`).Get("db")
+		t2 := reflectx.ParseTag(`db:"f_col,default:CURRENT_TIMESTAMP(3),onupdate:CURRENT_TIMESTAMP(3)"`, ':').Get("db")
+		Expect(t, t1.Option("default"), Equal(t2.Option("default")))
+		Expect(t, t1.Option("onupdate"), Equal(t2.Option("onupdate")))
+	})
 }

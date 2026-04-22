@@ -18,7 +18,12 @@ import (
 // Control characters are allowed only in option values.
 // Flag keys, flag names, and option names may contain only letters, digits, and underscores.
 // Other characters in option values must be wrapped in single quotes.
-func ParseTag(tag reflect.StructTag) Tag {
+// Default option splitter is '=' can set as '=' or ':'
+// eg:
+//
+//	`json:"name,option:value,no_value_option"`
+//	`json:"name,option=value,no_value_option"`
+func ParseTag(tag reflect.StructTag, splitter ...rune) Tag {
 	flags := make(Tag)
 
 	for i := 0; tag != ""; {
@@ -69,8 +74,12 @@ func ParseTag(tag reflect.StructTag) Tag {
 		}
 	}
 
+	s := '='
+	if len(splitter) > 0 && splitter[0] == ':' {
+		s = ':'
+	}
 	for k := range flags {
-		flags[k].parse()
+		flags[k].parse(s)
 	}
 
 	return flags
@@ -109,7 +118,7 @@ type Flag struct {
 	prettied string
 }
 
-func (f *Flag) parse() {
+func (f *Flag) parse(s rune) {
 	val := strings.TrimSpace(f.raw)
 
 	// scan value to parted by ','
@@ -158,7 +167,7 @@ func (f *Flag) parse() {
 			switch c {
 			case '\'':
 				quoted = !quoted
-			case '=':
+			case s:
 				if !quoted {
 					eq = true
 					goto FinishOption
@@ -189,6 +198,7 @@ func (f *Flag) parse() {
 			// 	}
 			// }
 			if opt := NewOption(k, v, index); !opt.IsZero() {
+				// duplicated options will be ignored silently
 				if _, exists := f.options[opt.key]; !exists {
 					f.options[opt.key] = opt
 				}
