@@ -66,17 +66,9 @@ func ExampleError() {
 }
 
 func TestIs(t *testing.T) {
-	code, isCode := Is[ECode](New(ECODE__REASON1))
-	Expect(t, isCode, BeTrue())
-	Expect(t, code, Equal(ECODE__REASON1))
-
-	code2, isCode2 := Is[ECode2](New(ECODE__REASON2))
-	Expect(t, isCode2, BeFalse())
-	Expect(t, code2, Equal(ECode2(0)))
-
-	code3, isCode3 := Is[ECode](errors.New("any"))
-	Expect(t, isCode3, BeFalse())
-	Expect(t, code3, Equal(ECode(0)))
+	Expect(t, Is[ECode](New(ECODE__REASON1)), BeTrue())
+	Expect(t, Is[ECode2](New(ECODE__REASON2)), BeFalse())
+	Expect(t, Is[ECode](errors.New("any")), BeFalse())
 
 	Expect(t, IsCode(New(ECODE__REASON1), ECODE__REASON1), BeTrue())
 	Expect(t, IsCode(New(ECODE__REASON1), ECODE__REASON2), BeFalse())
@@ -85,7 +77,14 @@ func TestIs(t *testing.T) {
 	Expect(t, asserted, BeTrue())
 	Expect(t, as1.Code(), Equal(ECODE__REASON1))
 
+	c, as := AsCode[ECode](New(ECODE__REASON1))
+	Expect(t, as, BeTrue())
+	Expect(t, c, Equal(ECODE__REASON1))
+
 	as2, asserted := As[ECode2](New(ECODE__REASON2))
 	Expect(t, as2 == nil, BeTrue())
 	Expect(t, asserted, BeFalse())
+
+	_, ok2 := AsCode[ECode2](New(ECODE__REASON2))
+	Expect(t, ok2, BeFalse())
 }

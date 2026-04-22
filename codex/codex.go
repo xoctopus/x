@@ -10,7 +10,7 @@ import (
 // any integer-based type. The Message method returns the error description
 // associated with the code.
 type Code interface {
-	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
+	~int | ~int8 | ~int16 | ~int32 | ~uint | ~uint8 | ~uint16 | ~uint32
 	// Message returns the error description string for the code.
 	Message() string
 }
@@ -56,11 +56,9 @@ func IsCode[C Code](e error, code C) bool {
 	return errors.Is(e, New(code))
 }
 
-func Is[C Code](e error) (C, bool) {
-	if target, ok := errors.AsType[*coderr[C]](e); ok {
-		return target.code, true
-	}
-	return *new(C), false
+func Is[C Code](e error) bool {
+	_, ok := errors.AsType[*coderr[C]](e)
+	return ok
 }
 
 func As[C Code](e error) (Error[C], bool) {
@@ -68,6 +66,13 @@ func As[C Code](e error) (Error[C], bool) {
 		return target, true
 	}
 	return nil, false
+}
+
+func AsCode[C Code](e error) (C, bool) {
+	if ce, ok := As[C](e); ok {
+		return ce.Code(), true
+	}
+	return *new(C), false
 }
 
 type coderr[C Code] struct {
