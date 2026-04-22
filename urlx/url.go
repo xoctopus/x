@@ -1,5 +1,4 @@
 // Package urlx provides a more user-friendly URL parser, modifier and builder.
-// TODO Opaque support
 package urlx
 
 import (
@@ -41,7 +40,7 @@ func WithScheme(scheme string) Modifier {
 	}
 }
 
-// TODO
+// TODO Opaque support
 // func WithOpaque(opaque string) Modifier {
 // 	return func(u *url.URL) {
 // 		u.Opaque = opaque
@@ -75,7 +74,7 @@ func TrimPort() Modifier {
 
 func WithDefaultPort() Modifier {
 	return func(u *url.URL) {
-		if port, ok := defaultPorts[u.Scheme]; ok {
+		if port, ok := gDefaultPorts[u.Scheme]; ok {
 			u.Host = strings.TrimSuffix(u.Host, ":"+u.Port())
 			u.Host += ":" + strconv.Itoa(int(port))
 		}
@@ -136,60 +135,20 @@ func TrimFragment() Modifier {
 	}
 }
 
-var defaultPorts = map[string]uint16{
-	// web + base
-	"http":  80,
-	"https": 443,
-	"ssh":   22,
-	"dns":   53,
-
-	// rdb
-	"mysql":    3306,
-	"postgres": 5432,
-	"pg":       5432,
-	"oracle":   1521,
-	"mssql":    1433,
-	"tidb":     4000,
-
-	// no-sql + cache
-	"redis":     6379,
-	"memcached": 11211,
-	"mongodb":   27017,
-
-	// mq
-	"amqp":     5672,
-	"kafka":    9092,
-	"pulsar":   6650,
-	"mqtt":     1883,
-	"rocketmq": 9876,
-}
-
-func DefaultPort(scheme string) (port uint16, ok bool) {
-	port, ok = defaultPorts[strings.ToLower(scheme)]
-	return
-}
-
-func AddDefaultPort(scheme string, port uint16) (conflicted bool) {
-	scheme = strings.ToLower(scheme)
-	_, conflicted = defaultPorts[scheme]
-	defaultPorts[scheme] = port
-	return
-}
-
 type URL struct {
 	url.URL
 }
 
 func (u *URL) Port() uint16 {
-	if port := u.URL.Port(); len(port) > 0 {
-		if i, err := strconv.ParseUint(port, 10, 16); err == nil {
-			return uint16(i)
+	port, _ := DefaultPort(u.Scheme)
+
+	if s := u.URL.Port(); len(s) > 0 {
+		if i, err := strconv.ParseUint(s, 10, 16); err == nil {
+			port = uint16(i)
 		}
 	}
-	if port, ok := DefaultPort(u.Scheme); ok {
-		return port
-	}
-	return 0
+
+	return port
 }
 
 func (u *URL) IsZero() bool {

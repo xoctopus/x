@@ -36,9 +36,6 @@ func ExampleBuild() {
 	u = urlx.From(u.URL, urlx.WithScheme("test"), urlx.TrimPort())
 	fmt.Println(u.Port())
 
-	urlx.AddDefaultPort("test", 30000)
-	fmt.Println(u.Port())
-
 	u, _ = urlx.Parse("http://localhost\n:8080")
 	fmt.Println(u.IsZero())
 
@@ -49,6 +46,5 @@ func ExampleBuild() {
 	// 443
 	// 30000
 	// 0
-	// 30000
 	// true
 }
