@@ -13,18 +13,54 @@ import (
 	"github.com/xoctopus/x/stringsx"
 )
 
+type option struct {
+	splitter rune
+	expects  map[string]bool
+}
+
+func (o *option) expected(f string) bool {
+	if len(o.expects) == 0 {
+		return true
+	}
+	_, ok := o.expects[f]
+	return ok
+}
+
+type ParseOption func(o *option)
+
+// WithOptionSplitter the default option splitter is '=' can set as '=' or ':'
+// eg:
+//
+//	`json:"name,option:value,no_value_option"`
+//	`json:"name,option=value,no_value_option"`
+func WithOptionSplitter(s rune) func(*option) {
+	must.BeTrue(s == ':' || s == '=')
+	return func(o *option) {
+		o.splitter = s
+	}
+}
+
+// WithExpectFlags flag will be ignored if expected flags is set and in flags
+func WithExpectFlags(flags ...string) func(*option) {
+	return func(o *option) {
+		for _, k := range flags {
+			o.expects[k] = true
+		}
+	}
+}
+
 // ParseTag parses a struct tag into a map of flag keys and values.
 // Each value is further parsed into a flag name and its options.
 // Control characters are allowed only in option values.
 // Flag keys, flag names, and option names may contain only letters, digits, and underscores.
 // Other characters in option values must be wrapped in single quotes.
-// Default option splitter is '=' can set as '=' or ':'
-// eg:
-//
-//	`json:"name,option:value,no_value_option"`
-//	`json:"name,option=value,no_value_option"`
-func ParseTag(tag reflect.StructTag, splitter ...rune) Tag {
+func ParseTag(tag reflect.StructTag, options ...ParseOption) Tag {
 	flags := make(Tag)
+
+	o := &option{splitter: '=', expects: make(map[string]bool)}
+	for _, f := range options {
+		f(o)
+	}
 
 	for i := 0; tag != ""; {
 		// skip spaces
@@ -64,7 +100,7 @@ func ParseTag(tag reflect.StructTag, splitter ...rune) Tag {
 			panic(codex.Errorf(ECODE__INVALID_FLAG_VALUE, "tag: %q", tag))
 		}
 		quoted := string(tag[:i+1])
-		if _, ok := flags[key]; !ok {
+		if _, ok := flags[key]; !ok && o.expected(key) {
 			flags[key] = &Flag{
 				key:     key,
 				raw:     must.NoErrorV(strconv.Unquote(quoted)),
@@ -74,12 +110,8 @@ func ParseTag(tag reflect.StructTag, splitter ...rune) Tag {
 		}
 	}
 
-	s := '='
-	if len(splitter) > 0 && splitter[0] == ':' {
-		s = ':'
-	}
 	for k := range flags {
-		flags[k].parse(s)
+		flags[k].parse(o.splitter)
 	}
 
 	return flags
@@ -118,7 +150,7 @@ type Flag struct {
 	prettied string
 }
 
-func (f *Flag) parse(s rune) {
+func (f *Flag) parse(splitter rune) {
 	val := strings.TrimSpace(f.raw)
 
 	// scan value to parted by ','
@@ -167,7 +199,7 @@ func (f *Flag) parse(s rune) {
 			switch c {
 			case '\'':
 				quoted = !quoted
-			case s:
+			case splitter:
 				if !quoted {
 					eq = true
 					goto FinishOption
