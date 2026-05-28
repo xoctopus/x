@@ -106,8 +106,8 @@ func ParseTag(tag reflect.StructTag, options ...ParseOption) Tag {
 				raw:     must.NoErrorV(strconv.Unquote(quoted)),
 				options: make(map[string]*Option),
 			}
-			tag = tag[i+1:]
 		}
+		tag = tag[i+1:]
 	}
 
 	for k := range flags {
@@ -118,6 +118,10 @@ func ParseTag(tag reflect.StructTag, options ...ParseOption) Tag {
 }
 
 type Tag map[string]*Flag
+
+func (t Tag) IsEmpty() bool {
+	return len(t) == 0
+}
 
 func (t Tag) Get(key string) *Flag {
 	if f, ok := t[key]; ok {

@@ -49,11 +49,6 @@ func TestParseFlags(t *testing.T) {
 				tag:  reflect.StructTag(`panic_invalid_key:"key,'x\n\r'='any'"`),
 				err:  codex.New(reflectx.ECODE__INVALID_OPTION_KEY),
 			},
-			// {
-			// 	name: "InvalidOptionValue",
-			// 	tag:  reflect.StructTag(`panic_invalid_value:",x=a b c"`),
-			// 	err:  codex.New(ECODE__INVALID_OPTION_VALUE),
-			// },
 		}
 		for _, c := range cases {
 			t.Run(c.name, func(t *testing.T) {
@@ -170,8 +165,17 @@ func TestParseFlags(t *testing.T) {
 
 	t.Run("UserSplitter", func(t *testing.T) {
 		t1 := reflectx.ParseTag(`db:"f_col,default=CURRENT_TIMESTAMP(3),onupdate=CURRENT_TIMESTAMP(3)"`).Get("db")
-		t2 := reflectx.ParseTag(`db:"f_col,default:CURRENT_TIMESTAMP(3),onupdate:CURRENT_TIMESTAMP(3)"`, reflectx.WithOptionSplitter(':'), reflectx.WithExpectFlags("db", "json")).Get("db")
+		t2 := reflectx.ParseTag(`db:"f_col,default:CURRENT_TIMESTAMP(3),onupdate:CURRENT_TIMESTAMP(3)"`, reflectx.WithOptionSplitter(':')).Get("db")
 		Expect(t, t1.Option("default"), Equal(t2.Option("default")))
 		Expect(t, t1.Option("onupdate"), Equal(t2.Option("onupdate")))
+
+		t3 := reflectx.ParseTag(`db:"a" json:"b" name:"c"`, reflectx.WithExpectFlags("json", "name"))
+		Expect(t, t3.IsEmpty(), BeFalse())
+		Expect(t, t3.Get("json"), NotBeNil[*reflectx.Flag]())
+		Expect(t, t3.Get("name"), NotBeNil[*reflectx.Flag]())
+		Expect(t, t3.Get("db"), BeNil[*reflectx.Flag]())
+
+		t4 := reflectx.ParseTag(``)
+		Expect(t, t4.IsEmpty(), BeTrue())
 	})
 }
