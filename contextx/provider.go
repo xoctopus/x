@@ -31,3 +31,7 @@ func Carry[KT comparable, P any](v P) Carrier {
 		return With[KT, P](ctx, v)
 	}
 }
+
+type Provider interface {
+	WithContext(context.Context) context.Context
+}

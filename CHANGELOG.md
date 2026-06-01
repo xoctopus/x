@@ -1,6 +1,22 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.4.5...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.4.7-rc1...HEAD) (0001-01-01)
+
+
+<a name="v0.4.7-rc1"></a>
+## [v0.4.7-rc1](https://github.com/xoctopus/x/compare/v0.4.6...v0.4.7-rc1) (2026-05-28)
+
+### Fix
+
+* tag parse options. tag parsing offset
+
+
+<a name="v0.4.6"></a>
+## [v0.4.6](https://github.com/xoctopus/x/compare/v0.4.5...v0.4.6) (2026-05-28)
+
+### Feat
+
+* tag parse options
 
 
 <a name="v0.4.5"></a>
