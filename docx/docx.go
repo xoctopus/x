@@ -1,6 +1,12 @@
 package docx
 
+import "github.com/xoctopus/x/contextx"
+
 type Doc interface {
+	DocOf(names ...string) ([]string, bool)
+}
+
+type Provider interface {
 	DocOf(names ...string) ([]string, bool)
 }
 
@@ -18,3 +24,12 @@ func Of(v any, prefix string, names ...string) ([]string, bool) {
 	}
 	return []string{}, false
 }
+
+type tCtxProvider struct{}
+
+var (
+	ProviderFrom  = contextx.From[tCtxProvider, Provider]
+	WithProvider  = contextx.With[tCtxProvider, Provider]
+	MustProvider  = contextx.Must[tCtxProvider, Provider]
+	CarryProvider = contextx.Carry[tCtxProvider, Provider]
+)
