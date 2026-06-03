@@ -70,10 +70,31 @@ func Equivalent[T comparable, E ~[]T](x, y E) bool {
 }
 
 // M converts ~[]FROM to []TO by mapping function m
+// Deprecated: use Mapping
 func M[FROM any, TO any, E ~[]FROM](s E, m func(FROM) TO) []TO {
 	results := make([]TO, 0, len(s))
 	for i := range s {
 		results = append(results, m(s[i]))
+	}
+	return results
+}
+
+// Mapping converts ~[]FROM to []TO by mapping function m
+func Mapping[FROM any, TO any, E ~[]FROM](s E, m func(FROM) TO) []TO {
+	results := make([]TO, 0, len(s))
+	for i := range s {
+		results = append(results, m(s[i]))
+	}
+	return results
+}
+
+// FilterMapping converts ~[]FROM to []TO by mapping function m, if m returns false the result will be filtered out
+func FilterMapping[FROM any, TO any, E ~[]FROM](s E, m func(FROM) (TO, bool)) []TO {
+	results := make([]TO, 0, len(s))
+	for i := range s {
+		if x, ok := m(s[i]); ok {
+			results = append(results, x)
+		}
 	}
 	return results
 }
