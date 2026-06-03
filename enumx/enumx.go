@@ -22,7 +22,7 @@ type Enum[E _Int] interface {
 	Values() []E
 	// String returns enum key as string identifier
 	String() string
-	// Text returns enum description for presents
+	// Text returns enum description for presents as EnumLabel
 	Text() string
 	// IsZero check if v is valid
 	IsZero() bool

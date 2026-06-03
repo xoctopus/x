@@ -1,6 +1,14 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.4.7-rc1...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.4.7-rc2...HEAD) (0001-01-01)
+
+
+<a name="v0.4.7-rc2"></a>
+## [v0.4.7-rc2](https://github.com/xoctopus/x/compare/v0.4.7-rc1...v0.4.7-rc2) (2026-06-02)
+
+### Feat
+
+* **contextx:** context provider
 
 
 <a name="v0.4.7-rc1"></a>
