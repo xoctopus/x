@@ -34,6 +34,10 @@ type Enum[E _Int] interface {
 	sql.Scanner
 }
 
+type CanBeEnum interface {
+	EnumValues() []any
+}
+
 // DriverValueOffset as an adaptor between code and database
 type DriverValueOffset interface {
 	Offset() int
