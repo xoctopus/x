@@ -89,11 +89,22 @@ func Mapping[FROM any, TO any, E ~[]FROM](s E, m func(FROM) TO) []TO {
 }
 
 // FilterMapping converts ~[]FROM to []TO by mapping function m, if m returns false the result will be filtered out
-func FilterMapping[FROM any, TO any, E ~[]FROM](s E, m func(FROM) (TO, bool)) []TO {
-	results := make([]TO, 0, len(s))
+func FilterMapping[E any, T any, S ~[]E](s S, m func(E) (T, bool)) []T {
+	results := make([]T, 0, len(s))
 	for i := range s {
 		if x, ok := m(s[i]); ok {
 			results = append(results, x)
+		}
+	}
+	return results
+}
+
+// Filter filters s with filter function
+func Filter[E any, S ~[]E](s S, filter func(E) bool) S {
+	results := make(S, 0, len(s))
+	for i := range s {
+		if filter(s[i]) {
+			results = append(results, s[i])
 		}
 	}
 	return results

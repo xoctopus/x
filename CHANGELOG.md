@@ -1,6 +1,27 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.4.7-rc2...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.4.8...HEAD) (0001-01-01)
+
+
+<a name="v0.4.8"></a>
+## [v0.4.8](https://github.com/xoctopus/x/compare/v0.4.7-rc3...v0.4.8) (2026-06-06)
+
+### Feat
+
+* universal enumx.EnumValues for oas generating
+
+
+<a name="v0.4.7-rc3"></a>
+## [v0.4.7-rc3](https://github.com/xoctopus/x/compare/v0.4.7-rc2...v0.4.7-rc3) (2026-06-03)
+
+### Doc
+
+* update CHANGELOG
+
+### Feat
+
+* **docx:** doc provider
+* **slicex:** add mapping and filter mapping
 
 
 <a name="v0.4.7-rc2"></a>

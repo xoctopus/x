@@ -86,3 +86,8 @@ func TestMap(t *testing.T) {
 	Expect(t, result[2], Equal("2"))
 	Expect(t, result[3], Equal("3"))
 }
+
+func TestFilter(t *testing.T) {
+	values := slicex.Filter([]string{"a", "", "b"}, func(s string) bool { return len(s) > 0 })
+	Expect(t, values, Equal([]string{"a", "b"}))
+}
