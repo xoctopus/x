@@ -84,16 +84,6 @@ func TestExpect(t *testing.T) {
 
 		Expect(t, codex.New(MockCodeErr(0)), Not(IsCodeError(MockCodeErr(1))))
 	})
-
-	// this help to verify failure point
-	// TODO trace2 case's failure point is not correct
-	// t.Run("Trace", func(t *testing.T) {
-	// 	// Should be traced to current line as case failure point
-	// 	ExpectPanic[error](t, func() { panic("any") })
-	// })
-	// t.Run("Trace2", func(t *testing.T) {
-	// 	ExpectPanic[string](t, func() { crash(1) })
-	// })
 }
 
 type MockCodeErr int
@@ -108,3 +98,26 @@ func crash(i int) {
 		panic(fmt.Errorf("any"))
 	}
 }
+
+/*
+func TestFailurePosition(t *testing.T) {
+	// t.Skip("this help to verify failure point")
+
+	t.Run("FailurePoint", func(t *testing.T) {
+		t.Run("Trace1", func(t *testing.T) {
+			// Should be traced to current line as case failure point
+			ExpectPanic[error](t, func() { // should :112
+				panic("any")
+			})
+		})
+		t.Run("Trace2", func(t *testing.T) {
+			ExpectPanic[string](t, func() { // should :116
+				crash(1)
+			})
+		})
+		t.Run("Trace3", func(t *testing.T) {
+			ExpectPanic[string](t, func() {}) // should 121
+		})
+	})
+}
+*/
