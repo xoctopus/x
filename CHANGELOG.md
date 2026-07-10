@@ -1,6 +1,30 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.4.8...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.4.9...HEAD) (2026-07-11)
+
+### Docs
+
+* add ci workflow and update readme
+
+### Feat
+
+* **testx:** Behavior-Driven Development testing and enrich assertions
+
+### Fix
+
+* **testx:** ExpectPanic failure position
+
+### Test
+
+* **textx:** update unit test
+
+
+<a name="v0.4.9"></a>
+## [v0.4.9](https://github.com/xoctopus/x/compare/v0.4.8...v0.4.9) (2026-06-16)
+
+### Feat
+
+* **slicex:** add slicex.Filter
 
 
 <a name="v0.4.8"></a>
