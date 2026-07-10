@@ -5,8 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/xoctopus/x/codex"
-	. "github.com/xoctopus/x/testx"
+	"github.com/xoctopus/x/testx/bdd"
 	. "github.com/xoctopus/x/textx"
 	"github.com/xoctopus/x/textx/testdata"
 )
@@ -42,102 +41,131 @@ var DefaultValue = Value{
 	},
 }
 
-func TestMarshalURL(t *testing.T) {
-	t.Run("InvalidInput", func(t *testing.T) {
-		u, err := MarshalURL(nil)
-		Expect(t, err, BeNil[error]())
-		Expect(t, u, Equal(url.Values{}))
+func TestURLArshaler(t *testing.T) {
+	bdd.From(t).When("marshaling", func(t bdd.T) {
+		t.Given("nil", func(t bdd.T) {
+			u, err := MarshalURL(nil)
+			t.Then("success and got empty url",
+				bdd.Succeed(err),
+				bdd.Equal(u, url.Values{}),
+			)
+		})
 
-		u, err = MarshalURL((*struct{})(nil))
-		Expect(t, err, BeNil[error]())
-		Expect(t, u, Equal(url.Values{}))
+		t.Given("not struct input", func(t bdd.T) {
+			_, err := MarshalURL(1)
+			t.Then("got invalid input error",
+				bdd.IsCodeError(err, ECODE__MARSHAL_URL_INVALID_INPUT),
+			)
+		})
 
-		_, err = MarshalURL(1)
-		Expect(t, err, IsError(codex.New(ECODE__MARSHAL_URL_INVALID_INPUT)))
+		t.Given("input must marshal failed", func(t bdd.T) {
+			_, err1 := MarshalURL(struct {
+				testdata.MustFailedArshaler
+			}{
+				MustFailedArshaler: testdata.MustFailedArshaler{V: 1},
+			})
+			_, err2 := MarshalURL(struct {
+				V []testdata.MustFailedArshaler
+			}{
+				V: []testdata.MustFailedArshaler{{}},
+			})
+			t.Then("got marshal failed error",
+				bdd.IsCodeError(err1, ECODE__MARSHAL_URL_FAILED),
+				bdd.IsCodeError(err2, ECODE__MARSHAL_URL_FAILED),
+			)
+		})
+
+		t.Given("value case for marshaling", func(t bdd.T) {
+			u, err := MarshalURL(DefaultValue)
+			t.Then("success and match expect",
+				bdd.Succeed(err),
+				bdd.Equal(u, url.Values{
+					"activeTasks": {"5"},
+					"idleTasks":   {"3"},
+					"db":          {"10"},
+					"timeout":     {"100"},
+					"noTag":       {"1.1"},
+					"k1":          {"100"},
+					"k2":          {"v2"},
+				}),
+			)
+		})
 	})
 
-	t.Run("FailedMarshal", func(t *testing.T) {
-		_, err := MarshalURL(struct{ testdata.MustFailedArshaler }{testdata.MustFailedArshaler{V: 1}})
-		Expect(t, err, IsError(codex.New(ECODE__MARSHAL_URL_FAILED)))
+	bdd.From(t).When("unmarshaling", func(t bdd.T) {
+		t.Given("nil", func(t bdd.T) {
+			err := UnmarshalURL(url.Values{}, nil)
+			t.Then("got unmarshal failed error",
+				bdd.IsCodeError(err, ECODE__UNMARSHAL_URL_INVALID_INPUT),
+			)
+		})
 
-		_, err = MarshalURL(struct{ V []testdata.MustFailedArshaler }{V: []testdata.MustFailedArshaler{{}}})
-		Expect(t, err, IsError(codex.New(ECODE__MARSHAL_URL_FAILED)))
-	})
+		t.Given("not struct value", func(t bdd.T) {
+			err := UnmarshalURL(url.Values{}, nil)
+			t.Then("got unmarshal failed error",
+				bdd.IsCodeError(err, ECODE__UNMARSHAL_URL_INVALID_INPUT),
+			)
+		})
 
-	u, err := MarshalURL(DefaultValue)
-	Expect(t, err, BeNil[error]())
-	Expect(t, u, Equal(url.Values{
-		"activeTasks": {"5"},
-		"idleTasks":   {"3"},
-		"db":          {"10"},
-		"timeout":     {"100"},
-		"noTag":       {"1.1"},
-		"k1":          {"100"},
-		"k2":          {"v2"},
-	}))
-}
+		t.Given("empty value pointer case", func(t bdd.T) {
+			v1 := &Value{}
+			err1 := UnmarshalURL(url.Values{}, v1)
+			v2 := new(Value)
+			err2 := UnmarshalURL(url.Values{}, v2)
+			v3 := (**Value)(nil)
+			err3 := UnmarshalURL(url.Values{}, &v3)
+			t.Then("unmarshal succeed and equal default result",
+				bdd.Succeed(err1),
+				bdd.Equal(*v1, DefaultValue),
+				bdd.Succeed(err2),
+				bdd.Equal(*v2, DefaultValue),
+				bdd.Succeed(err3),
+				bdd.Equal(**v3, DefaultValue),
+			)
+		})
 
-func TestUnmarshalURL(t *testing.T) {
-	t.Run("InvalidInput", func(t *testing.T) {
-		for _, v := range []any{nil, new(int)} {
-			err := UnmarshalURL(url.Values{}, v)
-			Expect(t, err, IsError(codex.New(ECODE__UNMARSHAL_URL_INVALID_INPUT)))
-		}
-	})
+		t.Given("valued url.Values", func(t bdd.T) {
+			v := &Value{}
+			err := UnmarshalURL(url.Values{
+				"activeTasks": {"10"},
+				"idleTasks":   {"100"},
+				"db":          {"database"},
+				"timeout":     {"500"},
+				"ignored":     {"ignored"},
+				"noTag":       {"1.2"},
+				"unexported":  {"unexported"},
+				"codes":       {"d", "e", "f"},
+				"k1":          {"101"},
+				"k2":          {"v3"},
+			}, v)
 
-	t.Run("UnmarshalDefault", func(t *testing.T) {
-		v1 := &Value{}
-		err := UnmarshalURL(url.Values{}, v1)
-		Expect(t, err, Succeed())
-		Expect(t, *v1, Equal(DefaultValue))
+			t.Then("should succeed and overwrite default value",
+				bdd.Succeed(err),
+				bdd.Equal(*v, Value{
+					Active:    10,
+					IdleTasks: 100,
+					DB:        "database",
+					Timeout:   500,
+					Ignored:   nil,
+					NoTag:     1.2,
+					Codes:     []string{"d", "e", "f"},
+					Inlined:   Inlined{K1: 101, K2: "v3"},
+				}),
+			)
+		})
 
-		v2 := (*Value)(nil)
-		_ = UnmarshalURL(url.Values{}, &v2)
-		Expect(t, *v2, Equal(DefaultValue))
+		t.Given("field unmarshal failed", func(t bdd.T) {
+			v1 := &Value{}
+			err1 := UnmarshalURL(url.Values{"noTag": {"abc"}}, v1)
+			v2 := struct{ V []testdata.MustFailedArshaler }{}
+			err2 := UnmarshalURL(url.Values{"v": {""}}, &v2)
 
-		v3 := (**Value)(nil)
-		_ = UnmarshalURL(url.Values{}, &v3)
-		Expect(t, **v3, Equal(DefaultValue))
-	})
-
-	t.Run("OverwriteDefault", func(t *testing.T) {
-		v := &Value{}
-		err := UnmarshalURL(url.Values{
-			"activeTasks": {"10"},
-			"idleTasks":   {"100"},
-			"db":          {"database"},
-			"timeout":     {"500"},
-			"ignored":     {"ignored"},
-			"noTag":       {"1.2"},
-			"unexported":  {"unexported"},
-			"codes":       {"d", "e", "f"},
-			"k1":          {"101"},
-			"k2":          {"v3"},
-		}, v)
-		Expect(t, err, Succeed())
-		Expect(t, *v, Equal(Value{
-			Active:    10,
-			IdleTasks: 100,
-			DB:        "database",
-			Timeout:   500,
-			Ignored:   nil,
-			NoTag:     1.2,
-			Codes:     []string{"d", "e", "f"},
-			Inlined:   Inlined{K1: 101, K2: "v3"},
-		}))
-	})
-
-	t.Run("FailedUnmarshalText", func(t *testing.T) {
-		v := &Value{}
-		err := UnmarshalURL(url.Values{"noTag": {"abc"}}, v)
-		Expect(t, err, Failed())
-		Expect(t, err, IsError(codex.New(ECODE__UNMARSHAL_URL_FAILED)))
-
-		v2 := struct{ V []testdata.MustFailedArshaler }{}
-		err = UnmarshalURL(url.Values{"v": {""}}, &v2)
-		Expect(t, err, Failed())
-		Expect(t, err, IsError(codex.New(ECODE__UNMARSHAL_URL_FAILED)))
-		Expect(t, err, IsError(codex.New(ECODE__UNMARSHAL_TEXT_FAILED)))
+			t.Then("got unmarshal failed error",
+				bdd.IsCodeError(err1, ECODE__UNMARSHAL_URL_FAILED),
+				bdd.IsCodeError(err2, ECODE__UNMARSHAL_URL_FAILED),
+				bdd.IsCodeError(err2, ECODE__UNMARSHAL_TEXT_FAILED),
+			)
+		})
 	})
 }
 

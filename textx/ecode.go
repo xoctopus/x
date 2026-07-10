@@ -1,7 +1,7 @@
 package textx
 
 // Ecode defines error code when Marshal/Unmarshal
-// +genx:code_error
+// +genx:code
 // @def textx
 type Ecode int8
 
