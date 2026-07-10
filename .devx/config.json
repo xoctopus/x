@@ -11,8 +11,7 @@
 			"main.go",
 			"testing.go",
 			"example/",
-			"testx/internal",
-			"testx/asserts.go"
+			"testutil/"
 		],
 		"format_ignore": [
 			".git/",
