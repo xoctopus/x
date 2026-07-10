@@ -46,50 +46,42 @@ func (t *bddT) Unwrap() *testing.T {
 }
 
 func (t *bddT) Given(summary string, setup func(b T)) {
-	if t.Skipped() {
-		return
+	if !t.Skipped() {
+		t.T.Run("GIVEN  "+summary, func(t *testing.T) {
+			setup(From(t))
+		})
 	}
-
-	t.T.Run("GIVEN  "+summary, func(t *testing.T) {
-		setup(From(t))
-	})
 }
 
 func (t *bddT) When(summary string, setup func(b T)) {
-	if t.Skipped() {
-		return
-	}
+	t.Helper()
 
-	t.T.Run("WHEN  "+summary, func(t *testing.T) {
-		setup(From(t))
-	})
+	if !t.Skipped() {
+		t.T.Run("WHEN  "+summary, func(t *testing.T) {
+			setup(From(t))
+		})
+	}
 }
 
 func (t *bddT) Then(summary string, checkers ...Checker) {
-	if t.Skipped() {
-		return
-	}
+	t.Helper()
 
-	t.T.Helper()
+	if !t.Skipped() {
+		t.T.Run("THEN  "+summary, func(t *testing.T) {
+			t.Helper()
 
-	t.T.Run("THEN  "+summary, func(t *testing.T) {
-		if t.Skipped() {
-			return
-		}
+			tt := From(t)
 
-		t.Helper()
-
-		tt := From(t)
-
-		checked := 0
-		for _, c := range checkers {
-			if c != nil {
-				c.Check(tt)
-				checked++
+			checked := 0
+			for _, c := range checkers {
+				if c != nil {
+					c.Check(tt)
+					checked++
+				}
 			}
-		}
-		if checked == 0 {
-			t.Logf("case %s has no checkers", t.Name())
-		}
-	})
+			if checked == 0 {
+				t.Logf("case %s has no checkers", t.Name())
+			}
+		})
+	}
 }

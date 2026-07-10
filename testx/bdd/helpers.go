@@ -1,5 +1,6 @@
 package bdd
 
+/*
 import "iter"
 
 func Cases[C any](cases ...C) iter.Seq[C] {
@@ -15,3 +16,4 @@ func Build[T any](build func(v *T)) *T {
 	build(v)
 	return v
 }
+*/

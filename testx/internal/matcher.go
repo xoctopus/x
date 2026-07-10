@@ -1,8 +1,11 @@
 package internal
 
-type Matcher[A any] interface {
+type Matcher[Actual any] interface {
+	// Action returns matching action name
 	Action() string
-	Match(A) bool
+	// Match defines matching action
+	Match(Actual) bool
+	// Negative returns if negative action. eg: Equal, NotEqual
 	Negative() bool
 }
 
@@ -21,51 +24,69 @@ func NewMatcher[A any](action string, match func(A) bool) Matcher[A] {
 	}
 }
 
-type matcher[A any] struct {
+type matcher[Actual any] struct {
 	action string
-	match  func(A) bool
+	match  func(Actual) bool
 }
 
-func (m *matcher[A]) Action() string { return m.action }
-
-func (m *matcher[A]) Match(actual A) bool { return m.match(actual) }
-
-func (m *matcher[A]) Negative() bool { return false }
-
-func Not[T any](matcher Matcher[T]) Matcher[T] {
-	return &negative[T]{Matcher: matcher}
+func (m *matcher[Actual]) Action() string {
+	return m.action
 }
 
-type negative[A any] struct {
-	Matcher[A]
+func (m *matcher[Actual]) Match(actual Actual) bool {
+	return m.match(actual)
 }
 
-func (m *negative[A]) Negative() bool { return true }
+func (m *matcher[Actual]) Negative() bool {
+	return false
+}
 
-type MatcherNewer[A any, E any] func(e E) Matcher[A]
+func Not[Actual any](matcher Matcher[Actual]) Matcher[Actual] {
+	return &negative[Actual]{Matcher: matcher}
+}
 
-func NewComparedMatcher[A any, E any](action string, match func(A, E) bool) MatcherNewer[A, E] {
-	return func(expected E) Matcher[A] {
-		return &compared[A, E]{
-			action:   action,
-			match:    match,
-			expected: expected,
+type negative[Actual any] struct {
+	Matcher[Actual]
+}
+
+func (m *negative[Actual]) Negative() bool {
+	return true
+}
+
+type MatcherNewer[Actual any, Expect any] func(expect Expect) Matcher[Actual]
+
+func NewComparedMatcher[Actual any, Expect any](action string, match func(Actual, Expect) bool) MatcherNewer[Actual, Expect] {
+	return func(expect Expect) Matcher[Actual] {
+		return &compared[Actual, Expect]{
+			action: action,
+			match:  match,
+			expect: expect,
 		}
 	}
 }
 
-type compared[A any, E any] struct {
-	action   string
-	match    func(A, E) bool
-	expected E
+type compared[Actual any, Expect any] struct {
+	action string
+	match  func(Actual, Expect) bool
+	expect Expect
 }
 
-func (m *compared[A, E]) Action() string { return m.action }
-
-func (m *compared[A, E]) Match(actual A) bool {
-	return m.match(actual, m.expected)
+func (m *compared[Actual, Expect]) Action() string {
+	return m.action
 }
 
-func (m *compared[A, E]) Negative() bool { return false }
+func (m *compared[Actual, Expect]) Match(actual Actual) bool {
+	return m.match(actual, m.expect)
+}
 
-func (m *compared[A, E]) NormalizeExpect() any { return m.expected }
+func (m *compared[Actual, Expect]) Negative() bool {
+	return false
+}
+
+func (m *compared[Actual, Expect]) NormalizeActual(actual Actual) any {
+	return actual
+}
+
+func (m *compared[Actual, Expect]) NormalizeExpect() any {
+	return m.expect
+}

@@ -1,8 +1,11 @@
 package testx
 
 import (
+	"cmp"
 	"errors"
+	"fmt"
 	"reflect"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -13,33 +16,36 @@ import (
 )
 
 type (
-	Matcher[A any]            = internal.Matcher[A]
+	Matcher[Actual any]       = internal.Matcher[Actual]
 	NormalizedExpectedMatcher = internal.NormalizedExpectedMatcher
+
+	MatchFunc[Actual any] func(Actual) bool
+
+	ComparableMatchFunc[Actual any, Expect any] func(Actual, Expect) bool
 )
 
-func NewMatcher[A any](name string, match func(A) bool) Matcher[A] {
-	return internal.NewMatcher(name, match)
+func NewMatcher[Actual any](name string, matcher MatchFunc[Actual]) Matcher[Actual] {
+	return internal.NewMatcher(name, matcher)
 }
 
-func NewComparedMatcher[A any, E any](name string, match func(A, E) bool) internal.MatcherNewer[A, E] {
-	return func(expect E) internal.Matcher[A] {
-		return internal.NewComparedMatcher(name, match)(expect)
+func NewComparedMatcher[Actual any, Expect any](name string, matcher ComparableMatchFunc[Actual, Expect]) internal.MatcherNewer[Actual, Expect] {
+	return func(expect Expect) internal.Matcher[Actual] {
+		return internal.NewComparedMatcher(name, matcher)(expect)
 	}
 }
 
-func Not[A any](matcher Matcher[A]) Matcher[A] {
+func Not[Actual any](matcher Matcher[Actual]) Matcher[Actual] {
 	return internal.Not(matcher)
 }
 
-func BeNil[A any]() Matcher[A] {
-	return NewMatcher[A]("BeNil", func(a A) bool {
-		v := reflect.ValueOf(a)
+func BeNil[Actual any]() Matcher[Actual] {
+	return NewMatcher[Actual]("BeNil", func(actual Actual) bool {
+		v := reflect.ValueOf(actual)
 		if !v.IsValid() {
 			return true
 		}
 		switch v.Kind() {
-		case reflect.Chan, reflect.Func, reflect.Interface,
-			reflect.Map, reflect.Pointer, reflect.Slice:
+		case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
 			return v.IsNil()
 		default:
 			return false
@@ -47,143 +53,190 @@ func BeNil[A any]() Matcher[A] {
 	})
 }
 
-func NotBeNil[A any]() Matcher[A] {
-	return internal.Not(BeNil[A]())
+func NotBeNil[Actual any]() Matcher[Actual] {
+	return internal.Not(BeNil[Actual]())
 }
 
 func BeTrue() Matcher[bool] {
-	return NewMatcher[bool]("BeTrue", func(a bool) bool { return a })
+	return Be(true)
 }
 
 func BeFalse() Matcher[bool] {
-	return NewMatcher[bool]("BeFalse", func(a bool) bool { return !a })
+	return Be(false)
 }
 
-func IsZero[A any]() Matcher[A] {
-	return NewMatcher[A]("IsZero", func(a A) bool {
-		return reflectx.IsZero(a)
-	})
+func IsZero[Actual any]() Matcher[Actual] {
+	return NewMatcher[Actual](
+		"IsZero",
+		func(a Actual) bool { return reflectx.IsZero(a) },
+	)
 }
 
-func IsNotZero[A any]() Matcher[A] {
-	return Not(IsZero[A]())
+func IsNotZero[Actual any]() Matcher[Actual] {
+	return Not(IsZero[Actual]())
 }
 
-func Be[E any](expect E) Matcher[E] {
-	return NewComparedMatcher[E, E]("Be", func(a, e E) bool {
-		return any(a) == any(e)
+func Be[T any](expect T) Matcher[T] {
+	return NewComparedMatcher[T, T]("Be", func(actual, expect T) bool {
+		return any(actual) == any(expect)
 	})(expect)
 }
 
-func NotBe[E any](expect E) Matcher[E] {
-	return Not(Be[E](expect))
+func NotBe[T any](expect T) Matcher[T] {
+	return Not(Be[T](expect))
 }
 
-func Equal[E any](expect E) Matcher[E] {
-	return NewComparedMatcher[E, E]("Equal", func(a, e E) bool {
-		return reflect.DeepEqual(a, e)
+func Equal[T any](expect T) Matcher[T] {
+	return NewComparedMatcher[T, T]("Equal", func(actual, expect T) bool {
+		return reflect.DeepEqual(actual, expect)
 	})(expect)
 }
 
-func NotEqual[E any](expect E) Matcher[E] {
-	return Not(Equal[E](expect))
+func NotEqual[T any](expect T) Matcher[T] {
+	return Not(Equal[T](expect))
+}
+
+func BeGt[T cmp.Ordered](expect T) Matcher[T] {
+	return NewComparedMatcher[T, T]("BeGt", func(actual, expect T) bool {
+		return actual > expect
+	})(expect)
+}
+
+func BeGte[T cmp.Ordered](expect T) Matcher[T] {
+	return NewComparedMatcher[T, T]("BeGte", func(actual, expect T) bool {
+		return actual >= expect
+	})(expect)
+}
+
+func BeLt[T cmp.Ordered](expect T) Matcher[T] {
+	return NewComparedMatcher[T, T]("BeLt", func(actual, expect T) bool {
+		return actual < expect
+	})(expect)
+}
+
+func BeLte[T cmp.Ordered](expect T) Matcher[T] {
+	return NewComparedMatcher[T, T]("BeLte", func(actual, expect T) bool {
+		return actual <= expect
+	})(expect)
 }
 
 func HaveCap[T any](cap int) Matcher[T] {
-	return NewComparedMatcher[T, int]("HaveCap", func(a T, cap int) bool {
-		return reflect.ValueOf(a).Cap() == cap
+	return NewComparedMatcher[T, int]("HaveCap", func(actual T, cap int) bool {
+		v := reflect.ValueOf(actual)
+		switch v.Kind() {
+		case reflect.Array, reflect.Chan, reflect.Slice:
+			return v.Cap() == cap
+		default:
+			return false
+		}
 	})(cap)
 }
 
 func HaveLen[T any](len int) Matcher[T] {
-	return NewComparedMatcher[T, int]("HaveLen", func(a T, len int) bool {
-		return reflect.ValueOf(a).Len() == len
+	return NewComparedMatcher[T, int]("HaveLen", func(actual T, len int) bool {
+		v := reflect.ValueOf(actual)
+		switch v.Kind() {
+		case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice, reflect.String:
+			return v.Len() == len
+		default:
+			return false
+		}
 	})(len)
 }
 
+func HaveKey[K comparable, V any, M ~map[K]V](key K) Matcher[M] {
+	return NewComparedMatcher("HaveKey", func(m M, k K) bool {
+		_, ok := m[k]
+		return ok
+	})(key)
+}
+
 func HavePrefix(prefix string) Matcher[string] {
-	return NewComparedMatcher[string, string](
-		"HavePrefix",
-		strings.HasPrefix,
-	)(prefix)
+	return NewComparedMatcher[string, string]("HavePrefix", strings.HasPrefix)(prefix)
 }
 
 func HaveSuffix(suffix string) Matcher[string] {
-	return NewComparedMatcher[string, string](
-		"HaveSuffix",
-		strings.HasSuffix,
-	)(suffix)
+	return NewComparedMatcher[string, string]("HaveSuffix", strings.HasSuffix)(suffix)
 }
 
 func ContainsSubString(sub string) Matcher[string] {
-	return NewComparedMatcher[string, string](
-		"ContainsSubString",
-		func(s, sub string) bool {
-			return strings.Contains(s, sub)
-		},
-	)(sub)
+	return NewComparedMatcher[string, string]("ContainsSubString", strings.Contains)(sub)
+}
+
+func MatchRegexp(pattern string) Matcher[string] {
+	return NewComparedMatcher[string, string]("MatchRegexp", func(actual, pattern string) bool {
+		matched, err := regexp.MatchString(pattern, actual)
+		return err == nil && matched
+	})(pattern)
 }
 
 func Contains[E comparable, S ~[]E](v E) Matcher[S] {
-	return NewComparedMatcher(
-		"Contains",
-		slices.Contains[S, E],
-	)(v)
+	return NewComparedMatcher("Contains", slices.Contains[S, E])(v)
 }
 
 func EquivalentSlice[E comparable, S ~[]E](expect S) Matcher[S] {
-	return NewComparedMatcher(
-		"EqualElements",
-		slicex.Equivalent[E, S],
-	)(expect)
+	return NewComparedMatcher("EqualElements", slicex.Equivalent[E, S])(expect)
 }
 
-func BeAssignableTo[E any]() Matcher[any] {
-	return NewComparedMatcher[any, E](
-		"BeAssignableTo",
-		func(a any, e E) bool {
-			if a == nil {
-				return false
-			}
-			return reflect.TypeOf(a).AssignableTo(reflect.TypeFor[E]())
-		},
-	)(*new(E))
+func ConsistOfSlice[E comparable, S ~[]E](expect S) Matcher[S] {
+	return NewComparedMatcher("ConsistOfSlice", slicex.Equivalent[E, S])(expect)
 }
 
-func BeConvertibleTo[E any]() Matcher[any] {
-	return NewComparedMatcher[any, E](
-		"BeConvertibleTo",
-		func(a any, e E) bool {
-			if a == nil {
-				return false
-			}
-			return reflect.TypeOf(a).ConvertibleTo(reflect.TypeFor[E]())
+func BeAssignableTo[T any]() Matcher[any] {
+	typ := reflect.TypeFor[T]()
+	return NewMatcher[any](
+		fmt.Sprintf("BeAssignableTo[%s]", typ),
+		func(actual any) bool {
+			return actual != nil && reflect.TypeOf(actual).AssignableTo(typ)
 		},
-	)(*new(E))
+	)
 }
 
-func BeType[E any]() Matcher[any] {
-	return NewComparedMatcher[any, E](
-		"BeAssignableTo",
-		func(a any, e E) bool {
-			if a == nil || any(e) == nil {
-				return false
-			}
-			return reflect.TypeOf(a) == reflect.TypeFor[E]()
+func BeConvertibleTo[T any]() Matcher[any] {
+	typ := reflect.TypeFor[T]()
+	return NewMatcher[any](
+		fmt.Sprintf("BeConvertibleTo[%s]", typ),
+		func(actual any) bool {
+			return actual != nil && reflect.TypeOf(actual).ConvertibleTo(typ)
 		},
-	)(*new(E))
+	)
+}
+
+func IsType[T any]() Matcher[any] {
+	typ := reflect.TypeFor[T]()
+	return NewMatcher[any](
+		fmt.Sprintf("IsType[%s]", typ),
+		func(actual any) bool {
+			return actual != nil && reflect.TypeOf(actual) == typ
+		},
+	)
 }
 
 func IsError(expect error) Matcher[error] {
-	return NewComparedMatcher[error, error](
-		"IsError",
-		errors.Is,
-	)(expect)
+	return NewComparedMatcher[error, error]("IsError", errors.Is)(expect)
+}
+
+func AsError[T any](expect *T) Matcher[error] {
+	return NewComparedMatcher[error, any]("AsError", errors.As)(expect)
+}
+
+func AsErrorType[T error]() Matcher[error] {
+	typ := reflect.TypeFor[T]()
+	return NewMatcher[error](
+		fmt.Sprintf("AsErrorType[%s]", typ),
+		func(actual error) bool {
+			if actual == nil {
+				return false
+			}
+			_, ok := errors.AsType[T](actual)
+			return ok
+		},
+	)
 }
 
 func IsCodeError[Code codex.Code](expect Code) Matcher[error] {
 	return NewComparedMatcher[error, Code](
-		"IsCodeError",
+		fmt.Sprintf("IsCodeError[%s]", reflect.TypeFor[Code]()),
 		codex.IsCode,
 	)(expect)
 }
@@ -192,10 +245,7 @@ func ErrorEqual(expect string) Matcher[error] {
 	return NewComparedMatcher(
 		"ErrorEqual",
 		func(actual error, expect string) bool {
-			if actual == nil {
-				return false
-			}
-			return actual.Error() == expect
+			return actual != nil && actual.Error() == expect
 		},
 	)(expect)
 }
@@ -204,10 +254,7 @@ func ErrorContains(sub string) Matcher[error] {
 	return NewComparedMatcher(
 		"ErrorContains",
 		func(actual error, sub string) bool {
-			if actual == nil {
-				return false
-			}
-			return strings.Contains(actual.Error(), sub)
+			return actual != nil && strings.Contains(actual.Error(), sub)
 		},
 	)(sub)
 }

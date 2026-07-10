@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -34,12 +35,13 @@ func failed[T any](actual T, m Matcher[T]) string {
 func diff(actual any, m any) (x any) {
 	if normalizer, ok := m.(NormalizedExpectedMatcher); ok {
 		expect := normalizer.NormalizeExpect()
+
 		defer func() {
 			if r := recover(); r != nil {
 				// some case may cause cmp.Diff panic. catch to compare dumped
 				x = cmp.Diff(
-					fmt.Sprintf("%T:%+v", expect, expect),
-					fmt.Sprintf("%T:%+v", expect, actual),
+					fmt.Sprintf("%s:%+v", reflect.TypeOf(expect), expect),
+					fmt.Sprintf("%s:%+v", reflect.TypeOf(actual), actual),
 				)
 			}
 		}()
