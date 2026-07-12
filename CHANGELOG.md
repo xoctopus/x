@@ -1,6 +1,10 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.5.0...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.5.0...HEAD) (2026-07-13)
+
+### Feat
+
+* **iterx:** enrich iterx
 
 
 <a name="v0.5.0"></a>
