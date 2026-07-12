@@ -1,6 +1,10 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.4.9...HEAD) (2026-07-11)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.5.0...HEAD) (0001-01-01)
+
+
+<a name="v0.5.0"></a>
+## [v0.5.0](https://github.com/xoctopus/x/compare/v0.4.9...v0.5.0) (2026-07-13)
 
 ### Docs
 
@@ -9,6 +13,7 @@
 
 ### Feat
 
+* **misc:** defer error collector
 * **testx:** Behavior-Driven Development testing and enrich assertions
 
 ### Fix
