@@ -4,6 +4,7 @@
 
 ### Docs
 
+* update changelog
 * add ci workflow and update readme
 
 ### Feat
