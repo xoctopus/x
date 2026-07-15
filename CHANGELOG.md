@@ -1,9 +1,14 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.5.0...HEAD) (2026-07-13)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.5.1...HEAD) (0001-01-01)
+
+
+<a name="v0.5.1"></a>
+## [v0.5.1](https://github.com/xoctopus/x/compare/v0.5.0...v0.5.1) (2026-07-13)
 
 ### Feat
 
+* **chanx:** add observer and subject patterns for channel communication
 * **iterx:** enrich iterx
 
 
