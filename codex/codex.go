@@ -11,6 +11,9 @@ import (
 // associated with the code.
 type Code interface {
 	~int | ~int8 | ~int16 | ~int32 | ~uint | ~uint8 | ~uint16 | ~uint32
+}
+
+type _ interface {
 	// Message returns the error description string for the code.
 	Message() string
 }
@@ -83,7 +86,10 @@ type coderr[C Code] struct {
 }
 
 func (e *coderr[C]) Error() string {
-	msg := e.code.Message()
+	msg := fmt.Sprintf("%T[%d]", e.code, e.code)
+	if x, ok := any(e.code).(interface{ Message() string }); ok {
+		msg = x.Message()
+	}
 	if len(e.msg) > 0 {
 		msg += ". " + e.msg
 	}

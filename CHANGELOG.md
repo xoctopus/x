@@ -1,6 +1,15 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.5.1...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.5.2...HEAD) (0001-01-01)
+
+
+<a name="v0.5.2"></a>
+## [v0.5.2](https://github.com/xoctopus/x/compare/v0.5.1...v0.5.2) (2026-07-15)
+
+### Feat
+
+* **docx:** add v2 for enriching comment parsing
+* **iterx:** iterx.OrderedMapOf
 
 
 <a name="v0.5.1"></a>

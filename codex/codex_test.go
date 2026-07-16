@@ -36,6 +36,8 @@ type ECode2 int8
 
 func (e ECode2) Message() string { return "" }
 
+type ECode3 int8
+
 func ExampleError() {
 	fmt.Println(New(ECODE_UNDEFINED).Error())
 	e0 := Errorf(ECODE__REASON1, "user message: %d", 1)
@@ -52,6 +54,9 @@ func ExampleError() {
 	fmt.Printf("expecting nil Wrap(ECODE__REASON1, nil): %v\n", Wrap(ECODE__REASON1, nil))
 	fmt.Printf("expecting nil Wrapf(ECODE__REASON2, nil): %v\n", Wrapf(ECODE__REASON2, nil, "whatever"))
 
+	e3 := New(ECode3(2))
+	fmt.Printf("expect ecode without Message: %s\n", e3.Error())
+
 	// Output:
 	// [region:1] undefined
 	// [region:2] reason1. user message: 1
@@ -63,6 +68,7 @@ func ExampleError() {
 	// expecting false errors.Is(e1, e2): false
 	// expecting nil Wrap(ECODE__REASON1, nil): <nil>
 	// expecting nil Wrapf(ECODE__REASON2, nil): <nil>
+	// expect ecode without Message: codex_test.ECode3[2]
 }
 
 func TestIs(t *testing.T) {
