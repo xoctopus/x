@@ -1,6 +1,14 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.5.2...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.5.3...HEAD) (0001-01-01)
+
+
+<a name="v0.5.3"></a>
+## [v0.5.3](https://github.com/xoctopus/x/compare/v0.5.2...v0.5.3) (2026-07-16)
+
+### Refact
+
+* **codex:** remove Message requirement for codex.Error
 
 
 <a name="v0.5.2"></a>
