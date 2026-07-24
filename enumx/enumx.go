@@ -10,39 +10,52 @@ import (
 	"strconv"
 )
 
-type _Int interface {
+// _U represents the union of supported underlying types for an enumeration.
+type _U interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
 }
 
-// Enum defines an enumeration interface for an int<->string type
-// implements encoding.TextMarshaler/TextUnmarshaler for interaction in networking
-// implements driver.Valuer/sql.Scanner for interaction with database
-type Enum[E _Int] interface {
+type EncodingArshaler interface {
+	encoding.TextMarshaler
+	encoding.TextUnmarshaler
+}
+
+type DatabaseValuer interface {
+	driver.Valuer
+	sql.Scanner
+}
+
+// Enum defines an enumeration interface for mapping between `int` and `string`.
+// It implements encoding.TextMarshaler encoding.TextUnmarshaler for network
+// interaction, and driver.Valuer sql.Scanner for database interaction.
+type Enum[E _U] interface {
 	// Values presents enum value list
 	Values() []E
-	// String returns enum key as string identifier
+	// String returns the string identifier (key) of the enumeration.
 	String() string
 	// Text returns enum description for presents as EnumLabel
 	Text() string
 	// IsZero check if v is valid
 	IsZero() bool
 
-	encoding.TextMarshaler
-	encoding.TextUnmarshaler
+	EncodingArshaler
 
-	driver.Valuer
-	sql.Scanner
+	DatabaseValuer
 }
 
+// CanBeEnum defines an interface for types that can provide value list of their
+// enumeration values.
 type CanBeEnum interface {
 	EnumValues() []any
 }
 
-// DriverValueOffset as an adaptor between code and database
+// DriverValueOffset acts as an adaptor between code and database.
+// It provides an offset to adjust the enumeration's value during converting
 type DriverValueOffset interface {
 	Offset() int
 }
 
+// Scan parses the database value (src) into an integer and adjusts by offset.
 func Scan(src any, offset int) (int, error) {
 	switch v := src.(type) {
 	case []byte:
@@ -72,19 +85,20 @@ func Scan(src any, offset int) (int, error) {
 	}
 }
 
-func ParseErrorFor[E _Int](from string) error {
-	return &ParseError[E]{from: from}
+// ParseErrorFor new parsing error for the specific enum type E.
+func ParseErrorFor[E _U](from string) error {
+	return &parseError[E]{from: from}
 }
 
-type ParseError[E _Int] struct {
+type parseError[E _U] struct {
 	from string
 }
 
-func (e *ParseError[E]) Error() string {
+func (e *parseError[E]) Error() string {
 	return fmt.Sprintf("failed to parse `%s` to %s", e.from, reflect.TypeFor[E]())
 }
 
-func (e *ParseError[E]) Is(err error) bool {
-	target, ok := errors.AsType[*ParseError[E]](err)
+func (e *parseError[E]) Is(err error) bool {
+	target, ok := errors.AsType[*parseError[E]](err)
 	return ok && target.from == e.from
 }
