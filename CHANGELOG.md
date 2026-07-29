@@ -1,6 +1,23 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.5.3...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.5.4...HEAD) (2026-07-30)
+
+### Chore
+
+* **deps:** bump lint actions
+
+### Doc
+
+* **enumx:** add doc comments
+* **testx:** add agent spec and skills
+
+
+<a name="v0.5.4"></a>
+## [v0.5.4](https://github.com/xoctopus/x/compare/v0.5.3...v0.5.4) (2026-07-17)
+
+### Refact
+
+* **docx:** remove v2 implements
 
 
 <a name="v0.5.3"></a>
