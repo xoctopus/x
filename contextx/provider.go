@@ -22,6 +22,15 @@ func FromOr[KT comparable, P any](ctx context.Context, or P) P {
 	return or
 }
 
+func FromOrDefault[KT comparable, P any](v P) func(context.Context) P {
+	return func(ctx context.Context) P {
+		if x, ok := ctx.Value(*new(KT)).(P); ok {
+			return x
+		}
+		return v
+	}
+}
+
 func Must[KT comparable, P any](ctx context.Context) P {
 	return must.BeTrueV(From[KT, P](ctx))
 }
