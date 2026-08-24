@@ -5,6 +5,7 @@ import (
 	"sync/atomic"
 )
 
+// Deprecated: use github.com/xoctopus/concx/pkg/chanx.Subject.
 type Subject[T any] struct {
 	mu   sync.Mutex
 	done atomic.Value

@@ -6,6 +6,7 @@ import (
 	"sync/atomic"
 )
 
+// Deprecated: use github.com/xoctopus/concx/pkg/chanx.NewNotifiableObserver.
 func NewNotifiableObserver[T any]() NotifiableObserver[T] {
 	o := &observer[T]{
 		value: make(chan T),
@@ -31,7 +32,8 @@ func NewNotifiableObserver[T any]() NotifiableObserver[T] {
 }
 
 var (
-	closedch     = make(chan struct{})
+	closedch = make(chan struct{})
+	// Deprecated: use github.com/xoctopus/concx/pkg/chanx.ErrCompleted.
 	ErrCompleted = errors.New("completed")
 )
 
