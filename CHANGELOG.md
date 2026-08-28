@@ -1,6 +1,18 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.5.6...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.5.7...HEAD) (2026-08-28)
+
+### Chore
+
+* bump Go to 1.27.0
+
+
+<a name="v0.5.7"></a>
+## [v0.5.7](https://github.com/xoctopus/x/compare/v0.5.6...v0.5.7) (2026-08-24)
+
+### Docs
+
+* **chanx:** archive package and point to concx/pkg/chanx
 
 
 <a name="v0.5.6"></a>
