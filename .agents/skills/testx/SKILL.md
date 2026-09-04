@@ -1,6 +1,8 @@
 ---
 name: testx-guideline
-description: 封装 testx 断言与 BDD 测试约定; 当任务涉及编写单元测试, 断言匹配器, panic 断言或 Given/When/Then 风格测试时使用.
+description: >-
+  封装 testx 断言与 BDD 测试约定.
+  当任务涉及编写单元测试, 断言匹配器, panic 断言或 Given/When/Then 风格测试时使用.
 triggers:
   - "为...添加单元测试"
   - "为...添加bdd风格单元测试"
