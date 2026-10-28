@@ -2,6 +2,7 @@ package cleanup
 
 import (
 	"errors"
+	"slices"
 	"sync"
 )
 
@@ -25,9 +26,9 @@ func (c *collector) JoinTo(dst *error) error {
 	c.once.Do(func() {
 		errs := make([]error, 0, len(c.fns))
 
-		for i := len(c.fns) - 1; i >= 0; i-- {
-			if c.fns[i] != nil {
-				if err := c.fns[i](); err != nil {
+		for _, v := range slices.Backward(c.fns) {
+			if v != nil {
+				if err := v(); err != nil {
 					errs = append(errs, err)
 				}
 			}

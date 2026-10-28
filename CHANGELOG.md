@@ -1,10 +1,26 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.5.7...HEAD) (2026-08-28)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.5.9...HEAD) (0001-01-01)
+
+
+<a name="v0.5.9"></a>
+## [v0.5.9](https://github.com/xoctopus/x/compare/v0.5.8...v0.5.9) (2026-09-05)
+
+### Docs
+
+* **skills:** split testx SKILL.md description into multiple lines
+
+
+<a name="v0.5.8"></a>
+## [v0.5.8](https://github.com/xoctopus/x/compare/v0.5.7...v0.5.8) (2026-08-28)
 
 ### Chore
 
 * bump Go to 1.27.0
+
+### Docs
+
+* update CHANGELOG
 
 
 <a name="v0.5.7"></a>
