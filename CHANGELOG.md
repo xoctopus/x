@@ -1,10 +1,15 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.5.9...HEAD) (2026-10-28)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.5.9...HEAD) (2026-10-29)
 
 ### Chore
 
 * bump go to 1.27.3 and enable modernize linter
+
+### BREAKING CHANGE
+
+
+code types based on uint are no longer accepted by Code
 
 
 <a name="v0.5.9"></a>
