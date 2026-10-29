@@ -94,3 +94,58 @@ func TestIs(t *testing.T) {
 	_, ok2 := AsCode[ECode2](New(ECODE__REASON2))
 	Expect(t, ok2, BeFalse())
 }
+
+type ECode4 uint16
+
+func (e ECode4) Error() string   { return "ecode4" }
+func (e ECode4) StatusCode() int { return 400 + int(e) }
+
+func TestCodeValue(t *testing.T) {
+	Expect(t, New(ECODE__REASON1).(Valuer).CodeValue(), Equal[any](ECODE__REASON1))
+	Expect(t, Errorf(ECODE__REASON2, "any").(Valuer).CodeValue(), Equal[any](ECODE__REASON2))
+	Expect(t, Wrapf(ECode4(1), errors.New("cause"), "any").(Valuer).CodeValue(), Equal[any](ECode4(1)))
+
+	m, ok := New(ECODE__REASON1).(Valuer).CodeValue().(ErrorMessage)
+	Expect(t, ok, BeTrue())
+	Expect(t, m.Message(), Equal("[region:2] reason1"))
+
+	_, ok = New(ECode3(1)).(Valuer).CodeValue().(ErrorMessage)
+	Expect(t, ok, BeFalse())
+
+	_, ok = fmt.Errorf("wrapped: %w", New(ECODE__REASON1)).(Valuer)
+	Expect(t, ok, BeFalse())
+}
+
+func TestAs(t *testing.T) {
+	cause := errors.New("cause")
+
+	var m ErrorMessage
+	Expect(t, errors.As(fmt.Errorf("wrapped: %w", Wrap(ECODE__REASON1, cause)), &m), BeTrue())
+	Expect(t, m.Message(), Equal("[region:2] reason1"))
+	Expect(t, errors.As(New(ECode3(1)), &m), BeFalse())
+
+	type StatusError interface {
+		error
+		StatusCode() int
+	}
+	se, ok := errors.AsType[StatusError](fmt.Errorf("wrapped: %w", New(ECode4(4))))
+	Expect(t, ok, BeTrue())
+	Expect(t, se.StatusCode(), Equal(404))
+
+	_, ok = errors.AsType[StatusError](New(ECODE__REASON1))
+	Expect(t, ok, BeFalse())
+
+	// outer node takes precedence
+	inner := Wrap(ECODE__REASON1, New(ECode4(9)))
+	Expect(t, errors.As(Wrap(ECode4(1), inner), &se), BeTrue())
+	Expect(t, se.StatusCode(), Equal(401))
+
+	// viewing as *coderr[C] is still served before As
+	ce, ok := errors.AsType[Error[ECode]](inner)
+	Expect(t, ok, BeTrue())
+	Expect(t, ce.Code(), Equal(ECODE__REASON1))
+
+	e := New(ECODE__REASON1).(interface{ As(any) bool })
+	Expect(t, e.As(nil), BeFalse())
+	Expect(t, e.As(m), BeFalse())
+}

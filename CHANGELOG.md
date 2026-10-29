@@ -1,6 +1,10 @@
 
 <a name="HEAD"></a>
-## [HEAD](https://github.com/xoctopus/x/compare/v0.5.9...HEAD) (0001-01-01)
+## [HEAD](https://github.com/xoctopus/x/compare/v0.5.9...HEAD) (2026-10-28)
+
+### Chore
+
+* bump go to 1.27.3 and enable modernize linter
 
 
 <a name="v0.5.9"></a>
